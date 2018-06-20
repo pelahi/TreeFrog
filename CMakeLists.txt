@@ -29,28 +29,29 @@ project(TreeFrog VERSION ${TF_VERSION} LANGUAGES ${TF_LANGS})
 set(CMAKE_CXX_STANDARD 11)
 
 # Command-line treefrog-specific options
-option(TF_BUILD_VELOCIRAPTOR "Whether VELOCiraptor should be built together with treefrog or not" OFF)
+#
+# Options users can give on the command line via -D
+#
+macro(tf_option optname optdesc status)
+        option(TF_${optname} "${optdesc}" "${status}")
+endmacro()
 
-set(TF_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}")
+# Input formats
+tf_option(HDF5 "Attempt to include HDF5 support in TreeFrog " ON)
+
+# MPI options
+tf_option(MPI               "Attempt to include MPI support in TreeFrog" ON)
+
+tf_option(TF_BUILD_VELOCIRAPTOR "Whether VELOCiraptor should be built together with treefrog or not" OFF)
+
+set(TF_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/src")
 set(TF_DEFINES "")
 set(TF_LIBS "")
 set(TF_CXX_FLAGS "")
 set(TF_LINK_FLAGS "")
 
-set(_treefrog_sources
-    allvars.cxx
-    crosscheck.cxx
-    idroutines.cxx
-    io.cxx
-    main.cxx
-    mpiroutines.cxx
-    otherio.cxx
-    stfio.cxx
-    ui.cxx
-    utilities.cxx)
-
 # Include nbodylib, which is definitely needed, and check its version
-add_subdirectory(../../NBodylib NBodylib)
+add_subdirectory(NBodylib NBodylib)
 if (NBODYLIB_VERSION VERSION_LESS "1.10")
 	message(FATAL_ERROR "NBodyLib version ${NBODYLIB_VERSION} unsupported, treefrog requires >= 1.10")
 endif()
@@ -65,7 +66,7 @@ list(APPEND TF_DOC_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/doc")
 # Optionally include VELOCIraptor, which might be needed (and internally
 # includes nbodylib)
 if (TF_BUILD_VELOCIRAPTOR)
-	add_subdirectory(../.. velociraptor)
+	add_subdirectory(velociraptor)
 	if (VR_VERSION VERSION_LESS "1.30")
 		message(FATAL_ERROR "VELOCIraptor version ${VR_VERSION} unsupported, treefrog requires >= 1.30")
 	endif()
@@ -86,14 +87,5 @@ list(REMOVE_DUPLICATES TF_LINK_FLAGS)
 string(REPLACE ";" " " TF_LINK_FLAGS "${TF_LINK_FLAGS}")
 
 include_directories(${TF_INCLUDE_DIRS})
-add_executable(treefrog ${_treefrog_sources})
-target_link_libraries(treefrog nbodylib ${TF_LIBS})
-target_compile_definitions(treefrog PRIVATE ${TF_DEFINES})
-if (TF_CXX_FLAGS)
-	set_target_properties(treefrog PROPERTIES COMPILE_FLAGS ${TF_CXX_FLAGS})
-endif()
-if (TF_LINK_FLAGS)
-	set_target_properties(treefrog PROPERTIES LINK_FLAGS ${TF_LINK_FLAGS})
-endif()
 
 try_add_doc_target("${TF_DOC_DIRS}")
