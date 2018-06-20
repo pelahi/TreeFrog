@@ -63,20 +63,7 @@ list(APPEND TF_CXX_FLAGS ${NBODYLIB_CXX_FLAGS})
 list(APPEND TF_LINK_FLAGS ${NBODYLIB_LINK_FLAGS})
 list(APPEND TF_DOC_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/doc")
 
-# Optionally include VELOCIraptor, which might be needed (and internally
-# includes nbodylib)
-if (TF_BUILD_VELOCIRAPTOR)
-	add_subdirectory(velociraptor)
-	if (VR_VERSION VERSION_LESS "1.30")
-		message(FATAL_ERROR "VELOCIraptor version ${VR_VERSION} unsupported, treefrog requires >= 1.30")
-	endif()
-	list(APPEND TF_INCLUDE_DIRS ${VR_INCLUDE_DIRS})
-	list(APPEND TF_DEFINES ${VR_DEFINES})
-	list(APPEND TF_CXX_FLAGS ${VR_CXX_FLAGS})
-	list(APPEND TF_LINK_FLAGS ${VR_LINK_FLAGS})
-	list(APPEND TF_LIBS ${VR_LIBS})
-	list(INSERT TF_DOC_DIRS 0 ${VR_DOC_DIRS})
-endif()
+# Before had option to build velociraptor as a submodule but keeping the repos separate
 
 list(INSERT TF_DOC_DIRS 0 ${NBODYLIB_DOC_DIRS})
 
@@ -88,4 +75,22 @@ string(REPLACE ";" " " TF_LINK_FLAGS "${TF_LINK_FLAGS}")
 
 include_directories(${TF_INCLUDE_DIRS})
 
-try_add_doc_target("${TF_DOC_DIRS}")
+# This provides us with the velociraptor library and the stf binary
+add_subdirectory(src)
+
+# Export the include directories, if necessary
+# If building on our own, add the "doc" target
+if (_export)
+        set(TF_VERSION "${TF_VERSION_MAJOR}.${TF_VERSION_MINOR}" PARENT_SCOPE)
+        set(TF_VERSION_MAJOR "${TF_VERSION_MAJOR}" PARENT_SCOPE)
+        set(TF_VERSION_MINOR "${TF_VERSION_MINOR}" PARENT_SCOPE)
+        set(TF_INCLUDE_DIRS "${TF_INCLUDE_DIRS}" PARENT_SCOPE)
+        set(TF_DEFINES "${TF_DEFINES}" PARENT_SCOPE)
+        set(TF_CXX_FLAGS "${TF_CXX_FLAGS}" PARENT_SCOPE)
+        set(TF_LINK_FLAGS "${TF_LINK_FLAGS}" PARENT_SCOPE)
+        set(TF_LIBS "${TF_LIBS}" PARENT_SCOPE)
+        set(TF_DOC_DIRS "${TF_DOC_DIRS}" PARENT_SCOPE)
+else()
+        try_add_doc_target("${TF_DOC_DIRS}")
+endif()
+

@@ -31,4 +31,3 @@ if (TF_LINK_FLAGS)
 	set_target_properties(treefrog PROPERTIES LINK_FLAGS ${TF_LINK_FLAGS})
 endif()
 
-try_add_doc_target("${TF_DOC_DIRS}")
