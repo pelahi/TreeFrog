@@ -30,4 +30,4 @@ endif()
 if (TF_LINK_FLAGS)
 	set_target_properties(treefrog PROPERTIES LINK_FLAGS ${TF_LINK_FLAGS})
 endif()
-
+set_target_properties(treefrog PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
