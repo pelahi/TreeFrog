@@ -42,13 +42,73 @@ tf_option(HDF5 "Attempt to include HDF5 support in TreeFrog " ON)
 # MPI options
 tf_option(MPI               "Attempt to include MPI support in TreeFrog" ON)
 
-tf_option(TF_BUILD_VELOCIRAPTOR "Whether VELOCiraptor should be built together with treefrog or not" OFF)
+# Precison options
+tf_option(UNSIGNED_IDS "Use unsigned ID's in TreeFrog" OFF)
+tf_option(LONG_INT "Use long ints ID's in TreeFrog, this will be set by NBODY_LONG_INT if not explicity set" OFF)
+
+#Other options
+tf_option(BUILD_VELOCIRAPTOR "Whether VELOCIraptor should be built together with treefrog or not" OFF)
+
 
 set(TF_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/src")
 set(TF_DEFINES "")
 set(TF_LIBS "")
 set(TF_CXX_FLAGS "")
 set(TF_LINK_FLAGS "")
+
+
+#
+# How we find HDF5 and set it up
+#
+
+macro(find_hdf5)
+        # FindHDF5 needs an environment variable, oddly, unlike
+        # most other packages that use normal cmake variables
+        if (HDF5_ROOT)
+                set(ENV{HDF5_ROOT} ${HDF5_ROOT})
+        endif()
+        find_package(HDF5 COMPONENTS CXX)
+        if (HDF5_FOUND)
+                list(APPEND TF_INCLUDE_DIRS ${HDF5_INCLUDE_DIRS})
+                list(APPEND TF_LIBS ${HDF5_LIBRARIES})
+                list(APPEND TF_DEFINES USEHDF)
+                set(TF_HAS_HDF5 Yes)
+                if (NOT HDF5_VERSION VERSION_LESS "1.10.1")
+                        list(APPEND TF_DEFINES "HDF5_NEWER_THAN_1_10_0")
+                endif()
+        endif()
+endmacro()
+
+#
+# How we find MPI and set it up
+#
+macro(find_mpi)
+        find_package(MPI)
+        if (MPI_FOUND)
+                list(APPEND TF_INCLUDE_DIRS ${MPI_CXX_INCLUDE_PATH})
+                list(APPEND TF_LIBS ${MPI_CXX_LIBRARIES})
+                list(APPEND TF_CXX_FLAGS ${MPI_CXX_FLAGS})
+                list(APPEND TF_LINK_FLAGS ${MPI_CXX_FLAGS})
+                list(APPEND TF_DEFINES USEMPI)
+                set(TF_HAS_MPI Yes)
+        endif()
+endmacro()
+
+#
+# Go and find our dependencies, depending on whether
+# we actually need them or not
+#
+
+set(TF_HAS_HDF5 No)
+if (TF_HDF5)
+        find_hdf5()
+endif()
+
+set(TF_HAS_MPI No)
+if (TF_MPI)
+        find_mpi()
+endif()
+
 
 # Include nbodylib, which is definitely needed, and check its version
 add_subdirectory(NBodylib NBodylib)
@@ -74,6 +134,98 @@ list(REMOVE_DUPLICATES TF_LINK_FLAGS)
 string(REPLACE ";" " " TF_LINK_FLAGS "${TF_LINK_FLAGS}")
 
 include_directories(${TF_INCLUDE_DIRS})
+
+#
+# Find what has been defined in NBodylib thats relevant to TreeFrog
+#
+list (FIND TF_DEFINES USEOPENMP _index)
+if (${_index} GREATER -1)
+      set(TF_HAS_OPENMP Yes)
+else()
+      set(TF_HAS_OPENMP No)
+endif()
+
+#Only if the treefrog longID's have been explicity set
+if(NOT TF_LONG_INT)
+        list (FIND TF_DEFINES LONGINT _index)
+        if (${_index} GREATER -1)
+              set(TF_HAS_LONG_INT Yes)
+        else()
+              set(TF_HAS_LONG_INT No)
+        endif()
+else()
+        set(TF_HAS_LONG_INT Yes)
+endif()
+
+# Lets set which ID type TreeFrog will be using from, long int, long int unsigned, unsigned int and int
+if(TF_HAS_LONG_INT)
+        if(TF_UNSIGNED_IDS)
+                set(TF_HAS_UNSIGNED_IDS Yes)
+                list(APPEND TF_DEFINES TREEFROGLONGUIDS)
+        else()
+                set(TF_HAS_UNSIGNED_IDS No)
+                list(APPEND TF_DEFINES TREEFROGLONGIDS)
+        endif()
+else()
+        if(TF_UNSIGNED_IDS)
+                set(TF_HAS_UNSIGNED_IDS Yes)
+        else()
+                set(TF_HAS_UNSIGNED_IDS No)
+                list(APPEND TF_DEFINES TREEFROGINTIDS)
+        endif()
+endif()
+
+#
+# Tell the world what what we are doing
+#
+macro(tf_report feature)
+
+        # Output feature name and underscore it in the next line
+        message("\n${feature}")
+        string(REGEX REPLACE "." "-" _underscores ${feature})
+        message("${_underscores}\n")
+
+        set(_args "${ARGN}")
+        list(LENGTH _args _nargs)
+        math(EXPR _nargs "${_nargs} - 1")
+        foreach(_idx RANGE 0 ${_nargs} 2)
+
+                # Items in the list come with a message first, then the variable name
+                list(GET _args ${_idx} _msg)
+                math(EXPR _idx2 "${_idx} + 1")
+                list(GET _args ${_idx2} _varname)
+
+                # We try to keep things up to 80 cols
+                string(LENGTH ${_msg} _len)
+                math(EXPR _nspaces "75 - ${_len}")
+                string(RANDOM LENGTH ${_nspaces} _spaces)
+                string(REGEX REPLACE "." " " _spaces "${_spaces}")
+                string(CONCAT _msg "${_msg}" ${_spaces})
+                message(" ${_msg} ${TF_HAS_${_varname}}")
+        endforeach()
+endmacro()
+
+message("\nTreeFrog successfully configured with the following settings:")
+tf_report("Dependencies" 
+          "OpenMP" OPENMP
+          "MPI support" MPI)
+tf_report("File formats" 
+          "HDF5" HDF5)
+tf_report("Types" 
+          "Long particle IDs" LONG_INT
+          "Unsigned particles IDs" UNSIGNED_IDS)
+# tf_report(Others
+#           "VELOCIraptor",TF_BUILD_VELOCIRAPTOR)
+message("")
+message("Compilation")
+message("-----------")
+message("")
+message(" Include dirs: ${TF_INCLUDE_DIRS}")
+message(" Macros defined: ${TF_DEFINES}")
+message(" Libs: ${TF_LIBS}")
+message(" C++ flags: ${TF_CXX_FLAGS}")
+message(" Link flags: ${TF_LINK_FLAGS}")
+message("")
 
 # This provides us with the velociraptor library and the stf binary
 add_subdirectory(src)
