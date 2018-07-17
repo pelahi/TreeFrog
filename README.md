@@ -16,13 +16,14 @@
                      `----'    `----'  `----'                         \   \  /  
                                                                        `--`-'   
 ```
- 
-TreeFrog (formerly HaloTree)
+
+![alt text](https://github.com/pelahi/TreeFrog/blob/master/treefrog.png)
+
+# TreeFrog (formerly HaloTree)
 
 ================================================================================================
-    developed by:
-================================================================================================
 
+ ## developed by:
     Pascal Jahan Elahi (continuously)
     Additional contributors:
     Rhys Poulton
@@ -30,11 +31,10 @@ TreeFrog (formerly HaloTree)
 
 ================================================================================================
 
-    Content
+## Content
     (for more information type make doc in main dir and in NBodylib dir and
     see documents in the doc directory)
 
-================================================================================================
     src/        contains main source code for the algorithm
     doc/        contains Doxygen generated latex and html file of code
     NBodylib/   contains library of objects and routines used by algorithm (can also be used by
@@ -42,9 +42,7 @@ TreeFrog (formerly HaloTree)
 
 ================================================================================================
 
-    Compiling (see documentation for more information)
-
-================================================================================================
+ ## Compiling (see documentation for more information)
 
     TreeFrog uses CMake as its build tool. cmake is used to perform system-level checks,
     like looking for libraries and setting up the rules for the build, and then generates the
@@ -86,9 +84,7 @@ TreeFrog (formerly HaloTree)
 
 ================================================================================================
 
-    Running (see documentation for more information)
-
-================================================================================================
+## Running (see documentation for more information)
 
     This is a MPI+OpenMP code that reads in particle IDs information between various structure
     catalogues and cross matches catalogues assuming that particle IDs are unique and constant
@@ -119,9 +115,7 @@ TreeFrog (formerly HaloTree)
 
 ================================================================================================
 
-    Tools:
-
-================================================================================================
+## Tools:
 
     Contains some example of reading routines for velociraptor output. For example will show
     how a routine will read the output of velociraptor.
