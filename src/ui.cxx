@@ -22,6 +22,7 @@ void GetParamFile(Options &opt)
     }
     paramfile.open(opt.configname, ios::in);
     unsigned j,k;
+    int idefaultflag = 0;
     if (paramfile.is_open())
     {
         while (paramfile.good()){
@@ -39,53 +40,132 @@ void GetParamFile(Options &opt)
                     pbuff=strtok(buff," ");
                     if (pbuff==NULL) continue;
                     strcpy(vbuff, pbuff);
-                    //config search type
-                    if (strcmp(tbuff, "Tree_direction")==0) {
+                    //Input tree format
+                    if (strcmp(tbuff, "Input_tree_format")==0) {
+                        opt.ioformat = atoi(vbuff);
+                    }
+
+                    // Input modifiers for catalog produced by velociraptor
+                    else if (strcmp(tbuff, "Input_format")==0) {
+                        opt.ibinary = atoi(vbuff);
+                    }
+                    else if (strcmp(tbuff, "Field_sep_files")==0) {
+                        opt.ifield = atoi(vbuff);
+                    }
+                    else if (strcmp(tbuff, "Num_files_per_snap")==0) {
+                        opt.nmpifiles = atoi(vbuff);
+                    }
+
+                    //Output related options
+                    else if (strcmp(tbuff, "Output_format")==0) {
+                        opt.outputformat = atoi(vbuff);
+                    }
+                    else if (strcmp(tbuff, "Output_data_format")==0) {
+                        opt.outdataformat = atoi(vbuff);
+                    }
+
+                    //Catalog related options
+                    else if (strcmp(tbuff, "Catalogue_type")==0) {
+                        opt.icatalog = atoi(vbuff);
+                    }
+
+                    //Tree construction options
+                    else if (strcmp(tbuff, "Tree_direction")==0) {
                         opt.isearchdirection = atoi(vbuff);
                     }
-                    else if (strcmp(tbuff, "Particle_type_criterion")==0) {
+                    else if (strcmp(tbuff, "Part_type")==0) {
                         opt.itypematch = atoi(vbuff);
+                    }
+                    else if (strcmp(tbuff, "Nsteps_search_new_links")==0) {
+                        opt.numsteps = atoi(vbuff);
+                    }
+                    else if (strcmp(tbuff, "Default_values")==0) {
+                        idefaultflag = atoi(vbuff);
                     }
                     else if (strcmp(tbuff, "Merit_type")==0) {
                         opt.imerittype = atoi(vbuff);
                         opt.idefaultvalues = 0;
                     }
-                    else if (strcmp(tbuff, "Multistep_criterion")==0) {
-                        opt.imultsteplinkcrit = atoi(vbuff);
-                        opt.idefaultvalues = 0;
-                    }
-                    else if (strcmp(tbuff, "Optimal_temporal_merit_criterion")==0) {
-                        opt.iopttemporalmerittype = atoi(vbuff);
-                        opt.idefaultvalues = 0;
-                    }
-
-                    //config search parameters
-                    else if (strcmp(tbuff, "Number_of_linking_steps")==0)
-                        opt.numsteps = atoi(vbuff);
-                    else if (strcmp(tbuff, "Shared_particle_signal_to_noise_limit")==0) {
-                        opt.mlsig = atof(vbuff);
-                        opt.idefaultvalues = 0;
-                    }
-                    else if (strcmp(tbuff, "Merit_limit_continuing_search")==0) {
-                        opt.meritlimit = atof(vbuff);
+                    else if (strcmp(tbuff, "Core_match_type")==0) {
+                        opt.icorematchtype = atoi(vbuff);
                         opt.idefaultvalues = 0;
                     }
                     else if (strcmp(tbuff, "Particle_core_fraction")==0) {
                         opt.particle_frac = atof(vbuff);
                         opt.idefaultvalues = 0;
                     }
-                    else if (strcmp(tbuff, "Particle_core_min_num")==0) {
+                    else if (strcmp(tbuff, "Particle_core_min_numpart")==0) {
                         opt.min_numpart = atoi(vbuff);
                         opt.idefaultvalues = 0;
                     }
-                    else if (strcmp(tbuff, "Particle_core_max_num")==0){
-                        opt.max_numpart = atoi(vbuff);
+                    else if (strcmp(tbuff, "Multistep_linking_criterion")==0) {
+                        opt.imultsteplinkcrit = atoi(vbuff);
                         opt.idefaultvalues = 0;
+                    }
+                    else if (strcmp(tbuff, "Merit_limit_continuing_search")==0) {
+                        opt.meritlimit = atof(vbuff);
+                        opt.idefaultvalues = 0;
+                    }
+                    else if (strcmp(tbuff, "Temporal_merit_type")==0) {
+                        opt.iopttemporalmerittype = atoi(vbuff);
+                        opt.idefaultvalues = 0;
+                    }
+                    else if (strcmp(tbuff, "Merit_ratio_limit")==0) {
+                        opt.meritratiolimit = atof(vbuff);
+                        opt.idefaultvalues = 0;
+                    }
+                    else if (strcmp(tbuff, "Shared_particle_signal_to_noise_limit")==0) {
+                        opt.mlsig = atof(vbuff);
+                        opt.idefaultvalues = 0;
+                    }
+
+                    //particle ID related options
+                    else if (strcmp(tbuff, "Max_ID_Value")==0){
+                        opt.MaxIDValue = atol(vbuff);
+                    }
+                    else if (strcmp(tbuff, "Mapping")==0) {
+                        opt.imapping = atoi(vbuff);
+                    }
+
+                    //Halo ID related options
+                    else if (strcmp(tbuff, "Temporal_haloidval")==0) {
+                        opt.haloidval = atol(vbuff);
+                    }
+                    else if (strcmp(tbuff, "HaloID_offset")==0) {
+                        opt.haloidoffset = atoi(vbuff);
+                    }
+                    else if (strcmp(tbuff, "HaloID_snapshot_offset")==0) {
+                        opt.snapshotvaloffset = atoi(vbuff);
+                    }
+
+                    //MPI load balancing options
+                    else if (strcmp(tbuff, "Num_per_mpi")==0) {
+                        opt.numpermpi = atoi(vbuff);
+                    }
+                    else if (strcmp(tbuff, "Num_desired_mpi_threads")==0) {
+                        opt.ndesiredmpithreads = atoi(vbuff);
+                    }
+                    else if (strcmp(tbuff, "Write_parallel")==0) {
+                        opt.iwriteparallel = atoi(vbuff);
+                    }
+                    else if (strcmp(tbuff, "Mpi_load_balance_splitting")==0) {
+                        opt.impiloadbalancesplitting = atoi(vbuff);
+                    }
+
+                    //Other options
+                    else if (strcmp(tbuff, "Verbose")==0){
+                        opt.iverbose = atoi(vbuff);
                     }
                 }
             }
         }
         paramfile.close();
+
+        // Check if the default flag is switched on but the opt.idefaultvalues is switched off
+        if((idefaultflag) & (opt.idefaultvalues==0)){
+            cout<<"WARNING: The default flag for the tree construction options is switched on in config file but values for these options have been given.\nTreeFrog will be using default options, please switch off the Default_values flag if you want to run with values in the config file"<<endl;
+            opt.idefaultvalues = 1;
+        }
     }
 }
 
@@ -94,11 +174,17 @@ void GetArgs(int argc, char *argv[], Options &opt)
 {
     int option;
     int NumArgs = 0;
-    while ((option = getopt(argc, argv, ":i:s:I:N:B:F:o:O:d:T:D:M:X:E:U:C:l:m:n:t:f:p:b:a:j:h:H:g:v:y:z:Z:S:q:")) != EOF)
+    int configflag=0;
+    while ((option = getopt(argc, argv, ":C:i:s:I:N:B:F:o:O:d:T:D:M:X:E:U:c:l:m:n:t:f:p:b:a:j:h:H:g:v:y:z:Z:S:q:")) != EOF)
     {
         switch(option)
         {
             ///input related options such as input name, number of snaps to process, input format, outputformat
+            case 'C':
+                opt.configname = optarg;
+                configflag=1;
+                NumArgs += 2;
+                break;
             case 'i':
                 opt.fname = optarg;
                 NumArgs += 2;
@@ -145,7 +231,7 @@ void GetArgs(int argc, char *argv[], Options &opt)
                 NumArgs += 2;
                 opt.isearchdirection = atoi(optarg);
                 break;
-            case 'C':
+            case 'c':
                 opt.icatalog = atoi(optarg);
                 opt.idefaultvalues = 0;
                 NumArgs += 2;
@@ -264,7 +350,6 @@ void GetArgs(int argc, char *argv[], Options &opt)
                 usage();
         }
     }
-    /*
     if(configflag){
         cout<<"Reading config file"<<endl;
         GetParamFile(opt);
@@ -272,7 +357,7 @@ void GetArgs(int argc, char *argv[], Options &opt)
     else {
         cout<<"NO CONFIG FILE PASSED! Using default values"<<endl;
     }
-    */
+
 #ifdef USEMPI
     MPI_Barrier(MPI_COMM_WORLD);
 #endif
