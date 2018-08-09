@@ -46,13 +46,13 @@ void GetParamFile(Options &opt)
                     }
 
                     // Input modifiers for catalog produced by velociraptor
-                    else if (strcmp(tbuff, "Input_format")==0) {
+                    else if (strcmp(tbuff, "VELOCIraptor_input_format")==0) {
                         opt.ibinary = atoi(vbuff);
                     }
-                    else if (strcmp(tbuff, "Field_sep_files")==0) {
+                    else if (strcmp(tbuff, "VELOCIraptor_input_field_sep_files")==0) {
                         opt.ifield = atoi(vbuff);
                     }
-                    else if (strcmp(tbuff, "Num_files_per_snap")==0) {
+                    else if (strcmp(tbuff, "VELOCIraptor_input_num_files_per_snap")==0) {
                         opt.nmpifiles = atoi(vbuff);
                     }
 
@@ -60,7 +60,7 @@ void GetParamFile(Options &opt)
                     else if (strcmp(tbuff, "Output_format")==0) {
                         opt.outputformat = atoi(vbuff);
                     }
-                    else if (strcmp(tbuff, "Output_data_format")==0) {
+                    else if (strcmp(tbuff, "Output_data_content")==0) {
                         opt.outdataformat = atoi(vbuff);
                     }
 
