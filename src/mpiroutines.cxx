@@ -76,18 +76,18 @@ void MPILoadBalanceSnapshots(Options &opt){
         mpi_endsnap[itask]=opt.numsnapshots;
         cout<<" Total number of items is "<<totpart<<" and should have "<<opt.numpermpi<<" per mpi"<<endl;
         //split the information such that each mpi domain has at least
-        //2*opt.numsteps+1 locally. This ensures complete overlap of connections
+        //opt.numsteps+1 locally. This ensures complete overlap of connections
         for (int i=opt.numsnapshots-1;i>=0;i--) {
             sum+=numinfo[i];
             inumsteps++;
-            if (sum>opt.numpermpi && inumsteps>=2*opt.numsteps) {
+            if (sum>opt.numpermpi && inumsteps>=opt.numsteps) {
                 mpi_startsnap[itask]=i;
                 mpi_endsnap[itask-1]=i+opt.numsteps;
                 itask--;
                 //inumsteps=-1;
                 //sum=0;
                 inumsteps=opt.numsteps-1;
-                sum=0;for (int j=0;j<=2*opt.numsteps;j++) sum+=numinfo[i+j];
+                sum=0;for (int j=0;j<=opt.numsteps;j++) sum+=numinfo[i+j];
                 if (itask==0) break;
             }
         }

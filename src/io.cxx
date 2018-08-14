@@ -1386,9 +1386,9 @@ void SavePIDStoIndexMap(Options &opt,map<IDTYPE, IDTYPE>&idmap)
     Fout.write((char*)&opt.TotalNumberofHalos,sizeof(long unsigned));
     //read the mpi info as the map is only valid if the number of mpi is the same and
     //the local start and end snaps are also the same
-    Fout.write((char*)NProcs,sizeof(int));
-    Fout.write((char*)StartSnap,sizeof(int));
-    Fout.write((char*)EndSnap,sizeof(int));
+    Fout.write((char*)&NProcs,sizeof(int));
+    Fout.write((char*)&StartSnap,sizeof(int));
+    Fout.write((char*)&EndSnap,sizeof(int));
 
     idsize=sizeof(IDTYPE);
     Fout.write((char*)&idsize,sizeof(size_t));
@@ -1468,7 +1468,7 @@ int ReadPIDStoIndexMap(Options &opt,map<IDTYPE, IDTYPE>&idmap)
     }
 #ifdef USEMPI
     int iflagsum=0;
-    MPI_Reduce(&iflag, &iflagsum, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+    MPI_Allreduce(&iflag, &iflagsum, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
     if (iflagsum<NProcs) iflag=0;
 #endif
     if (iflag==0) {
