@@ -137,7 +137,7 @@ void GetParamFile(Options &opt)
                     else if (strcmp(tbuff, "HaloID_snapshot_offset")==0) {
                         opt.snapshotvaloffset = atoi(vbuff);
                     }
-
+#ifdef USEMPI
                     //MPI load balancing options
                     else if (strcmp(tbuff, "Num_per_mpi")==0) {
                         opt.numpermpi = atoi(vbuff);
@@ -151,7 +151,7 @@ void GetParamFile(Options &opt)
                     else if (strcmp(tbuff, "Mpi_load_balance_splitting")==0) {
                         opt.impiloadbalancesplitting = atoi(vbuff);
                     }
-
+#endif
                     //Other options
                     else if (strcmp(tbuff, "Verbose")==0){
                         opt.iverbose = atoi(vbuff);
