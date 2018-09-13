@@ -22,7 +22,12 @@ HaloData *ReadHaloData(string &infile, Int_t &numhalos)
     for(i=0; i<TotalNumberofHalos; i++){
       fscanf(f, "%ld %ld",&(nparts),&(haloid));
       Halo[i].Alloc(nparts);
+#ifdef HALOIDNOTINDEX
+      Halo[i].origID=haloid;
+      Halo[i].haloID=i;
+#else
       Halo[i].haloID=haloid;
+#endif
       double e,x,y,z,vx,vy,vz;
       for(j=0; j<Halo[i].NumberofParticles; j++){
         fscanf(f, "%ld %f %f %f %f %f %f %f",
@@ -66,8 +71,13 @@ HaloData *ReadNIFTYData(string &infile, Int_t &numhalos, int idcorrectflag, int 
     Halo = new HaloData[TotalNumberofHalos];
     for(i=0; i<TotalNumberofHalos; i++){
       fscanf(f, "%ld %ld",&(nparts),&(haloid));
-      Halo[i].Alloc(nparts);
+      Halo[i].Alloc(nparts); 
+#ifdef HALOIDNOTINDEX
+      Halo[i].origID=haloid;
+      Halo[i].haloID=i+hidoffset;
+#else
       Halo[i].haloID=haloid+hidoffset;
+#endif
       ncount=0;
       for(j=0; j<Halo[i].NumberofParticles; j++){
         fscanf(f, "%ld %d",
