@@ -46,6 +46,9 @@ tf_option(MPI               "Attempt to include MPI support in TreeFrog" ON)
 tf_option(UNSIGNED_IDS "Use unsigned ID's in TreeFrog" OFF)
 tf_option(LONG_INT "Use long ints ID's in TreeFrog, this will be set by NBODY_LONG_INT if not explicity set" OFF)
 
+#ID related options
+tf_option(HALOIDNOTINDEX "If the haloID does not correspond to an index which it is located in the snapshot, if so this should be switched on and a index ordered, temporally unique ID will be outputted along with original ID" OFF)
+
 #Other options
 tf_option(BUILD_VELOCIRAPTOR "Whether VELOCIraptor should be built together with treefrog or not" OFF)
 
@@ -175,6 +178,13 @@ else()
         endif()
 endif()
 
+if(TF_HALOIDNOTINDEX)
+    set(TF_HAS_HALOIDNOTINDEX Yes)
+    list(APPEND TF_DEFINES HALOIDNOTINDEX) 
+else()
+    set(TF_HAS_HALOIDNOTINDEX No)
+endif()
+
 #
 # Tell the world what what we are doing
 #
@@ -214,8 +224,10 @@ tf_report("File formats"
 tf_report("Types" 
           "Long particle IDs" LONG_INT
           "Unsigned particles IDs" UNSIGNED_IDS)
-# tf_report(Others
-#           "VELOCIraptor",TF_BUILD_VELOCIRAPTOR)
+tf_report("ID related"
+          "Halo ID does not correspond to index within snapshot" HALOIDNOTINDEX)
+# tf_report("Others"
+#           "VELOCIraptor" TF_BUILD_VELOCIRAPTOR)
 message("")
 message("Compilation")
 message("-----------")

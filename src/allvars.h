@@ -403,7 +403,11 @@ struct Options
 */
 struct HaloData{
     long unsigned haloID;
+#ifdef HALOIDNOTINDEX
+    long long unsigned origID;
+#endif
     long unsigned NumberofParticles;
+
     IDTYPE *ParticleID;
     float Xcm[3], Vcm[3];
     float Rmax, Vmax;
