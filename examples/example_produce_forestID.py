@@ -25,26 +25,26 @@ inputhdftreefname=sys.argv[2]
 #base raw tree file name to load the raw tree if necessary
 basetreefname=sys.argv[3]
 
-#base halo properties 
+#base halo properties
 basepropfname=sys.argv[4]
 
-#file name for the unified file 
+#file name for the unified file
 outputfname=sys.argv[5]
 
 #define properties of interest
 requestedfields=[
-    'ID', 'hostHaloID', 
-    'numSubStruct', 'npart', 
-    'Mass_tot', 'Mass_FOF', 'Mass_200mean', 'Mass_200crit', 
-    'R_size', 'R_HalfMass', 'R_200mean', 'R_200crit', 
-    'Xc', 'Yc', 'Zc', 
-    'VXc', 'VYc', 'VZc', 
+    'ID', 'hostHaloID',
+    'numSubStruct', 'npart',
+    'Mass_tot', 'Mass_FOF', 'Mass_200mean', 'Mass_200crit',
+    'R_size', 'R_HalfMass', 'R_200mean', 'R_200crit',
+    'Xc', 'Yc', 'Zc',
+    'VXc', 'VYc', 'VZc',
     'lambda_B',
     'Lx','Ly','Lz',
     'RVmax_Lx','RVmax_Ly','RVmax_Lz',
     'sigV', 'RVmax_sigV',
-    'Rmax', 'Vmax', 
-    'cNFW', 
+    'Rmax', 'Vmax',
+    'cNFW',
     'Efrac','Structuretype'
     ]
 
@@ -68,7 +68,7 @@ if (os.path.exists(inputhdftreefname)):
     numhalos=np.zeros(numsnaps,dtype=np.int64)
     atime=np.zeros(numsnaps)
     print(numsnaps)
-    #load halo properties file 
+    #load halo properties file
     for i in range(numsnaps):
         fname=basepropfname+'%03d.VELOCIraptor'%i
         print(fname)
@@ -89,7 +89,7 @@ else:
     #if raw tree, then next load the halodata properties
     numhalos=np.zeros(numsnaps,dtype=np.int64)
     atime=np.zeros(numsnaps)
-    #load halo properties file 
+    #load halo properties file
     for i in range(numsnaps):
         fname=basepropfname+'_%03d.VELOCIraptor'%i
         halodata[i],numhalos[i] = vpt.ReadPropertyFile(fname,RAWPROPFORMAT,0,0,requestedfields)
@@ -114,7 +114,7 @@ ForestSize=vpt.GenerateForest(numsnaps,numhalos,halodata,atime,NSNAPSEARCH)
 SimulationInfo=copy.deepcopy(halodata[0]['SimulationInfo'])
 UnitInfo=copy.deepcopy(halodata[0]['UnitInfo'])
 if SimulationInfo['Cosmological_Sim']:
-    if not UnitInfo['Comoving_or_Physical']: 
+    if not UnitInfo['Comoving_or_Physical']:
         #convert period to comoving little h
         SimulationInfo['Period']*=SimulationInfo['h_val']/SimulationInfo['ScaleFactor']
     del SimulationInfo['ScaleFactor']
@@ -128,16 +128,14 @@ for i in range(numsnaps):
 
 #currently only dark matter runs
 igas=istar=ibh=0
-#write the unified file that contains forest ids, properties, 
+#write the unified file that contains forest ids, properties,
 #description will have to be updated so as to use appropriate version numbers
 DescriptionInfo={
-        'Title':'Tree and Halo', 'HaloFinder':'VELOCIraptor', 'TreeBuilder':'TreeFrog', 
-        'HaloFinder_version':1.25, 'TreeBuilder_version':1.2, 
+        'Title':'Tree and Halo', 'HaloFinder':'VELOCIraptor', 'TreeBuilder':'TreeFrog',
+        'HaloFinder_version':1.25, 'TreeBuilder_version':1.2,
         'Particle_num_threshold':20, 'Temporal_linking_length':4, 'Temporal_halo_id_value':TEMPORALHALOIDVAL,
         'Flag_gas':(igas==1), 'Flag_star':(istar==1), 'Flag_bh':(ibh==1),
         'Flag_subhalo_links':True, 'Flag_progenitor_links':True, 'Flag_forest_ids':True, 'Flag_sorted_forest':False
         }
-vpt.WriteUnifiedTreeandHaloCatalog(outputfname, numsnaps, rawtreedata, numhalos, halodata, atime, 
-                                   DescriptionInfo,SimulationInfo,UnitInfo)
-
-
+vpt.WriteUnifiedTreeandHaloCatalog(outputfname, numsnaps, rawtreedata, numhalos, halodata, atime,
+                                   DescriptionInfo, SimulationInfo, UnitInfo)

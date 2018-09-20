@@ -2,7 +2,7 @@
 """
 Created on Wed Aug 16 11:05:33 2017
 
-Example of loading a tree, associated halo properties and building sublinks, progenitor links 
+Example of loading a tree, associated halo properties and building sublinks, progenitor links
 @author: Pascal Jahan Elahi
 
 
@@ -22,26 +22,26 @@ import velociraptor_python_tools as vpt
 #load the hdf tree file
 inputhdftreefname=sys.argv[2]
 
-#base halo properties 
+#base halo properties
 basepropfname=sys.argv[3]
 
-#file name for the unified file 
+#file name for the unified file
 outputfname=sys.argv[4]
 
 #define properties of interest
 requestedfields=[
-    'ID', 'hostHaloID', 
-    'numSubStruct', 'npart', 
-    'Mass_tot', 'Mass_FOF', 'Mass_200mean', 'Mass_200crit', 
-    'R_size', 'R_HalfMass', 'R_200mean', 'R_200crit', 
-    'Xc', 'Yc', 'Zc', 
-    'VXc', 'VYc', 'VZc', 
+    'ID', 'hostHaloID',
+    'numSubStruct', 'npart',
+    'Mass_tot', 'Mass_FOF', 'Mass_200mean', 'Mass_200crit',
+    'R_size', 'R_HalfMass', 'R_200mean', 'R_200crit',
+    'Xc', 'Yc', 'Zc',
+    'VXc', 'VYc', 'VZc',
     'lambda_B',
     'Lx','Ly','Lz',
     'RVmax_Lx','RVmax_Ly','RVmax_Lz',
     'sigV', 'RVmax_sigV',
-    'Rmax', 'Vmax', 
-    'cNFW', 
+    'Rmax', 'Vmax',
+    'cNFW',
     'Efrac','Structuretype'
     ]
 
@@ -65,7 +65,7 @@ if (os.path.exists(inputhdftreefname)):
     numhalos=np.zeros(numsnaps,dtype=np.int64)
     atime=np.zeros(numsnaps)
     print(numsnaps)
-    #load halo properties file 
+    #load halo properties file
     for i in range(numsnaps):
         fname=basepropfname+'%03d.VELOCIraptor'%i
         print(fname)
@@ -89,7 +89,7 @@ vpt.GenerateProgenitorLinks(numsnaps,numhalos,halodata)
 SimulationInfo=copy.deepcopy(halodata[0]['SimulationInfo'])
 UnitInfo=copy.deepcopy(halodata[0]['UnitInfo'])
 if SimulationInfo['Cosmological_Sim']:
-    if not UnitInfo['Comoving_or_Physical']: 
+    if not UnitInfo['Comoving_or_Physical']:
         #convert period to comoving little h
         SimulationInfo['Period']*=SimulationInfo['h_val']/SimulationInfo['ScaleFactor']
     del SimulationInfo['ScaleFactor']
@@ -103,16 +103,14 @@ for i in range(numsnaps):
 
 #currently only dark matter runs
 igas=istar=ibh=0
-#write the unified file that contains forest ids, properties, 
+#write the unified file that contains forest ids, properties,
 #description will have to be updated so as to use appropriate version numbers
 DescriptionInfo={
-        'Title':'Tree and Halo', 'HaloFinder':'VELOCIraptor', 'TreeBuilder':'TreeFrog', 
-        'HaloFinder_version':1.25, 'TreeBuilder_version':1.2, 
+        'Title':'Tree and Halo', 'HaloFinder':'VELOCIraptor', 'TreeBuilder':'TreeFrog',
+        'HaloFinder_version':1.25, 'TreeBuilder_version':1.2,
         'Particle_num_threshold':20, 'Temporal_linking_length':4, 'Temporal_halo_id_value':TEMPORALHALOIDVAL,
         'Flag_gas':(igas==1), 'Flag_star':(istar==1), 'Flag_bh':(ibh==1),
         'Flag_subhalo_links':True, 'Flag_progenitor_links':True, 'Flag_forest_ids':False
         }
-vpt.WriteUnifiedTreeandHaloCatalog(outputfname, numsnaps, rawtreedata, numhalos, halodata, atime, 
-                                   DescriptionInfo,SimulationInfo,UnitInfo)
-
-
+vpt.WriteUnifiedTreeandHaloCatalog(outputfname, numsnaps, rawtreedata, numhalos, halodata, atime,
+                                   DescriptionInfo, SimulationInfo, UnitInfo)
