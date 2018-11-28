@@ -98,9 +98,33 @@ macro(find_mpi)
 endmacro()
 
 #
+# Make sure we have the git submodules we need
+#
+macro(ensure_git_submodules)
+        if (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/NBodylib/CMakeLists.txt" OR NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tools/velociraptor_python_tools.py")
+                find_package(Git QUIET)
+                if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
+                        # Update submodules as needed
+                        message(STATUS "Updating NBodylib and tools submodule")
+                        execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init
+                                        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                                        RESULT_VARIABLE GIT_SUBMOD_RESULT)
+                        if(NOT GIT_SUBMOD_RESULT EQUAL "0")
+                            message(FATAL_ERROR "git submodule update --init failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
+                        endif()
+                else()
+                        message(FATAL_ERROR "Cannot get NBodylib submodule or tools submodule automatically.
+                                  Make sure you get your submodules")
+                endif()
+        endif()
+endmacro()
+
+#
 # Go and find our dependencies, depending on whether
 # we actually need them or not
 #
+
+ensure_git_submodules()
 
 set(TF_HAS_HDF5 No)
 if (TF_HDF5)
