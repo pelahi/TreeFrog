@@ -46,6 +46,9 @@ tf_option(MPI               "Attempt to include MPI support in TreeFrog" ON)
 tf_option(UNSIGNED_IDS "Use unsigned ID's in TreeFrog" OFF)
 tf_option(LONG_INT "Use long ints ID's in TreeFrog, this will be set by NBODY_LONG_INT if not explicity set" OFF)
 
+#ID related options
+tf_option(HALOIDNOTINDEX "If the haloID does not correspond to an index which it is located in the snapshot, if so this should be switched on and a index ordered, temporally unique ID will be outputted along with original ID" OFF)
+
 #Other options
 tf_option(BUILD_VELOCIRAPTOR "Whether VELOCIraptor should be built together with treefrog or not" OFF)
 
@@ -95,9 +98,33 @@ macro(find_mpi)
 endmacro()
 
 #
+# Make sure we have the git submodules we need
+#
+macro(ensure_git_submodules)
+        if (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/NBodylib/CMakeLists.txt" OR NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tools/velociraptor_python_tools.py")
+                find_package(Git QUIET)
+                if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
+                        # Update submodules as needed
+                        message(STATUS "Updating NBodylib and tools submodule")
+                        execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init
+                                        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                                        RESULT_VARIABLE GIT_SUBMOD_RESULT)
+                        if(NOT GIT_SUBMOD_RESULT EQUAL "0")
+                            message(FATAL_ERROR "git submodule update --init failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
+                        endif()
+                else()
+                        message(FATAL_ERROR "Cannot get NBodylib submodule or tools submodule automatically.
+                                  Make sure you get your submodules")
+                endif()
+        endif()
+endmacro()
+
+#
 # Go and find our dependencies, depending on whether
 # we actually need them or not
 #
+
+ensure_git_submodules()
 
 set(TF_HAS_HDF5 No)
 if (TF_HDF5)
@@ -175,6 +202,13 @@ else()
         endif()
 endif()
 
+if(TF_HALOIDNOTINDEX)
+    set(TF_HAS_HALOIDNOTINDEX Yes)
+    list(APPEND TF_DEFINES HALOIDNOTINDEX) 
+else()
+    set(TF_HAS_HALOIDNOTINDEX No)
+endif()
+
 #
 # Tell the world what what we are doing
 #
@@ -214,8 +248,10 @@ tf_report("File formats"
 tf_report("Types" 
           "Long particle IDs" LONG_INT
           "Unsigned particles IDs" UNSIGNED_IDS)
-# tf_report(Others
-#           "VELOCIraptor",TF_BUILD_VELOCIRAPTOR)
+tf_report("ID related"
+          "Halo ID does not correspond to index within snapshot" HALOIDNOTINDEX)
+# tf_report("Others"
+#           "VELOCIraptor" TF_BUILD_VELOCIRAPTOR)
 message("")
 message("Compilation")
 message("-----------")
