@@ -4,15 +4,15 @@
     ,`   .'  :                             ,---,.                               
   ;    ;     /                           ,'  .' |                               
 .'___,/    ,' __  ,-.                  ,---.'   |  __  ,-.   ,---.              
-|    :     |,' ,'/ /|                  |   |   .',' ,'/ /|  '   ,'\   ,----._,. 
-;    |.';  ;'  | |' | ,---.     ,---.  :   :  :  '  | |' | /   /   | /   /  ' / 
-`----'  |  ||  |   ,'/     \   /     \ :   |  |-,|  |   ,'.   ; ,. :|   :     | 
-    '   :  ;'  :  / /    /  | /    /  ||   :  ;/|'  :  /  '   | |: :|   | .\  . 
-    |   |  '|  | ' .    ' / |.    ' / ||   |   .'|  | '   '   | .; :.   ; ';  | 
-    '   :  |;  : | '   ;   /|'   ;   /|'   :  '  ;  : |   |   :    |'   .   . | 
-    ;   |.' |  , ; '   |  / |'   |  / ||   |  |  |  , ;    \   \  /  `---`-'| | 
-    '---'    ---'  |   :    ||   :    ||   :  \   ---'      `----'   .'__/\_: | 
-                    \   \  /  \   \  / |   | ,'                      |   :    : 
+|    :     |,' ,'/ /|                  |   |   .',' ,'/ /|  '   ,'\   ,----._,.
+;    |.';  ;'  | |' | ,---.     ,---.  :   :  :  '  | |' | /   /   | /   /  ' /
+`----'  |  ||  |   ,'/     \   /     \ :   |  |-,|  |   ,'.   ; ,. :|   :     |
+    '   :  ;'  :  / /    /  | /    /  ||   :  ;/|'  :  /  '   | |: :|   | .\  .
+    |   |  '|  | ' .    ' / |.    ' / ||   |   .'|  | '   '   | .; :.   ; ';  |
+    '   :  |;  : | '   ;   /|'   ;   /|'   :  '  ;  : |   |   :    |'   .   . |
+    ;   |.' |  , ; '   |  / |'   |  / ||   |  |  |  , ;    \   \  /  `---`-'| |
+    '---'    ---'  |   :    ||   :    ||   :  \   ---'      `----'   .'__/\_: |
+                    \   \  /  \   \  / |   | ,'                      |   :    :
                      `----'    `----'  `----'                         \   \  /  
                                                                        `--`-'   
 ```
@@ -37,8 +37,9 @@
 
     src/        contains main source code for the algorithm
     doc/        contains Doxygen generated latex and html file of code
-    NBodylib/   contains library of objects and routines used by algorithm (can also be used by
+    NBodylib/   submodule: contains library of objects and routines used by algorithm (can also be used by
                 other routines)
+    tools/      submodule: contains python tools of manipulating/reading output
 
 ================================================================================================
 
@@ -51,11 +52,11 @@
     cluttering the original source code directories) and several build system, like make and
     ninja files.
 
-    TreeFrog uses submodules so if you have a fresh clone use 
+    TreeFrog uses submodules so if you have a fresh clone use
 
     git submodule update --init --recursive
 
-    to update the submodules use 
+    to update the submodules use
 
     git submodule update --recursive --remote
 
