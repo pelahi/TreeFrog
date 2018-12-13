@@ -199,6 +199,7 @@ ax.set_yscale("log")
 ax.set_ylabel(y1title)
 plt.savefig(baseplotdir+labelname+'-halonumberdesnity.pdf')
 fig1.clf()
+plt.close(fig1)
 
 #
 fig1, ax = plt.subplots(figsize=(10,6))
@@ -219,6 +220,8 @@ ax.set_xlabel(xtitle)
 ax.set_yscale("log")
 ax.set_ylabel(y1title)
 plt.savefig(baseplotdir+labelname+'-massinhalosdesnity.pdf')
+fig1.clf()
+plt.close(fig1)
 
 fig1, ax = plt.subplots(figsize=(10,6))
 xtitle=r'Snapshots'
@@ -238,6 +241,8 @@ ax.set_xlabel(xtitle)
 ax.set_yscale("log")
 ax.set_ylabel(y1title)
 plt.savefig(baseplotdir+labelname+'-massinhalosdesnity.pdf')
+fig1.clf()
+plt.close(fig1)
 
 #get no descendant information 
 numdata={'Low':np.zeros(numsnaps),'Intermediate':np.zeros(numsnaps),'High':np.zeros(numsnaps), 'All':np.zeros(numsnaps)}
@@ -291,6 +296,8 @@ ax.set_xlabel(xtitle)
 ax.set_yscale("log")
 ax.set_ylabel(y1title)
 plt.savefig(baseplotdir+labelname+'-nodescenstats.pdf')
+fig1.clf()
+plt.close(fig1)
 
 fig1, ax = plt.subplots(figsize=(10,6))
 xtitle=r'Snapshot'
@@ -310,6 +317,8 @@ ax.set_xlabel(xtitle)
 ax.set_yscale("log")
 ax.set_ylabel(y1title)
 plt.savefig(baseplotdir+labelname+'-nodescenstats-numsnaps.pdf')
+fig1.clf()
+plt.close(fig1)
 
 fig1, ax = plt.subplots(figsize=(10,6))
 xtitle=r'Scale Factor'
@@ -336,6 +345,7 @@ ax.set_ylim(10,110)
 ax.set_yscale("linear")
 ax.set_ylabel(y1title)
 plt.savefig(baseplotdir+labelname+'-nodescen-numdistrib.pdf')
+fig1.clf()
 
 fig1, ax = plt.subplots(figsize=(10,6))
 xtitle=r'Snapshots'
@@ -362,10 +372,13 @@ ax.set_ylim(10,110)
 ax.set_yscale("linear")
 ax.set_ylabel(y1title)
 plt.savefig(baseplotdir+labelname+'-nodescen-numdistrib-numsnaps.pdf')
+fig1.clf()
+plt.close(fig1)
 
 #get no progenitor information 
 numdata={'Low':np.zeros(numsnaps),'Intermediate':np.zeros(numsnaps),'High':np.zeros(numsnaps), 'All':np.zeros(numsnaps)}
 numnoprogen={'Low':np.zeros(numsnaps),'Intermediate':np.zeros(numsnaps),'High':np.zeros(numsnaps), 'All':np.zeros(numsnaps)}
+numnoprogentype={'Halo':np.zeros(numsnaps),'Subhalo':np.zeros(numsnaps),'Merger Remnants':np.zeros(numsnaps)}
 npartlim=20
 noprogennumdistrib=np.zeros([numsnaps,7])
 for i in range(numsnaps):
@@ -392,7 +405,7 @@ colorval={'All': 'black', 'Low':'blue','Intermediate':'DarkOrange','High':'Crims
 labelset=['']
 xvals=atime
 for key in numdata.keys():
-    yvals=numnoprogen[key]/numdata[key]
+    yvals=numnoprogen[key]/(numdata[key]+1e-32)
     ax.plot(xvals,yvals,color=colorval[key],ls='solid',lw=2,label=key)
 ax.legend(loc='lower right',numpoints=2)
 ax.xaxis.set_ticks_position('both')
@@ -403,6 +416,8 @@ ax.set_xlabel(xtitle)
 ax.set_yscale("log")
 ax.set_ylabel(y1title)
 plt.savefig(baseplotdir+labelname+'-noprogenitor.pdf')
+fig1.clf()
+plt.close(fig1)
 
 fig1, ax = plt.subplots(figsize=(10,6))
 xtitle=r'Snapshots'
@@ -411,7 +426,7 @@ colorval={'All': 'black', 'Low':'blue','Intermediate':'DarkOrange','High':'Crims
 labelset=['']
 xvals=np.arange(numsnaps)
 for key in numdata.keys():
-    yvals=numnoprogen[key]/numdata[key]
+    yvals=numnoprogen[key]/(numdata[key]+1e-32)
     ax.plot(xvals,yvals,color=colorval[key],ls='solid',lw=2,label=key)
 ax.legend(loc='lower right',numpoints=2)
 ax.xaxis.set_ticks_position('both')
@@ -421,7 +436,9 @@ ax.set_xscale("linear")
 ax.set_xlabel(xtitle)
 ax.set_yscale("log")
 ax.set_ylabel(y1title)
-plt.savefig(baseplotdir+'noprogenitor-numsnaps.pdf')
+plt.savefig(baseplotdir+labelname+'-noprogenitor-numsnaps.pdf')
+fig1.clf()
+plt.close(fig1)
 
 fig1, ax = plt.subplots(figsize=(10,6))
 xtitle=r'Scale Factor'
@@ -448,6 +465,8 @@ ax.set_ylim(10,110)
 ax.set_yscale("linear")
 ax.set_ylabel(y1title)
 plt.savefig(baseplotdir+labelname+'-noprogenitor-numdistrib.pdf')
+fig1.clf()
+plt.close(fig1)
 
 fig1, ax = plt.subplots(figsize=(10,6))
 xtitle=r'Snapshots'
@@ -474,6 +493,8 @@ ax.set_ylim(10,110)
 ax.set_yscale("linear")
 ax.set_ylabel(y1title)
 plt.savefig(baseplotdir+labelname+'-noprogenitor-numdistrib-numsnaps.pdf')
+fig1.clf()
+plt.close(fig1)
 
 #get unusual events (like objects with no progenitor that are large)
 noprogendata={
@@ -483,11 +504,12 @@ noprogendata={
             'Npart_stats' : np.zeros([numsnaps,7]), 
             'Npart_subtohost_stats' : np.zeros([numsnaps,7]), 
             'Npart_hosttosubs_stats' : np.zeros([numsnaps,8]), 
+            'Npart_structype_stats' : {'Halos': np.zeros([numsnaps,7]), 'Subhalos': np.zeros([numsnaps,7]), 'Merger Remnants': np.zeros([numsnaps,7])},
             'Zform' : np.array([]), 
             'Zfinal' : np.array([]), 
             'Npart_descen' : np.array([]), 
             'Branch_type' : np.array([]), 
-            'Branch_liftime' : np.array([]), 
+            'Branch_lifetime' : np.array([]), 
             'Sub_type' : np.array([]), 
             'Sub_type_descen' : np.array([]), 
             'Descen_type' : np.array([]), 
@@ -528,6 +550,22 @@ for i in range(numsnaps):
     noprogendata['Npart_stats'][i][1:6] = np.percentile(halopropdata[i]['npart'][sizewdata][noprogenwdata],[2.5,16.0,50.,84.0,97.5])
     noprogendata['Npart_stats'][i][0] = np.min(halopropdata[i]['npart'][sizewdata][noprogenwdata])
     noprogendata['Npart_stats'][i][-1] = np.max(halopropdata[i]['npart'][sizewdata][noprogenwdata])
+
+    wdatatype = np.where(halopropdata[i]['Structuretype'][sizewdata][noprogenwdata]==10)[0]
+    if (wdatatype.size > 0):
+        noprogendata['Npart_structype_stats']['Halos'][i][1:6] = np.percentile(halopropdata[i]['npart'][sizewdata][noprogenwdata][wdatatype],[2.5,16.0,50.,84.0,97.5])
+        noprogendata['Npart_structype_stats']['Halos'][i][0] = np.min(halopropdata[i]['npart'][sizewdata][noprogenwdata][wdatatype])
+        noprogendata['Npart_structype_stats']['Halos'][i][-1] = np.max(halopropdata[i]['npart'][sizewdata][noprogenwdata][wdatatype])
+    wdatatype = np.where(halopropdata[i]['Structuretype'][sizewdata][noprogenwdata]>=20)[0]
+    if (wdatatype.size > 0):
+        noprogendata['Npart_structype_stats']['Subhalos'][i][1:6] = np.percentile(halopropdata[i]['npart'][sizewdata][noprogenwdata][wdatatype],[2.5,16.0,50.,84.0,97.5])
+        noprogendata['Npart_structype_stats']['Subhalos'][i][0] = np.min(halopropdata[i]['npart'][sizewdata][noprogenwdata][wdatatype])
+        noprogendata['Npart_structype_stats']['Subhalos'][i][-1] = np.max(halopropdata[i]['npart'][sizewdata][noprogenwdata][wdatatype])
+    wdatatype = np.where(halopropdata[i]['Structuretype'][sizewdata][noprogenwdata]==15)[0]
+    if (wdatatype.size > 0):
+        noprogendata['Npart_structype_stats']['Merger Remnants'][i][1:6] = np.percentile(halopropdata[i]['npart'][sizewdata][noprogenwdata][wdatatype],[2.5,16.0,50.,84.0,97.5])
+        noprogendata['Npart_structype_stats']['Merger Remnants'][i][0] = np.min(halopropdata[i]['npart'][sizewdata][noprogenwdata][wdatatype])
+        noprogendata['Npart_structype_stats']['Merger Remnants'][i][-1] = np.max(halopropdata[i]['npart'][sizewdata][noprogenwdata][wdatatype])
     #subs
     wdata = np.where(halopropdata[i]['Structuretype'][sizewdata][noprogenwdata]!=10)[0]
     if (wdata.size > 0):
@@ -550,20 +588,23 @@ for i in range(numsnaps):
     if (wdata.size > 0):
         tempdata = np.zeros(numval)
         subs = np.where(np.in1d(halopropdata[i]['hostHaloID'], halopropdata[i]['ID'][sizewdata][noprogenwdata][wdata]))[0]
-        hostmap = dict(zip(halopropdata[i]['ID'][sizewdata][noprogenwdata][wdata], wdata))
-        hostmassmap = dict(zip(halopropdata[i]['ID'][sizewdata][noprogenwdata][wdata], halopropdata[i]['npart'][sizewdata][noprogenwdata][wdata]))
-        for isub in subs:
-            ihost=halopropdata[i]['hostHaloID'][isub]
-            hostindex=hostmap[ihost]
-            tempdata[hostindex]+=halopropdata[i]['npart'][isub]/hostmassmap[ihost]
-        noprogendata['Npart_hosttosubs'] = np.concatenate([noprogendata['Npart_hosttosubs'],
-            tempdata])
-        #store number of halos with no substructure 
-        noprogendata['Npart_hosttosubs_stats'][i][7] = float(np.where(tempdata[wdata]==0)[0].size)/float(wdata.size)
-        tempdata=tempdata[np.where(tempdata>0)]
-        noprogendata['Npart_hosttosubs_stats'][i][1:6] = np.percentile(tempdata,[2.5,16.0,50.,84.0,97.5])
-        noprogendata['Npart_hosttosubs_stats'][i][0] = np.min(tempdata)
-        noprogendata['Npart_hosttosubs_stats'][i][6] = np.max(tempdata)
+        if (subs.size>0):
+            hostmap = dict(zip(halopropdata[i]['ID'][sizewdata][noprogenwdata][wdata], wdata))
+            hostmassmap = dict(zip(halopropdata[i]['ID'][sizewdata][noprogenwdata][wdata], halopropdata[i]['npart'][sizewdata][noprogenwdata][wdata]))
+            for isub in subs:
+                ihost=halopropdata[i]['hostHaloID'][isub]
+                hostindex=hostmap[ihost]
+                tempdata[hostindex]+=halopropdata[i]['npart'][isub]/hostmassmap[ihost]
+            noprogendata['Npart_hosttosubs'] = np.concatenate([noprogendata['Npart_hosttosubs'],
+                tempdata])
+            #store number of halos with no substructure 
+            noprogendata['Npart_hosttosubs_stats'][i][7] = float(np.where(tempdata[wdata]==0)[0].size)/float(wdata.size)
+            wdata2 = np.where(tempdata>0)[0]
+            if (wdata2.size >0): 
+                tempdata=tempdata[wdata2]
+                noprogendata['Npart_hosttosubs_stats'][i][1:6] = np.percentile(tempdata,[2.5,16.0,50.,84.0,97.5])
+                noprogendata['Npart_hosttosubs_stats'][i][0] = np.min(tempdata)
+                noprogendata['Npart_hosttosubs_stats'][i][6] = np.max(tempdata)
         
     temptreedata=np.zeros(numval, dtype=np.int64)
     temptreedata2=np.zeros(numval, dtype=np.int64)
@@ -603,16 +644,17 @@ for i in range(numsnaps):
         curHalo = roottails[j]
         curSnap = np.uint64(curHalo / TEMPORALHALOIDVAL)
         curIndex = np.uint64(curHalo % TEMPORALHALOIDVAL - 1)
-        # curTail = halodata[curSnap]['Tail'][curIndex]
-        curRootTail = halodata[curSnap]['RootTail'][curIndex]
+        curRootHead = treedata[curSnap]['RootHead'][curIndex]
+        curRootTail = treedata[curSnap]['RootTail'][curIndex]
+        branchlife[j] = -1 
         while (curRootTail == roottails[j]):
-            branchlife[j] += 1 
-            if (curHalo == haloRootHead):
+            if (curHalo == curRootHead):
                 break
-            curHalo = halodata[curSnap]['Head'][curIndex]
+            branchlife[j] += 1 
+            curHalo = treedata[curSnap]['Head'][curIndex]
             curSnap = np.uint64(curHalo / TEMPORALHALOIDVAL)
             curIndex = np.uint64(curHalo % TEMPORALHALOIDVAL - 1)
-            curRootTail = halodata[curSnap]['RootTail'][curIndex]
+            curRootTail = treedata[curSnap]['RootTail'][curIndex]
 
     noprogendata['Branch_type'] = np.concatenate([noprogendata['Branch_type'],
         temptreedata])
@@ -642,6 +684,8 @@ ax.set_yscale("log")
 ax.set_ylabel(ytitle)
 ax.legend()
 plt.savefig(baseplotdir+labelname+'-noprogenitor-outliers-fraction-numsnaps.pdf')
+fig1.clf()
+plt.close(fig1)
 
 fig1, ax = plt.subplots(figsize=(10,6))
 ytitle=r'$N_i/N_{\rm outliers}$'
@@ -672,6 +716,8 @@ ax.set_yscale("linear")
 ax.set_ylabel(ytitle)
 ax.legend(fontsize=16, ncol=3, loc=0)
 plt.savefig(baseplotdir+labelname+'-noprogenitor-outliers-subpopulations-fraction-numsnaps.pdf')
+fig1.clf()
+plt.close(fig1)
 
 #plot number of particles distribution as function of redshift
 fig1, ax = plt.subplots(figsize=(10,6))
@@ -700,6 +746,43 @@ ax.set_ylim(100,1e6)
 ax.set_yscale("log")
 ax.set_ylabel(ytitle)
 plt.savefig(baseplotdir+labelname+'-noprogenitor-outliers-numdistrib-numsnaps.pdf')
+fig1.clf()
+plt.close(fig1)
+
+#plot number of particles distribution as function of redshift split into types
+selectionlabellist=['Halos','Subhalos','Merger Remnants']
+selectionplotlabellist=['halos','subhalos','mergers']
+numsel=3
+for i in range(numsel):
+    fig1, ax = plt.subplots(figsize=(10,6))
+    xtitle=r'Snapshots'
+    ytitle=r'$N_p(z_{\rm form})$'
+    selectionlabel=selectionlabellist[i]
+    selectionplotlabel=selectionplotlabellist[i]
+    xvals=np.arange(numsnaps)
+    yvals=noprogendata['Npart_structype_stats'][selectionlabel].transpose()
+    ymean=yvals[3]
+    ax.plot(xvals,ymean,color='Navy',ls='solid',lw=4, zorder=4)
+    yel,yeh=yvals[2],yvals[4]
+    ax.fill_between(xvals,yel,yeh,
+        facecolor='Blue',edgecolor='None',alpha=0.75,interpolate=True,zorder=3,linewidth=0,linestyle='None')
+    yell,yehh=yvals[1],yvals[5]
+    ax.fill_between(xvals,yell,yehh,
+        facecolor='Teal',edgecolor='None',alpha=0.5,interpolate=True,zorder=2,linewidth=0,linestyle='None')
+    yelll,yehhh=yvals[0],yvals[6]
+    ax.fill_between(xvals,yelll,yehhh,
+        facecolor='None',edgecolor='Cyan',alpha=0.25,interpolate=True,zorder=1,linewidth=2,linestyle='solid')
+    ax.xaxis.set_ticks_position('both')
+    ax.yaxis.set_ticks_position('both')
+    ax.set_xlim(0,numsnaps)
+    ax.set_xscale("linear")
+    ax.set_xlabel(xtitle)
+    ax.set_ylim(100,1e6)
+    ax.set_yscale("log")
+    ax.set_ylabel(ytitle)
+    plt.savefig(baseplotdir+labelname+'-noprogenitor-outliers-numdistrib-numsnaps-'+selectionplotlabel+'.pdf')
+    fig1.clf()
+    plt.close(fig1)
 
 #plot subhalo to host halo fraction as a function of redshift
 fig1, ax = plt.subplots(figsize=(10,6))
@@ -728,6 +811,8 @@ ax.set_ylim(1e-4,1)
 ax.set_yscale("log")
 ax.set_ylabel(ytitle)
 plt.savefig(baseplotdir+labelname+'-noprogenitor-outliers-subhalos-numfracdistrib-numsnaps.pdf')
+fig1.clf()
+plt.close(fig1)
 
 #plot host halo's subhalo mass fraction as a function of redshift
 fig1, ax = plt.subplots(figsize=(10,6))
@@ -756,173 +841,140 @@ ax.set_ylim(1e-4,2)
 ax.set_yscale("log")
 ax.set_ylabel(ytitle)
 plt.savefig(baseplotdir+labelname+'-noprogenitor-outliers-host-numfracdistrib-numsnaps.pdf')
-
+fig1.clf()
+plt.close(fig1)
 
 #plot first the time of occurence and number of particles split along type of subtructure
-#coloured by the ratio of descendant mass 
-fig1, ax = plt.subplots(figsize=(10,10))
+#coloured by the ratio of descendant mass
 xtitle=r'$N_p$'
 ytitle=r'$z_{\rm form}$'
 ztitle=r'$N_p(z_{\rm descen})/N_p(z_{\rm form})$'
-selectionlabel='Halos'
-selectionplotlabel='halos'
-wdata=np.where(noprogendata['Sub_type']==10)[0]
-xvals=noprogendata['Npart'][wdata]
-yvals=noprogendata['Zform'][wdata]
-zvals=noprogendata['Npart_descen'][wdata]/noprogendata['Npart'][wdata]
-zzvals=noprogendata['Branch_lifetime'][wdata]
+selectionlabellist=['Halos','Subhalos','Merger Remnants']
+selectionplotlabellist=['halos','subhalos','mergers']
+wdatalist=[np.where(noprogendata['Sub_type']==10)[0],np.where(noprogendata['Sub_type']>=20)[0], np.where(noprogendata['Sub_type']==15)[0]]
+numsel=3
+for i in range(numsel):
+    fig1, ax = plt.subplots(figsize=(10,10))
+    selectionlabel=selectionlabellist[i]
+    selectionplotlabel=selectionplotlabellist[i]
+    wdata=wdatalist[i]
+    xvals=noprogendata['Npart'][wdata]
+    yvals=noprogendata['Zform'][wdata]
+    zvals=noprogendata['Npart_descen'][wdata]/noprogendata['Npart'][wdata]
+    zzvals=noprogendata['Branch_lifetime'][wdata]
 
-#all points
-scatter1 = ax.scatter(xvals, yvals, c=zvals, s=10, marker='o', cmap='jet', norm = matplotlib.colors.LogNorm(vmin=1e-1,vmax=1e1), alpha=0.5, zorder=1, edgecolors='none')
-cbar = fig1.colorbar(scatter1, ax=ax)
-cbar.set_label(ztitle)
+    #all points
+    scatter1 = ax.scatter(xvals, yvals, c=zvals, s=10, marker='o', cmap='jet', norm = matplotlib.colors.LogNorm(vmin=1e-1,vmax=1e1), alpha=0.5, zorder=1, edgecolors='none')
+    cbar = fig1.colorbar(scatter1, ax=ax)
+    cbar.set_label(ztitle)
 
-#median and scatter
-xmean=np.median(xvals)
-ymean=np.median(yvals)
-zmean=np.median(zvals)
-zzmean=np.median(zzvals)
-ax.scatter(xmean,ymean, c=zmean, s=100, marker='s', cmap='jet', norm = matplotlib.colors.LogNorm(vmin=1e-1,vmax=1e1), alpha=0.9, edgecolors='k', linewidth=2, zorder=3)
-yerrval=np.array(np.fabs(np.percentile(yvals,[16.0,84.0])-ymean))
-xerrval=np.array(np.fabs(np.percentile(xvals,[16.0,84.0])-xmean))
-zerrval=np.array(np.fabs(np.percentile(zvals,[16.0,84.0])-zmean))
-zzerrval=np.array(np.fabs(np.percentile(zzvals,[16.0,84.0])-zzmean))
-ax.errorbar(xmean, ymean, yerr=[np.array([yerrval[0]]),np.array([yerrval[1]])], xerr=[np.array([xerrval[0]]),np.array([xerrval[1]])], color='k',ls='solid',lw=4, alpha=0.5, zorder=2)
-xerrval2=np.array(np.fabs(np.percentile(xvals,[2.5,97.5])-np.median(xvals)))
-yerrval2=np.array(np.fabs(np.percentile(yvals,[2.5,97.5])-np.median(yvals)))
-ax.errorbar(xmean, ymean, yerr=[np.array([yerrval2[0]]),np.array([yerrval2[1]])], xerr=[np.array([xerrval2[0]]),np.array([xerrval2[1]])], color='k',ls='solid',lw=2, alpha=0.25, zorder=2)
-t=ax.annotate(selectionlabel, 
-    xy=(0.95,0.90),xycoords='axes fraction', horizontalalignment='right')
-t=ax.annotate(r'$N_p=%1.0f_{-%1.0f}^{+%1.0f}$'%
-    (xmean,xerrval[0],xerrval[1]),
-    xy=(0.95,0.85),xycoords='axes fraction', horizontalalignment='right')
-t=ax.annotate(r'$z_{\rm form}=%1.2f_{-%1.2f}^{+%1.2f}$'%
-    (ymean,yerrval[0],yerrval[1]),
-    xy=(0.95,0.80),xycoords='axes fraction', horizontalalignment='right')
-t=ax.annotate(r'$N_p(z_{\rm descen})/N_p(z_{\rm form})=%1.2f_{-%1.2f}^{+%1.2f}$'%
-    (zmean,zerrval[0],zerrval[1]),
-    xy=(0.95,0.75),xycoords='axes fraction', horizontalalignment='right')
-t=ax.annotate(r'$\mathcal{B}_l=%1.0f_{-%1.0f}^{+%1.0f}$'%
-    (zzmean,zzerrval[0],zzerrval[1]),
-    xy=(0.95,0.70),xycoords='axes fraction', horizontalalignment='right')
+    #median and scatter
+    xmean=np.median(xvals)
+    ymean=np.median(yvals)
+    zmean=np.median(zvals)
+    zzmean=np.median(zzvals)
+    ax.scatter([xmean],[ymean], c=[zmean], s=100, marker='s', cmap='jet', norm = matplotlib.colors.LogNorm(vmin=1e-1,vmax=1e1), alpha=0.9, edgecolors='k', linewidth=2, zorder=3)
+    yerrval=np.array(np.fabs(np.percentile(yvals,[16.0,84.0])-ymean))
+    xerrval=np.array(np.fabs(np.percentile(xvals,[16.0,84.0])-xmean))
+    zerrval=np.array(np.fabs(np.percentile(zvals,[16.0,84.0])-zmean))
+    zzerrval=np.array(np.fabs(np.percentile(zzvals,[16.0,84.0])-zzmean))
+    ax.errorbar(xmean, ymean, yerr=[np.array([yerrval[0]]),np.array([yerrval[1]])], xerr=[np.array([xerrval[0]]),np.array([xerrval[1]])], color='k',ls='solid',lw=4, alpha=0.5, zorder=2)
+    xerrval2=np.array(np.fabs(np.percentile(xvals,[2.5,97.5])-np.median(xvals)))
+    yerrval2=np.array(np.fabs(np.percentile(yvals,[2.5,97.5])-np.median(yvals)))
+    ax.errorbar(xmean, ymean, yerr=[np.array([yerrval2[0]]),np.array([yerrval2[1]])], xerr=[np.array([xerrval2[0]]),np.array([xerrval2[1]])], color='k',ls='solid',lw=2, alpha=0.25, zorder=2)
+    t=ax.annotate(selectionlabel, 
+        xy=(0.95,0.90),xycoords='axes fraction', horizontalalignment='right')
+    t=ax.annotate(r'$N=%1.0f$'%xvals.size,
+        xy=(0.95,0.85),xycoords='axes fraction', horizontalalignment='right')
+    t=ax.annotate(r'$N_p=%1.0f_{-%1.0f}^{+%1.0f}$'%
+        (xmean,xerrval[0],xerrval[1]),
+        xy=(0.95,0.80),xycoords='axes fraction', horizontalalignment='right')
+    t=ax.annotate(r'$z_{\rm form}=%1.2f_{-%1.2f}^{+%1.2f}$'%
+        (ymean,yerrval[0],yerrval[1]),
+        xy=(0.95,0.75),xycoords='axes fraction', horizontalalignment='right')
+    t=ax.annotate(r'$N_p(z_{\rm descen})/N_p(z_{\rm form})=%1.2f_{-%1.2f}^{+%1.2f}$'%
+        (zmean,zerrval[0],zerrval[1]),
+        xy=(0.95,0.70),xycoords='axes fraction', horizontalalignment='right')
+    t=ax.annotate(r'$\mathcal{B}_l=%1.0f_{-%1.0f}^{+%1.0f}$'%
+        (zzmean,zzerrval[0],zzerrval[1]),
+        xy=(0.95,0.65),xycoords='axes fraction', horizontalalignment='right')
 
-ax.xaxis.set_ticks_position('both')
-ax.yaxis.set_ticks_position('both')
-ax.set_xlim(100,1e6)
-ax.set_xscale("log")
-ax.set_xlabel(xtitle)
-ax.set_ylim(0,10)
-ax.set_yscale("linear")
-ax.set_ylabel(ytitle)
-plt.savefig(baseplotdir+labelname+'-noprogenitor-outliers-'selectionplotlabel+'.pdf')
+    ax.xaxis.set_ticks_position('both')
+    ax.yaxis.set_ticks_position('both')
+    ax.set_xlim(100,1e6)
+    ax.set_xscale("log")
+    ax.set_xlabel(xtitle)
+    ax.set_ylim(0,10)
+    ax.set_yscale("linear")
+    ax.set_ylabel(ytitle)
+    plt.savefig(baseplotdir+labelname+'-noprogenitor-outliers-'+selectionplotlabel+'.pdf')
+    fig1.clf()
+    plt.close(fig1)
 
-#subhalos only     
-fig1, ax = plt.subplots(figsize=(10,10))
-selectionlabel='Subhalos'
-selectionplotlabel='subhalos'
-wdata=np.where(noprogendata['Sub_type']>=20)[0]
-xvals=noprogendata['Npart'][wdata]
-yvals=noprogendata['Zform'][wdata]
-zvals=noprogendata['Npart_descen'][wdata]/noprogendata['Npart'][wdata]
-zzvals=noprogendata['Branch_lifetime'][wdata]
+#similar to above but color code by branch length and also split by branch type (main or not main)
+xtitle=r'$N_p$'
+ytitle=r'$z_{\rm form}$'
+ztitle=r'$\mathcal{B}_l$'
+selectionlabellist=['Halos','Subhalos','Merger Remnants']
+selectionplotlabellist=['halos','subhalos','mergers']
+wdatalist=[np.where(noprogendata['Sub_type']==10)[0],np.where(noprogendata['Sub_type']>=20)[0], np.where(noprogendata['Sub_type']==15)[0]]
+numsel=3
+for i in range(numsel):
+    fig1, ax = plt.subplots(figsize=(10,10))
+    selectionlabel=selectionlabellist[i]
+    selectionplotlabel=selectionplotlabellist[i]
+    wdata=wdatalist[i]
+    xvals=noprogendata['Npart'][wdata]
+    yvals=noprogendata['Zform'][wdata]
+    zvals=noprogendata['Branch_lifetime'][wdata]
+    zzvals=noprogendata['Branch_type'][wdata]
+    wdata2=np.where(noprogendata['Branch_type'][wdata]==1)[0]
 
-#all points
-ax.scatter(xvals, yvals, c=zvals, s=10, marker='o', cmap='jet', norm = matplotlib.colors.LogNorm(vmin=1e-1,vmax=1e1), alpha=0.5, zorder=1)
-cbar = fig1.colorbar(scatter1, ax=ax)
-cbar.set_label(ztitle)
+    #all points
+    scatter1 = ax.scatter(xvals, yvals, c=zvals, s=10, marker='o', cmap='jet', norm = matplotlib.colors.Normalize(vmin=0,vmax=10), alpha=0.5, zorder=1, edgecolors='none')
+    cbar = fig1.colorbar(scatter1, ax=ax)
+    cbar.set_label(ztitle)
+    scatter2 = ax.scatter(xvals[wdata2], yvals[wdata2], facecolor='None', edgecolor='black', linewidth=2, s=10, marker='o', alpha=0.5, zorder=2)
 
-#median and scatter
-xmean=np.median(xvals)
-ymean=np.median(yvals)
-zmean=np.median(zvals)
-zzmean=np.median(zzvals)
-ax.scatter(xmean,ymean, c=zmean, s=100, marker='s', cmap='jet', norm = matplotlib.colors.LogNorm(vmin=1e-1,vmax=1e1), alpha=0.9, edgecolors='k', linewidth=2, zorder=3)
-yerrval=np.array(np.fabs(np.percentile(yvals,[16.0,84.0])-ymean))
-xerrval=np.array(np.fabs(np.percentile(xvals,[16.0,84.0])-xmean))
-zerrval=np.array(np.fabs(np.percentile(zvals,[16.0,84.0])-zmean))
-zzerrval=np.array(np.fabs(np.percentile(zzvals,[16.0,84.0])-zzmean))
-ax.errorbar(xmean, ymean, yerr=[np.array([yerrval[0]]),np.array([yerrval[1]])], xerr=[np.array([xerrval[0]]),np.array([xerrval[1]])], color='k',ls='solid',lw=4, alpha=0.5, zorder=2)
-xerrval2=np.array(np.fabs(np.percentile(xvals,[2.5,97.5])-np.median(xvals)))
-yerrval2=np.array(np.fabs(np.percentile(yvals,[2.5,97.5])-np.median(yvals)))
-ax.errorbar(xmean, ymean, yerr=[np.array([yerrval2[0]]),np.array([yerrval2[1]])], xerr=[np.array([xerrval2[0]]),np.array([xerrval2[1]])], color='k',ls='solid',lw=2, alpha=0.25, zorder=2)
-t=ax.annotate(selectionlabel, 
-    xy=(0.95,0.90),xycoords='axes fraction', horizontalalignment='right')
-t=ax.annotate(r'$N_p=%1.0f_{-%1.0f}^{+%1.0f}$'%
-    (xmean,xerrval[0],xerrval[1]),
-    xy=(0.95,0.85),xycoords='axes fraction', horizontalalignment='right')
-t=ax.annotate(r'$z_{\rm form}=%1.2f_{-%1.2f}^{+%1.2f}$'%
-    (ymean,yerrval[0],yerrval[1]),
-    xy=(0.95,0.80),xycoords='axes fraction', horizontalalignment='right')
-t=ax.annotate(r'$N_p(z_{\rm descen})/N_p(z_{\rm form})=%1.2f_{-%1.2f}^{+%1.2f}$'%
-    (zmean,zerrval[0],zerrval[1]),
-    xy=(0.95,0.75),xycoords='axes fraction', horizontalalignment='right')
-t=ax.annotate(r'$\mathcal{B}_l=%1.0f_{-%1.0f}^{+%1.0f}$'%
-    (zzmean,zzerrval[0],zzerrval[1]),
-    xy=(0.95,0.70),xycoords='axes fraction', horizontalalignment='right')
+    #median and scatter
+    xmean=np.median(xvals)
+    ymean=np.median(yvals)
+    zmean=np.median(zvals)
+    zzmean=np.median(zzvals)
+    ax.scatter([xmean],[ymean], c=[zmean], s=100, marker='s', cmap='jet', norm = matplotlib.colors.Normalize(vmin=0,vmax=10), alpha=0.9, edgecolors='k', linewidth=2, zorder=3)
+    yerrval=np.array(np.fabs(np.percentile(yvals,[16.0,84.0])-ymean))
+    xerrval=np.array(np.fabs(np.percentile(xvals,[16.0,84.0])-xmean))
+    zerrval=np.array(np.fabs(np.percentile(zvals,[16.0,84.0])-zmean))
+    zzerrval=np.array(np.fabs(np.percentile(zzvals,[16.0,84.0])-zzmean))
+    ax.errorbar(xmean, ymean, yerr=[np.array([yerrval[0]]),np.array([yerrval[1]])], xerr=[np.array([xerrval[0]]),np.array([xerrval[1]])], color='k',ls='solid',lw=4, alpha=0.5, zorder=2)
+    xerrval2=np.array(np.fabs(np.percentile(xvals,[2.5,97.5])-np.median(xvals)))
+    yerrval2=np.array(np.fabs(np.percentile(yvals,[2.5,97.5])-np.median(yvals)))
+    ax.errorbar(xmean, ymean, yerr=[np.array([yerrval2[0]]),np.array([yerrval2[1]])], xerr=[np.array([xerrval2[0]]),np.array([xerrval2[1]])], color='k',ls='solid',lw=2, alpha=0.25, zorder=2)
+    t=ax.annotate(selectionlabel, 
+        xy=(0.95,0.90),xycoords='axes fraction', horizontalalignment='right')
+    t=ax.annotate(r'$N=%1.0f$'%xvals.size,
+        xy=(0.95,0.85),xycoords='axes fraction', horizontalalignment='right')
+    t=ax.annotate(r'$f_{\rm main branch}=%1.2f$'%
+        (float(wdata2.size)/float(wdata.size)),
+        xy=(0.95,0.80),xycoords='axes fraction', horizontalalignment='right')
+    t=ax.annotate(r'$N_p=%1.0f_{-%1.0f}^{+%1.0f}$'%
+        (xmean,xerrval[0],xerrval[1]),
+        xy=(0.95,0.75),xycoords='axes fraction', horizontalalignment='right')
+    t=ax.annotate(r'$\mathcal{B}_l=%1.0f_{-%1.0f}^{+%1.0f}$'%
+        (zmean,zerrval[0],zerrval[1]),
+        xy=(0.95,0.70),xycoords='axes fraction', horizontalalignment='right')
 
-ax.xaxis.set_ticks_position('both')
-ax.yaxis.set_ticks_position('both')
-ax.set_xlim(100,1e6)
-ax.set_xscale("log")
-ax.set_xlabel(xtitle)
-ax.set_ylim(0,10)
-ax.set_yscale("linear")
-ax.set_ylabel(ytitle)
-plt.savefig(baseplotdir+labelname+'-noprogenitor-outliers-'selectionplotlabel+'.pdf')
-
-#mergers only     
-fig1, ax = plt.subplots(figsize=(10,10))
-selectionlabel='Merger Remnants '
-selectionplotlabel='mergers'
-wdata=np.where(noprogendata['Sub_type']==15)[0]
-xvals=noprogendata['Npart'][wdata]
-yvals=noprogendata['Zform'][wdata]
-zvals=noprogendata['Npart_descen'][wdata]/noprogendata['Npart'][wdata]
-zzvals=noprogendata['Branch_lifetime'][wdata]
-
-#all points
-ax.scatter(xvals, yvals, c=zvals, s=10, marker='o', cmap='jet', norm = matplotlib.colors.LogNorm(vmin=1e-1,vmax=1e1), alpha=0.5, zorder=1)
-cbar = fig1.colorbar(scatter1, ax=ax)
-cbar.set_label(ztitle)
-
-#median and scatter
-xmean=np.median(xvals)
-ymean=np.median(yvals)
-zmean=np.median(zvals)
-zzmean=np.median(zzvals)
-ax.scatter(xmean,ymean, c=zmean, s=100, marker='s', cmap='jet', norm = matplotlib.colors.LogNorm(vmin=1e-1,vmax=1e1), alpha=0.9, edgecolors='k', linewidth=2, zorder=3)
-yerrval=np.array(np.fabs(np.percentile(yvals,[16.0,84.0])-ymean))
-xerrval=np.array(np.fabs(np.percentile(xvals,[16.0,84.0])-xmean))
-zerrval=np.array(np.fabs(np.percentile(zvals,[16.0,84.0])-zmean))
-zzerrval=np.array(np.fabs(np.percentile(zzvals,[16.0,84.0])-zzmean))
-ax.errorbar(xmean, ymean, yerr=[np.array([yerrval[0]]),np.array([yerrval[1]])], xerr=[np.array([xerrval[0]]),np.array([xerrval[1]])], color='k',ls='solid',lw=4, alpha=0.5, zorder=2)
-xerrval2=np.array(np.fabs(np.percentile(xvals,[2.5,97.5])-np.median(xvals)))
-yerrval2=np.array(np.fabs(np.percentile(yvals,[2.5,97.5])-np.median(yvals)))
-ax.errorbar(xmean, ymean, yerr=[np.array([yerrval2[0]]),np.array([yerrval2[1]])], xerr=[np.array([xerrval2[0]]),np.array([xerrval2[1]])], color='k',ls='solid',lw=2, alpha=0.25, zorder=2)
-t=ax.annotate(selectionlabel, 
-    xy=(0.95,0.90),xycoords='axes fraction', horizontalalignment='right')
-t=ax.annotate(r'$N_p=%1.0f_{-%1.0f}^{+%1.0f}$'%
-    (xmean,xerrval[0],xerrval[1]),
-    xy=(0.95,0.85),xycoords='axes fraction', horizontalalignment='right')
-t=ax.annotate(r'$z_{\rm form}=%1.2f_{-%1.2f}^{+%1.2f}$'%
-    (ymean,yerrval[0],yerrval[1]),
-    xy=(0.95,0.80),xycoords='axes fraction', horizontalalignment='right')
-t=ax.annotate(r'$N_p(z_{\rm descen})/N_p(z_{\rm form})=%1.2f_{-%1.2f}^{+%1.2f}$'%
-    (zmean,zerrval[0],zerrval[1]),
-    xy=(0.95,0.75),xycoords='axes fraction', horizontalalignment='right')
-t=ax.annotate(r'$\mathcal{B}_l=%1.0f_{-%1.0f}^{+%1.0f}$'%
-    (zzmean,zzerrval[0],zzerrval[1]),
-    xy=(0.95,0.70),xycoords='axes fraction', horizontalalignment='right')
-
-ax.xaxis.set_ticks_position('both')
-ax.yaxis.set_ticks_position('both')
-ax.set_xlim(100,1e6)
-ax.set_xscale("log")
-ax.set_xlabel(xtitle)
-ax.set_ylim(0,10)
-ax.set_yscale("linear")
-ax.set_ylabel(ytitle)
-plt.savefig(baseplotdir+labelname+'-noprogenitor-outliers-'selectionplotlabel+'.pdf')
+    ax.xaxis.set_ticks_position('both')
+    ax.yaxis.set_ticks_position('both')
+    ax.set_xlim(100,1e6)
+    ax.set_xscale("log")
+    ax.set_xlabel(xtitle)
+    ax.set_ylim(0,10)
+    ax.set_yscale("linear")
+    ax.set_ylabel(ytitle)
+    plt.savefig(baseplotdir+labelname+'-noprogenitor-outliers-branchproperties-'+selectionplotlabel+'.pdf')
+    fig1.clf()
+    plt.close(fig1)
 
 #Fakhouri style merger rates 
 #split z=0 halos/subhalos into several mass bins, 
