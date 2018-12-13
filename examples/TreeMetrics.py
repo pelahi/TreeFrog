@@ -30,8 +30,13 @@ matplotlib.use('pdf') #this backend works fine on python (I think) but not ipyth
 from matplotlib.pylab import *
 #to load specific functions defined in another python file
 
+scriptpath=os.path.abspath(__file__)
+basecodedir=scriptpath.split('TreeMetrics.py')[0]+'../tools/'
+sys.path.append(basecodedir)
+import velociraptor_python_tools as vpt
+
 NumArg=5
-if (len(sys.argv) < NumArg+1): 
+if (len(sys.argv) < NumArg+1):
     print ('Number of Args provided ',len(sys.argv)-1, 'Number that must be provided', NumArg)
     print ('This script produces some tree metris')
     print ('Input : ')
@@ -42,10 +47,6 @@ if (len(sys.argv) < NumArg+1):
     print ('Extra Options :')
     print ('5) Extra Diagnostics flag (0, none; >=1 Merger rates; >=2 Merger radius statistics;')
     quit()
-
-basecodedir=sys.argv[1]
-sys.path.append(basecodedir)
-import velociraptor_python_tools as vpt
 
 def GetHaloLiftime(treedata,haloindex,halosnap,haloid,atime,TEMPORALHALOIDVAL=1000000000000):
     """
@@ -73,25 +74,29 @@ def GetHaloLiftime(treedata,haloindex,halosnap,haloid,atime,TEMPORALHALOIDVAL=10
 ASCIIFORMAT=0
 HDFFORMAT=2
 
-#base filename 
-labelname=sys.argv[2]
-walkabletreename=sys.argv[3]
-basesnapname=sys.argv[4]
-baseplotdir=sys.argv[5]
-ExtraDiagnostics = 0 
-if (len(sys.argv) > NumArg+1):
-    ExtraDiagnostics = sys.argv[6]
+#base filename
+labelname=sys.argv[1]
+walkabletreename=sys.argv[2]
+basesnapname=sys.argv[3]
+baseplotdir=sys.argv[4]
+ExtraDiagnostics = False
+if (len(sys.argv) == NumArg+1):
+    ExtraDiagnostics = bool(int(sys.argv[5]))
 
-print('Reading tree ',walkabletreename, 'snapshots ', 
+#set default values
+TEMPORALHALOIDVAL=1000000000000
+NSNAPSEARCH=4
+
+print('Reading tree ',walkabletreename, 'snapshots ',
       basesnapname,' and will plot and save data to ', baseplotdir,
       'under label', labelname)
 treedata,numsnaps = vpt.ReadWalkableHDFTree(walkabletreename, True)
 hfile=h5py.File(walkabletreename)
-#TEMPORALHALOIDVAL=hfile['Header/TreeBuilder'].attrs['Temporal_halo_id_value']
-#NSNAPSEARCH=hfile['Header/TreeBuilder'].attrs['Temporal_linking_length']
-TEMPORALHALOIDVAL=1000000000000
-NSNAPSEARCH=4
+#if key present in header, use these
+TEMPORALHALOIDVAL=hfile['Header/TreeBuilder'].attrs['Temporal_halo_id_value']
+NSNAPSEARCH=hfile['Header/TreeBuilder'].attrs['Temporal_linking_length']
 hfile.close()
+
 numhalosintree = np.zeros(numsnaps,dtype=np.uint64)
 for isnap in range(numsnaps):
     numhalosintree[isnap] = treedata[isnap]['ID'].size
@@ -113,17 +118,17 @@ for isnap in range(numsnaps):
     atime[isnap] = halopropdata[isnap]['SimulationInfo']['ScaleFactor']
     numhalosintree[isnap] = treedata[isnap]['ID'].size
     if (numhalos[isnap] != numhalosintree[isnap]):
-        print('ERORR: Number of halo catalogs disagrees with number of halos in tree! At snapshot', 
+        print('ERORR: Number of halo catalogs disagrees with number of halos in tree! At snapshot',
             isnap, 'containing', numhalos[isnap],
             'with tree containing', numhalosintree[isnap])
         print('CHECK tree, halo catalogs or input files names')
         exit(9)
 
-#store simulation info    
+#store simulation info
 SimulationInfo=dict()
 for key in halopropdata[-1]['SimulationInfo'].keys():
     SimulationInfo[key] = halopropdata[-1]['SimulationInfo'][key]
-#should generalize to whether comoving or not 
+#should generalize to whether comoving or not
 SimulationInfo['Period'] = halopropdata[-1]['SimulationInfo']['Period'] / halopropdata[-1]['SimulationInfo']['ScaleFactor']
 
 UnitInfo=dict()
@@ -134,13 +139,13 @@ period = SimulationInfo['Period']
 converttocomove = ['Xc', 'Yc', 'Zc', 'Rmax', 'R_200crit']
 keys = halopropdata[0].keys()
 for key in converttocomove:
-    if key not in keys: 
+    if key not in keys:
         converttocomove.remove(key)
 # convert positions and sizes to comoving if necesary
 if (UnitInfo['Comoving_or_Physical'] == 0 and SimulationInfo['Cosmological_Sim'] == 1):
     print('Converting to comoving')
     for i in range(numsnaps):
-        if (numhalos[i] == 0): 
+        if (numhalos[i] == 0):
             continue
         for key in converttocomove:
             halopropdata[i][key] /= atime[i]
@@ -244,7 +249,7 @@ plt.savefig(baseplotdir+labelname+'-massinhalosdesnity.pdf')
 fig1.clf()
 plt.close(fig1)
 
-#get no descendant information 
+#get no descendant information
 numdata={'Low':np.zeros(numsnaps),'Intermediate':np.zeros(numsnaps),'High':np.zeros(numsnaps), 'All':np.zeros(numsnaps)}
 numnodescen={'Low':np.zeros(numsnaps),'Intermediate':np.zeros(numsnaps),'High':np.zeros(numsnaps), 'All':np.zeros(numsnaps)}
 numnoimmediatedescen={'Low':np.zeros(numsnaps),'Intermediate':np.zeros(numsnaps),'High':np.zeros(numsnaps), 'All':np.zeros(numsnaps)}
@@ -267,7 +272,7 @@ for i in range(numsnaps):
     nodescennumdistrib[i][0] = np.min(data)
     nodescennumdistrib[i][6] = np.max(data)
     nodescennumdistrib[i][1:6] = np.percentile(data,[2.5, 16.0, 50.0, 84.0, 97.5])
- 
+
     numnoimmediatedescen['All'][i] = np.where(treedata[i]['HeadSnap'] > i+1)[0].size
     numnoimmediatedescen['Low'][i] = np.where((treedata[i]['HeadSnap'] > i+1)*(halopropdata[i]['npart'] < 2*npartlim))[0].size
     numnoimmediatedescen['Intermediate'][i] = np.where((treedata[i]['HeadSnap'] > i+1)*(halopropdata[i]['npart'] >= 2*npartlim)*(halopropdata[i]['npart'] < 4*npartlim))[0].size
@@ -375,7 +380,7 @@ plt.savefig(baseplotdir+labelname+'-nodescen-numdistrib-numsnaps.pdf')
 fig1.clf()
 plt.close(fig1)
 
-#get no progenitor information 
+#get no progenitor information
 numdata={'Low':np.zeros(numsnaps),'Intermediate':np.zeros(numsnaps),'High':np.zeros(numsnaps), 'All':np.zeros(numsnaps)}
 numnoprogen={'Low':np.zeros(numsnaps),'Intermediate':np.zeros(numsnaps),'High':np.zeros(numsnaps), 'All':np.zeros(numsnaps)}
 numnoprogentype={'Halo':np.zeros(numsnaps),'Subhalo':np.zeros(numsnaps),'Merger Remnants':np.zeros(numsnaps)}
@@ -397,7 +402,7 @@ for i in range(numsnaps):
     noprogennumdistrib[i][0] = np.min(data)
     noprogennumdistrib[i][6] = np.max(data)
     noprogennumdistrib[i][1:6] = np.percentile(data,[2.5, 16.0, 50.0, 84.0, 97.5])
- 
+
 fig1, ax = plt.subplots(figsize=(10,6))
 xtitle=r'Scale Factor'
 y1title=r'$f$'
@@ -498,45 +503,45 @@ plt.close(fig1)
 
 #get unusual events (like objects with no progenitor that are large)
 noprogendata={
-            'Npart' : np.array([]), 
-            'Npart_subtohost' : np.array([]), 
-            'Npart_hosttosubs' : np.array([]), 
-            'Npart_stats' : np.zeros([numsnaps,7]), 
-            'Npart_subtohost_stats' : np.zeros([numsnaps,7]), 
-            'Npart_hosttosubs_stats' : np.zeros([numsnaps,8]), 
+            'Npart' : np.array([]),
+            'Npart_subtohost' : np.array([]),
+            'Npart_hosttosubs' : np.array([]),
+            'Npart_stats' : np.zeros([numsnaps,7]),
+            'Npart_subtohost_stats' : np.zeros([numsnaps,7]),
+            'Npart_hosttosubs_stats' : np.zeros([numsnaps,8]),
             'Npart_structype_stats' : {'Halos': np.zeros([numsnaps,7]), 'Subhalos': np.zeros([numsnaps,7]), 'Merger Remnants': np.zeros([numsnaps,7])},
-            'Zform' : np.array([]), 
-            'Zfinal' : np.array([]), 
-            'Npart_descen' : np.array([]), 
-            'Branch_type' : np.array([]), 
-            'Branch_lifetime' : np.array([]), 
-            'Sub_type' : np.array([]), 
-            'Sub_type_descen' : np.array([]), 
-            'Descen_type' : np.array([]), 
+            'Zform' : np.array([]),
+            'Zfinal' : np.array([]),
+            'Npart_descen' : np.array([]),
+            'Branch_type' : np.array([]),
+            'Branch_lifetime' : np.array([]),
+            'Sub_type' : np.array([]),
+            'Sub_type_descen' : np.array([]),
+            'Descen_type' : np.array([]),
             'Environ_type' : np.array([]),
             }
 noprogenfrac={
-    'All': np.zeros(numsnaps), 
+    'All': np.zeros(numsnaps),
     'Masscut' : np.zeros(numsnaps),
     'Halos': np.zeros(numsnaps),
     'Subs': np.zeros(numsnaps),
     'MainBranch': np.zeros(numsnaps),
     'ShortBranch': np.zeros(numsnaps),
     'DescenType' : {
-        'Same': np.zeros(numsnaps), 
-        'Change': np.zeros(numsnaps), 
-        'HaloToSub': np.zeros(numsnaps), 
+        'Same': np.zeros(numsnaps),
+        'Change': np.zeros(numsnaps),
+        'HaloToSub': np.zeros(numsnaps),
         'SubToHalo': np.zeros(numsnaps),
         }
     }
 for i in range(numsnaps):
-    if (numhalos[i] == 0): 
+    if (numhalos[i] == 0):
         continue
     sizewdata = np.where((halopropdata[i]['npart'] > 10*npartlim))[0]
-    if (sizewdata.size == 0): 
+    if (sizewdata.size == 0):
         continue
     noprogenwdata = np.where(treedata[i]['Tail'][sizewdata] == treedata[i]['ID'][sizewdata])[0]
-    if (noprogenwdata.size == 0): 
+    if (noprogenwdata.size == 0):
         continue
     numval=noprogenwdata.size
     noprogenfrac['All'][i]=float(numval)/float(numhalos[i])
@@ -544,7 +549,7 @@ for i in range(numsnaps):
 
     noprogenfrac['Halos'][i]=float(np.where(halopropdata[i]['Structuretype'][sizewdata][noprogenwdata]==10)[0].size)/float(numval)
     noprogenfrac['Subs'][i]=float(np.where(halopropdata[i]['Structuretype'][sizewdata][noprogenwdata]!=10)[0].size)/float(numval)
-    
+
     noprogendata['Npart'] = np.concatenate([noprogendata['Npart'],
         halopropdata[i]['npart'][sizewdata][noprogenwdata]])
     noprogendata['Npart_stats'][i][1:6] = np.percentile(halopropdata[i]['npart'][sizewdata][noprogenwdata],[2.5,16.0,50.,84.0,97.5])
@@ -571,7 +576,7 @@ for i in range(numsnaps):
     if (wdata.size > 0):
         tempdata = np.zeros(numval)
         hosts = np.uint64(halopropdata[i]['hostHaloID'][sizewdata][noprogenwdata] % TEMPORALHALOIDVAL - 1)
-        
+
         tempdata[wdata]=halopropdata[i]['npart'][sizewdata][noprogenwdata][wdata] / halopropdata[i]['npart'][hosts[wdata]]
         noprogendata['Npart_subtohost'] = np.concatenate([noprogendata['Npart_subtohost'],
             tempdata])
@@ -597,15 +602,15 @@ for i in range(numsnaps):
                 tempdata[hostindex]+=halopropdata[i]['npart'][isub]/hostmassmap[ihost]
             noprogendata['Npart_hosttosubs'] = np.concatenate([noprogendata['Npart_hosttosubs'],
                 tempdata])
-            #store number of halos with no substructure 
+            #store number of halos with no substructure
             noprogendata['Npart_hosttosubs_stats'][i][7] = float(np.where(tempdata[wdata]==0)[0].size)/float(wdata.size)
             wdata2 = np.where(tempdata>0)[0]
-            if (wdata2.size >0): 
+            if (wdata2.size >0):
                 tempdata=tempdata[wdata2]
                 noprogendata['Npart_hosttosubs_stats'][i][1:6] = np.percentile(tempdata,[2.5,16.0,50.,84.0,97.5])
                 noprogendata['Npart_hosttosubs_stats'][i][0] = np.min(tempdata)
                 noprogendata['Npart_hosttosubs_stats'][i][6] = np.max(tempdata)
-        
+
     temptreedata=np.zeros(numval, dtype=np.int64)
     temptreedata2=np.zeros(numval, dtype=np.int64)
     temptreedata3=np.zeros(numval, dtype=np.int64)
@@ -632,7 +637,7 @@ for i in range(numsnaps):
     noprogenfrac['DescenType']['Change'][i]=float(np.where(temptreedata2!=halopropdata[i]['Structuretype'][sizewdata][noprogenwdata])[0].size)/float(numval)
     noprogenfrac['DescenType']['SubToHalo'][i]=float(np.where((temptreedata2==10)*(halopropdata[i]['Structuretype'][sizewdata][noprogenwdata]>10))[0].size)/float(numval)
     noprogenfrac['DescenType']['HaloToSub'][i]=float(np.where((temptreedata2>10)*(halopropdata[i]['Structuretype'][sizewdata][noprogenwdata]==10))[0].size)/float(numval)
-    
+
     #check if objects are main branches and get their lifetime as a main branch
     rootheads = treedata[i]['RootHead'][sizewdata][noprogenwdata]
     roottails = treedata[i]['RootTail'][sizewdata][noprogenwdata]
@@ -646,11 +651,11 @@ for i in range(numsnaps):
         curIndex = np.uint64(curHalo % TEMPORALHALOIDVAL - 1)
         curRootHead = treedata[curSnap]['RootHead'][curIndex]
         curRootTail = treedata[curSnap]['RootTail'][curIndex]
-        branchlife[j] = -1 
+        branchlife[j] = -1
         while (curRootTail == roottails[j]):
             if (curHalo == curRootHead):
                 break
-            branchlife[j] += 1 
+            branchlife[j] += 1
             curHalo = treedata[curSnap]['Head'][curIndex]
             curSnap = np.uint64(curHalo / TEMPORALHALOIDVAL)
             curIndex = np.uint64(curHalo % TEMPORALHALOIDVAL - 1)
@@ -664,7 +669,7 @@ for i in range(numsnaps):
     noprogenfrac['ShortBranch'][i]=float(np.where(branchlife<=3)[0].size)/float(numval)
 
 
-#plot the information of no progenitors 
+#plot the information of no progenitors
 #plot the fraction as a function of redshift
 fig1, ax = plt.subplots(figsize=(10,6))
 xtitle=r'Snapshots'
@@ -882,7 +887,7 @@ for i in range(numsel):
     xerrval2=np.array(np.fabs(np.percentile(xvals,[2.5,97.5])-np.median(xvals)))
     yerrval2=np.array(np.fabs(np.percentile(yvals,[2.5,97.5])-np.median(yvals)))
     ax.errorbar(xmean, ymean, yerr=[np.array([yerrval2[0]]),np.array([yerrval2[1]])], xerr=[np.array([xerrval2[0]]),np.array([xerrval2[1]])], color='k',ls='solid',lw=2, alpha=0.25, zorder=2)
-    t=ax.annotate(selectionlabel, 
+    t=ax.annotate(selectionlabel,
         xy=(0.95,0.90),xycoords='axes fraction', horizontalalignment='right')
     t=ax.annotate(r'$N=%1.0f$'%xvals.size,
         xy=(0.95,0.85),xycoords='axes fraction', horizontalalignment='right')
@@ -950,7 +955,7 @@ for i in range(numsel):
     xerrval2=np.array(np.fabs(np.percentile(xvals,[2.5,97.5])-np.median(xvals)))
     yerrval2=np.array(np.fabs(np.percentile(yvals,[2.5,97.5])-np.median(yvals)))
     ax.errorbar(xmean, ymean, yerr=[np.array([yerrval2[0]]),np.array([yerrval2[1]])], xerr=[np.array([xerrval2[0]]),np.array([xerrval2[1]])], color='k',ls='solid',lw=2, alpha=0.25, zorder=2)
-    t=ax.annotate(selectionlabel, 
+    t=ax.annotate(selectionlabel,
         xy=(0.95,0.90),xycoords='axes fraction', horizontalalignment='right')
     t=ax.annotate(r'$N=%1.0f$'%xvals.size,
         xy=(0.95,0.85),xycoords='axes fraction', horizontalalignment='right')
@@ -976,8 +981,8 @@ for i in range(numsel):
     fig1.clf()
     plt.close(fig1)
 
-#Fakhouri style merger rates 
-#split z=0 halos/subhalos into several mass bins, 
+#Fakhouri style merger rates
+#split z=0 halos/subhalos into several mass bins,
 if (ExtraDiagnostics >= 1):
     dlogMhost,dz,dlogxi=0.25,0.5,0.25
 
@@ -992,7 +997,7 @@ if (ExtraDiagnostics >= 1):
     massratiobins=10**(0.5*(np.log10(massratiobinedges[:-1])+np.log10(massratiobinedges[1:])))
     dxi=np.log(10.0)*massratiobins*dlogxi
     nmassratiobins=len(massratiobins)
-    #here, lets choose a hostHalo and a subhalo 
+    #here, lets choose a hostHalo and a subhalo
     npartlim=40
     maxnsample=10000
     unitfac=UnitInfo['Mass_unit_to_solarmass']
@@ -1020,7 +1025,7 @@ if (ExtraDiagnostics >= 1):
                 numhostsatscalefactor[curSnap]=len(wdata[0])
                 hostids=np.concatenate([hostids,np.int64(halopropdata[curSnap]['ID'][wdata])])
             numhostsall[ibin][iscalebin]=len(hostids)
-            if (numhostsall[ibin][iscalebin]==0): 
+            if (numhostsall[ibin][iscalebin]==0):
                 continue
             #if number of objects is very large subsample
             if (numhostsall[ibin][iscalebin]>=maxnsample):
@@ -1037,7 +1042,7 @@ if (ExtraDiagnostics >= 1):
                 if (curHalo==curTail): continue
                 curMass=halopropdata[curSnap]['Mass_tot'][curIndex]
                 #if looking at true complete mergers then want objects that fully merge with object
-                #find all progenitors of this (sub)halo 
+                #find all progenitors of this (sub)halo
                 progens=np.array([],dtype=np.int64)
                 for snap in np.arange(curSnap-1,curSnap-NSNAPSEARCH-1,-1,dtype=np.int32):
                     wdata=np.where((halopropdata[snap]["Efrac"]>=0.1)*(halopropdata[snap]["npart"]>=npartlim)*(treedata[snap]["Head"]==curHalo)*(halopropdata[snap]["ID"]!=curTail))
@@ -1134,8 +1139,8 @@ if (ExtraDiagnostics >= 1):
     #cb1.set_label(ztitle)
     #plt.savefig(baseplotdir+'mergerrate.pdf')
 
-    #get mass accretion history 
-    #split z=0 halos into several mass bins, 
+    #get mass accretion history
+    #split z=0 halos into several mass bins,
     #massbinedges=10.0**np.array([9.5,10.5,11.5,12.5,13.5,14.5])
     #massbins=10**np.array([10,11,12,13,14])
 
@@ -1143,7 +1148,7 @@ if (ExtraDiagnostics >= 1):
     massbins=10**np.array([11,12,13])
     nmassbins=len(massbins)
 
-    #here, lets choose a hostHalo and a subhalo 
+    #here, lets choose a hostHalo and a subhalo
     numhosts=np.zeros(nmassbins,dtype=np.int32)
     numnomergers=np.zeros(nmassbins)
     numfewmergers=np.zeros(nmassbins)
@@ -1166,7 +1171,7 @@ if (ExtraDiagnostics >= 1):
         hostindices=np.where((halopropdata[curSnap]['Mass_200crit']*UnitInfo['Mass_unit_to_solarmass']*SimulationInfo['h_val']>=massbinedges[ibin])*
             (halopropdata[curSnap]['Mass_200crit']*UnitInfo['Mass_unit_to_solarmass']*SimulationInfo['h_val']<massbinedges[ibin+1])*(halopropdata[curSnap]['hostHaloID']==-1))[0]
         numhosts[ibin]=len(hostindices)
-        if (numhosts[ibin]==0): 
+        if (numhosts[ibin]==0):
             continue
         if (numhosts[ibin]>maxnsample):
             hostindices=np.random.choice(hostindices,size=maxnsample,replace=False)
@@ -1196,7 +1201,7 @@ if (ExtraDiagnostics >= 1):
             #lets get the position of the host halo main branch
             halolifetime=GetHaloLiftime(treedata,np.uint64(roothosthead%TEMPORALHALOIDVAL-1),np.uint32(roothosthead/TEMPORALHALOIDVAL),roothosttail,atime,TEMPORALHALOIDVAL)
             #if object is not long lived ignore,
-            if (halolifetime<10): 
+            if (halolifetime<10):
                 continue
             hostatime=np.zeros(halolifetime)
             hostmasstot=np.zeros(halolifetime)
@@ -1222,7 +1227,7 @@ if (ExtraDiagnostics >= 1):
                 curSnap=int(curHalo/TEMPORALHALOIDVAL)
                 curHead=treedata[curSnap]["Head"][curIndex]
             #if object spends most of its time as a subhalo ignore
-            if (assubhalolifetime>0.5*halolifetime): 
+            if (assubhalolifetime>0.5*halolifetime):
                 nummostlysubhalo[ibin]+=1.0
                 continue
             nummostlyhalo[ibin]+=1.0
@@ -1236,12 +1241,12 @@ if (ExtraDiagnostics >= 1):
                 if len(wdata[0]) == 0 : continue
                 tails=np.concatenate([tails,np.uint64(treedata[snap]['RootTail'][wdata])])
             #ignore if there are no secondary progenitors
-            if (tails.size == 0): 
+            if (tails.size == 0):
                 numnomergers[ibin]+=1.0
                 continue
             tails=np.unique(tails)
             #if the number of unique secondary progenitors is low, ignore
-            if (tails.size < 5): 
+            if (tails.size < 5):
                 numfewmergers[ibin]+=1.0
                 continue
 
@@ -1252,7 +1257,7 @@ if (ExtraDiagnostics >= 1):
             #accmassratiodata[ihostcount]=np.zeros(totalhalolifetime)
             #minormergermassratiodata[ihostcount]=np.zeros(totalhalolifetime)
             #majormergermassratiodata[ihostcount]=np.zeros(totalhalolifetime)
-           
+
             for itail in np.uint64(tails):
                 curHalo=itail
                 curSnap=np.uint64(curHalo/TEMPORALHALOIDVAL)
@@ -1284,7 +1289,7 @@ if (ExtraDiagnostics >= 1):
 
                     if (curHalo==curHead): break
                     #if object nolonger main branch then has merged with something
-                    if (refRootTail!=curRootTail): 
+                    if (refRootTail!=curRootTail):
                         if (curRootTail==roothosttail):
                             mergeMass=prevMass
                             mergeSnap=curSnap
@@ -1306,13 +1311,13 @@ if (ExtraDiagnostics >= 1):
                     accmassratiodata[np.int32(accSnap)][ihostcount]+=accMassRatio
                     mergeMassRatio=mergeMass/np.power(10.0,hostmasstot(atime[mergeSnap]))
                     cummassratiodata[np.int32(accSnap)][ihostcount]+=accMass/np.power(10.0,hostmasstot(1.0))
-                    if (accMassRatio>=5e-2): 
+                    if (accMassRatio>=5e-2):
                         majormergermassratiodata[np.int32(mergeSnap)][ihostcount]+=mergeMassRatio
                         nummajormergerdata[np.int32(accSnap)][ihostcount]+=1
                         accmajormergermassratiodata[np.int32(mergeSnap)][ihostcount]+=accMassRatio
                         numaccmajormergerdata[np.int32(accSnap)][ihostcount]+=1
                         cummajormergermassratiodata[np.int32(accSnap)][ihostcount]+=accMass/np.power(10.0,hostmasstot(1.0))
-                    else: 
+                    else:
                         minormergermassratiodata[np.int32(mergeSnap)][ihostcount]+=mergeMassRatio
                         numminormergerdata[np.int32(accSnap)][ihostcount]+=1
                         accminormergermassratiodata[np.int32(mergeSnap)][ihostcount]+=accMassRatio
@@ -1365,7 +1370,7 @@ if (ExtraDiagnostics >= 1):
             if (np.sum(numminormergerdata[snap])>=2):
                 minormergermassratiostats[ibin][snap][0]=np.sum(numminormergerdata[snap])
                 minormergermassratiostats[ibin][snap][1:]=np.nanpercentile(minormergermassratiodata[snap],[2.5,16.0,50.0,84.0,97.5])
-            
+
             cumstat=cummassratiodata.transpose()
             cumstat=np.array([np.sum(cumval) for cumval in cumstat])
             cumaccmassratiostats[ibin][1:]=np.percentile(cumstat,[2.5,16.0,50.,84.0,97.5])
@@ -1406,7 +1411,7 @@ if (ExtraDiagnostics >= 2):
     relraddata=np.zeros(np.sum(numhalos))
     numpartsdata={'Merging':np.zeros(np.sum(numhalos)),'Host':np.zeros(np.sum(numhalos))}
     print('Getting radial and particle distribution of merging events')
-    noffset = 0 
+    noffset = 0
     maxnsample=50000
     for i in snaplist:
         print('starting at snapshot ',i)
@@ -1421,9 +1426,9 @@ if (ExtraDiagnostics >= 2):
             curSnap = np.uint64(curHalo / TEMPORALHALOIDVAL)
             curIndex = np.uint64(curHalo % TEMPORALHALOIDVAL - 1)
             curTail = treedata[curSnap]['Tail'][curIndex]
-            if (curHalo == curTail): 
+            if (curHalo == curTail):
                 continue
-            #find all progenitors of this (sub)halo 
+            #find all progenitors of this (sub)halo
             progenindex=np.array([], dtype=np.int64)
             progensnap=np.array([], dtype=np.int32)
             for snap in np.arange(curSnap-1, curSnap-NSNAPSEARCH,-1, dtype=np.int32):
@@ -1434,7 +1439,7 @@ if (ExtraDiagnostics >= 2):
                     (halopropdata[snap]["ID"] != curTail))[0]
                 progenindex = np.concatenate([progenindex,wdata])
                 progensnap = np.concatenate([progensnap,snap*np.ones(wdata.size,dtype=np.int32)])
-            if (progenindex.size == 0): 
+            if (progenindex.size == 0):
                 continue
             #get relative position, radii and npart for both primary and secondary
             relpos = np.zeros([progenindex.size,3])
@@ -1456,7 +1461,7 @@ if (ExtraDiagnostics >= 2):
             numpartsdata['Host'][noffset:noffset+progenindex.size] = np.ones(progenindex.size)*halopropdata[curSnap]['npart'][curIndex]
             noffset += progenindex.size
             nactive += progenindex.size
-            if (nactive > maxnsample): 
+            if (nactive > maxnsample):
                 break
         print('Done processing ', i, 'with', nactive, 'mergers in', time.clock()-start)
     print('Finshed processing all snapshots, have ',noffset,'mergers')
@@ -1466,7 +1471,7 @@ if (ExtraDiagnostics >= 2):
 
     #now plot
     from matplotlib.ticker import NullFormatter
-    nullfmt = NullFormatter() 
+    nullfmt = NullFormatter()
     colorval=['blue','DarkOrange','Crimson']
     cmapval=['Blues','Purples', 'Reds']
     itree=0
@@ -1518,7 +1523,7 @@ if (ExtraDiagnostics >= 2):
         yerrval=[np.median(y)-np.percentile(y,[2.5])[0],np.percentile(y,[97.5])[0]-np.median(y)]
         axHex.errorbar([np.median(x)],[np.median(y)],xerr=[np.array([xerrval[0]]),np.array([xerrval[1]])],yerr=[np.array([yerrval[0]]),np.array([yerrval[1]])],marker='None',alpha=0.7,zorder=9,color=colorval[itree],lw=2,capsize=4)
         """
-        #now get objects slight above the limit and perhaps later times 
+        #now get objects slight above the limit and perhaps later times
         wdata=np.where((treedata[treelabel[itree]]['mergerstats'][1]>=40.0)*(treedata[treelabel[itree]]['mergerstats'][2]>=40.0))
         mergernpart=treedata[treelabel[itree]]['mergerstats'][1][wdata]
         ratiomergerradius=treedata[treelabel[itree]]['mergerstats'][0][wdata]
@@ -1570,7 +1575,7 @@ if (ExtraDiagnostics >= 2):
         #Line for the npart limit
         axHex.axvline(np.log10(20),color="k",ls="--")
         axHex.axhline(np.log10(1),color="k",ls="--")
-        
+
         #Set labels and ticks
         axHex.set_xlabel(r'$\log N_p$')
         axHex.set_ylabel(r'$\log r_{\mathrm{merge}}/R_{200\rho_c}$')
@@ -1582,7 +1587,7 @@ if (ExtraDiagnostics >= 2):
         axHex.yaxis.set_ticks_position('both')
 
 
-        #reset x,y 
+        #reset x,y
         mergernpart=treedata[treelabel[itree]]['mergerstats'][1]
         ratiomergerradius=treedata[treelabel[itree]]['mergerstats'][0]
         x =np.log10(mergernpart)
