@@ -35,7 +35,7 @@ else:
 basetreefname=sys.argv[1]
 
 #number of snaphots
-numsnaps=sys.argv[2]
+numsnaps=int(sys.argv[2])
 
 #base halo properties file name
 basepropfname=sys.argv[3]
