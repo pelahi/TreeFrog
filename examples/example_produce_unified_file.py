@@ -16,17 +16,25 @@ import numpy as np
 import copy
 
 #load python routines
-sys.path.append(sys.argv[1])
-import velociraptor_python_tools as vpt
+scriptpath=os.path.abspath(__file__)
+basecodedir=scriptpath.split('examples/')[0]+'/tools/'
+sys.path.append(basecodedir)
+#load the cythonized code if compiled
+if (len(glob.glob(basecodedir+'velociraptor_python_tools_cython.*.so'))==1):
+    print('using cython VR+TF toolkit')
+    import velociraptor_python_tools_cython as vpt
+else:
+    print('using python VR+TF toolkit')
+    import velociraptor_python_tools as vpt
 
 #load the hdf tree file
-inputhdftreefname=sys.argv[2]
+inputhdftreefname=sys.argv[1]
 
 #base halo properties
-basepropfname=sys.argv[3]
+basepropfname=sys.argv[2]
 
 #file name for the unified file
-outputfname=sys.argv[4]
+outputfname=sys.argv[3]
 
 #define properties of interest
 requestedfields=[

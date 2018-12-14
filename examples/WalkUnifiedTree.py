@@ -4,7 +4,7 @@
 """
 
     This python script reads a full tree and plots some tree statistics, like merger rates, merger trees
-    
+
 """
 
 import sys,os,string,time,re,struct
@@ -15,9 +15,16 @@ matplotlib.use('Agg')
 import numpy as np
 
 #load python routines
-#one of these paths should work
-sys.path.append('/path/to/VELOCIraptor-STF/stf/tools/')
-import velociraptor_python_tools as vpt
+scriptpath=os.path.abspath(__file__)
+basecodedir=scriptpath.split('examples/')[0]+'/tools/'
+sys.path.append(basecodedir)
+#load the cythonized code if compiled
+if (len(glob.glob(basecodedir+'velociraptor_python_tools_cython.*.so'))==1):
+    print('using cython VR+TF toolkit')
+    import velociraptor_python_tools_cython as vpt
+else:
+    print('using python VR+TF toolkit')
+    import velociraptor_python_tools as vpt
 
 def dtda(a,Omegam,OmegaL):
     return 1.0/np.sqrt(Omegam*np.power(a,-3.0)+OmegaL)/a
@@ -34,16 +41,16 @@ requestedfields=[]
 atime,tree,numhalos,halodata,cosmodata,unitdata=vpt.ReadUnifiedTreeandHaloCatalog(treefilename,requestedfields)
 numsnaps=len(atime)
 
-""" 
+"""
     -----------------------------------------------
-    Now for some sample analysis 
+    Now for some sample analysis
     -----------------------------------------------
 """
 #this is the special value that allows the tree to be walked
 TEMPORALHALOIDVAL=1000000000000
 
-#here's an example of looking at the evolution, motion of a halo 
-#lets select a sample of halos at z=0. 
+#here's an example of looking at the evolution, motion of a halo
+#lets select a sample of halos at z=0.
 selectedhalos=halodata[0]['ID'][np.where(halodata[0]['Mass_tot']*unitdata['Mass_to_solarmass']>1e12)]
 len(numobjs)
 for j in range(numobjs):
@@ -62,11 +69,11 @@ for j in range(numobjs):
     progid=halodata[i][halosnap]["Tail"][haloindex]
     progindex=int(progid%TEMPORALHALOIDVAL-1)
     progsnap=int(np.floor(progid/TEMPORALHALOIDVAL))
-    #now for a reverse ordered data set where you have the halos at z=0 located at [0] 
+    #now for a reverse ordered data set where you have the halos at z=0 located at [0]
     progsnap=numsnaps-1-progsnap
-    #otherwise, leave at is 
-    
-    #find out how long the object has lived for 
+    #otherwise, leave at is
+
+    #find out how long the object has lived for
     proglength=1
     #we do this by checking if the progenitor id is not a halo's own id
     while (progid!=haloid):
@@ -80,11 +87,11 @@ for j in range(numobjs):
         progindex=int(progid%HALOIDVAL-1)
         progsnap=int(np.floor(progid/TEMPORALHALOIDVAL))
         progsnap=numsnaps-1-progsnap
-    
+
     #now that we know how long an object has lived for,
     #lets do some stuff
 
-    #reset 
+    #reset
     haloid=mainid
     haloindex=mainindex
     halosnap=mainsnap

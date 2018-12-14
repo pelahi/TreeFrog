@@ -10,14 +10,23 @@ Example of loading a raw tree, building the head/tail, root head/ root tail info
 
 import sys
 import os
+import glob
 import psutil
 import time
 import numpy as np
 import copy
 
 #load python routines
-sys.path.append(sys.argv[1])
-import velociraptor_python_tools as vpt
+scriptpath=os.path.abspath(__file__)
+basecodedir=scriptpath.split('examples/')[0]+'/tools/'
+sys.path.append(basecodedir)
+#load the cythonized code if compiled
+if (len(glob.glob(basecodedir+'velociraptor_python_tools_cython.*.so'))==1):
+    print('using cython VR+TF toolkit')
+    import velociraptor_python_tools_cython as vpt
+else:
+    print('using python VR+TF toolkit')
+    import velociraptor_python_tools as vpt
 
 #base raw tree file name to load the raw tree if necessary
 basetreefname=sys.argv[2]
@@ -40,7 +49,7 @@ if (ibranchfix):
         'npart',
         'Xc', 'Yc', 'Zc',
         'VXc', 'VYc', 'VZc',
-        'Rmax', 'Vmax',
+        'Rmax', 'Vmax', 'R_200crit'
         'Structuretype'
         ]
 else:
@@ -59,9 +68,10 @@ RAWPROPFORMAT=HDFINPUT
 TEMPORALHALOIDVAL=1000000000000
 #number of snapshots searched when producing the tree
 NSNAPSEARCH=4
+#number of particles used in the halo catalog
+NPARTTHRESHOLD=20
 
 #read raw descendant tree along with merits, don't reverse snap order,
-
 if (RAWTREEFORMAT == HDFINPUT):
     #for hdf input produce file listing input files
     snaptreelist=open(basetreefname+'.snaptreelist.txt','w')
@@ -91,23 +101,30 @@ vpt.BuildTemporalHeadTailDescendant(numsnaps,rawtreedata,numhalos,halodata,TEMPO
 print("Finished head/tail ", time.clock()-start)
 
 if (ibranchfix):
-    start=time.clock()
-    print('Fixing branch swapping events')
     #set the limits to use when trying to fix branch swapping events.
-    npartlim=200
-    meritlim=0.025
-    xdifflim=2.0
-    vdifflim=1.0
+    npartlim=NPARTTHRESHOLD*10
+    #suggested values that reduce the number of outliers (well resolved objects with no progenitor)
+    meritlim=0.01
+    xdifflim=5.0
+    vdifflim=2.5
+    numsnapsearch = np.int32(np.ceil(NSNAPSEARCH*1.5))
+    descendantsearchdepth = 2
+    iswaphalosubhaloflag = True
+    iverbose=0
     vpt.FixTruncationBranchSwapsInTreeDescendant(numsnaps, rawtreedata, halodata, numhalos,
                                                  npartlim, meritlim, xdifflim, vdifflim,
-                                                 NSNAPSEARCH, TEMPORALHALOIDVAL)
-    print("Finished fixing branch swapping events", time.clock()-start)
+                                                 descendantsearchdepth, iswaphalosubhaloflag,
+                                                 numsnapsearch,
+                                                 TEMPORALHALOIDVAL,
+                                                 iverbose)
 
 #write the tree and quit
 DescriptionInfo={
-        'Title':'Walkable Tree', 'TreeBuilder':'TreeFrog', 'TreeBuilder_version':1.2,
-        'Temporal_linking_length':NSNAPSEARCH, 'Temporal_halo_id_value':TEMPORALHALOIDVAL
+        'Title':'Walkable Tree',
+        'TreeBuilder':'TreeFrog', 'TreeBuilder_version':1.20, 'Temporal_linking_length':NSNAPSEARCH, 'Temporal_halo_id_value':TEMPORALHALOIDVAL,
+        'HaloFinder':'VELOCIraptor', 'HaloFinder_version':1.11, 'Particle_num_threshold':20,
         }
+
 vpt.WriteWalkableHDFTree(outputfname, numsnaps, rawtreedata, numhalos, halodata,
                          atime, DescriptionInfo)
 quit()

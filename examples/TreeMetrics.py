@@ -8,7 +8,7 @@ import numpy as np
 import astropy as ap
 import h5py, copy
 #for general python stuff
-import sys,os,string,time,re,struct
+import sys,os,string,time,re,struct,glob
 import math,operator
 #for useful scipy stuff
 from scipy.stats.mstats import mquantiles
@@ -30,10 +30,17 @@ matplotlib.use('pdf') #this backend works fine on python (I think) but not ipyth
 from matplotlib.pylab import *
 #to load specific functions defined in another python file
 
+#load python routines
 scriptpath=os.path.abspath(__file__)
-basecodedir=scriptpath.split('TreeMetrics.py')[0]+'../tools/'
+basecodedir=scriptpath.split('examples/')[0]+'/tools/'
 sys.path.append(basecodedir)
-import velociraptor_python_tools as vpt
+#load the cythonized code if compiled
+if (len(glob.glob(basecodedir+'velociraptor_python_tools_cython.*.so'))==1):
+    print('using cython VR+TF toolkit')
+    import velociraptor_python_tools_cython as vpt
+else:
+    print('using python VR+TF toolkit')
+    import velociraptor_python_tools as vpt
 
 NumArg=5
 if (len(sys.argv) < NumArg+1):
