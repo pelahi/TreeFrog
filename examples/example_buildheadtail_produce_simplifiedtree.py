@@ -113,8 +113,8 @@ if (ibranchfix):
     iverbose=0
     vpt.FixTruncationBranchSwapsInTreeDescendant(numsnaps, rawtreedata, halodata, numhalos,
                                                  npartlim, meritlim, xdifflim, vdifflim,
-                                                 descendantsearchdepth, iswaphalosubhaloflag,
                                                  numsnapsearch,
+                                                 descendantsearchdepth, iswaphalosubhaloflag,
                                                  TEMPORALHALOIDVAL,
                                                  iverbose)
 

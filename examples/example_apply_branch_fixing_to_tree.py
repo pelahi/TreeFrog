@@ -82,6 +82,7 @@ for i in range(numsnaps):
     halodata[i],numhalos[i] = vpt.ReadPropertyFile(fname,RAWPROPFORMAT,0,0,requestedfields)
     atime[i]=halodata[i]['SimulationInfo']['ScaleFactor']
     for key in halodata[i].keys():
+        if (key == 'SimulationInfo' or key == 'UnitInfo'): continue
         if (halodata[i][key].dtype==np.float64):
             halodata[i][key] = np.array(halodata[i][key],dtype=np.float32)
 #load raw tree info
@@ -122,8 +123,8 @@ iswaphalosubhaloflag = True
 iverbose=0
 vpt.FixTruncationBranchSwapsInTreeDescendant(numsnaps, rawtreedata, halodata, numhalos,
                                              npartlim, meritlim, xdifflim, vdifflim,
-                                             descendantsearchdepth, iswaphalosubhaloflag,
                                              numsnapsearch,
+                                             descendantsearchdepth, iswaphalosubhaloflag,
                                              TEMPORALHALOIDVAL,
                                              iverbose)
 #and then clean secondary progenitors to make sure no secondary points to an object without
