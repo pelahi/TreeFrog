@@ -12,6 +12,7 @@ but some final clean-up can be useful.
 
 import sys
 import os
+import glob
 import psutil
 import time
 import numpy as np
@@ -139,7 +140,7 @@ vpt.CleanSecondaryProgenitorsFromNoPrimaryProgenObjectsTreeDescendant(numsnaps,
 DescriptionInfo={
         'Title':'Tree and Halo', 'HaloFinder':'VELOCIraptor', 'TreeBuilder':'TreeFrog',
         'HaloFinder_version':1.25, 'TreeBuilder_version':1.2,
-        'Particle_num_threshold':, 'Temporal_linking_length':NSNAPSEARCH, 'Temporal_halo_id_value':TEMPORALHALOIDVAL,
+        'Particle_num_threshold':NPARTTHRESHOLD, 'Temporal_linking_length':NSNAPSEARCH, 'Temporal_halo_id_value':TEMPORALHALOIDVAL,
         }
 vpt.WriteWalkableHDFTree(outputfname, numsnaps, rawtreedata, numhalos, halodata,
                          atime, DescriptionInfo)

@@ -10,6 +10,7 @@ Example of loading a tree, associated halo properties and building sublinks, pro
 
 import sys
 import os
+import glob
 import psutil
 import time
 import numpy as np

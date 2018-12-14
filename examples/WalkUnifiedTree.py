@@ -8,6 +8,7 @@
 """
 
 import sys,os,string,time,re,struct
+import glob
 import math,operator
 import random as rn
 import matplotlib
