@@ -49,7 +49,7 @@ if (ibranchfix):
         'npart',
         'Xc', 'Yc', 'Zc',
         'VXc', 'VYc', 'VZc',
-        'Rmax', 'Vmax', 'R_200crit'
+        'Rmax', 'Vmax', 'R_200crit',
         'Structuretype'
         ]
 else:
