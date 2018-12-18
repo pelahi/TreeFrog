@@ -29,19 +29,19 @@ else:
     import velociraptor_python_tools as vpt
 
 #base raw tree file name to load the raw tree if necessary
-basetreefname=sys.argv[2]
+basetreefname=sys.argv[1]
 
 #base halo properties
-basepropfname=sys.argv[3]
+basepropfname=sys.argv[2]
 
 #number of snapshots
-numsnaps=int(sys.argv[4])
+numsnaps=int(sys.argv[3])
 
 #file name for the simplified tree file
-outputfname=sys.argv[5]
+outputfname=sys.argv[4]
 
 #if post-process for branch swaps, more time consuming and requires more memory.
-ibranchfix=bool(sys.argv[6])
+ibranchfix=bool(sys.argv[5])
 #define properties of interest
 if (ibranchfix):
     requestedfields=[
