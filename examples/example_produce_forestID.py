@@ -112,12 +112,25 @@ else:
     vpt.BuildTemporalHeadTailDescendant(numsnaps,rawtreedata,numhalos,halodata,TEMPORALHALOIDVAL)
     print("finished head tail ", time.clock()-start)
 
+#given walkable tree, determine the largest difference in snapshots between an object and its head
+maxnsnapsearch=0
+for i in range(numsnaps):
+    if (numhalos[i] == 0): continue
+    headsnap = np.int64(halodata[i]['Head']/TEMPORALHALOIDVAL)
+    maxs = np.max(headsnap-i)
+    maxnsnapsearch = max(maxnsnapsearch, maxs)
+print('Walkable tree has maximum snaps search of ', maxnsnapsearch)
+sys.stdout.flush()
+
 #generate subhalo links
 vpt.GenerateSubhaloLinks(numsnaps,numhalos,halodata)
 #generate progenitor links
 vpt.GenerateProgenitorLinks(numsnaps,numhalos,halodata)
 #building forest
-ForestSize=vpt.GenerateForest(numsnaps,numhalos,halodata,atime,NSNAPSEARCH)
+ireverseorder = False
+iverbose = 1
+iforestcheck = True
+ForestSize=vpt.GenerateForest(numsnaps,numhalos,halodata,atime,maxnsnapsearch, ireverseorder, TEMPORALHALOIDVAL, iverbose, iforestcheck))
 
 #strip out simulation and unit data
 SimulationInfo=copy.deepcopy(halodata[0]['SimulationInfo'])
