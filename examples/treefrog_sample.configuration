@@ -99,7 +99,7 @@ Merit_limit_continuing_search=0.025
 #cosmological times have few objects were as late times have many.
 #can set the minimum number of times per thread (either halos or raw particle numbers)
 
-#set the min number per mpi, if 0, tetermined by TreeFrog
+#set the min number per mpi, if 0, determined by TreeFrog
 Num_per_mpi=0
 
 #also can run treefrog with a single thread to examine what the mpi load balance would be
