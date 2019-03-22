@@ -44,7 +44,7 @@ tf_option(MPI               "Attempt to include MPI support in TreeFrog" ON)
 
 # Precison options
 tf_option(UNSIGNED_IDS "Use unsigned ID's in TreeFrog" OFF)
-tf_option(LONG_INT "Use long ints ID's in TreeFrog, this will be set by NBODY_LONG_INT if not explicity set" OFF)
+tf_option(LONG_INT "Use long ints ID's in TreeFrog, this will be set by NBODY_LONG_INT if not explicity set" ON)
 
 #ID related options
 tf_option(HALOIDNOTINDEX "If the haloID does not correspond to an index which it is located in the snapshot, if so this should be switched on and a index ordered, temporally unique ID will be outputted along with original ID" OFF)
@@ -204,7 +204,7 @@ endif()
 
 if(TF_HALOIDNOTINDEX)
     set(TF_HAS_HALOIDNOTINDEX Yes)
-    list(APPEND TF_DEFINES HALOIDNOTINDEX) 
+    list(APPEND TF_DEFINES HALOIDNOTINDEX)
 else()
     set(TF_HAS_HALOIDNOTINDEX No)
 endif()
@@ -240,12 +240,12 @@ macro(tf_report feature)
 endmacro()
 
 message("\nTreeFrog successfully configured with the following settings:")
-tf_report("Dependencies" 
+tf_report("Dependencies"
           "OpenMP" OPENMP
           "MPI support" MPI)
-tf_report("File formats" 
+tf_report("File formats"
           "HDF5" HDF5)
-tf_report("Types" 
+tf_report("Types"
           "Long particle IDs" LONG_INT
           "Unsigned particles IDs" UNSIGNED_IDS)
 tf_report("ID related"
@@ -281,4 +281,3 @@ if (_export)
 else()
         try_add_doc_target("${TF_DOC_DIRS}")
 endif()
-
