@@ -29,27 +29,41 @@ is to produce HDF format unless otherwise required we only list the HDF output i
 | `Header Attributes`                                                                                                        |
 +------------------------------+---------------------------------------------------------------------------------------------+
 | Number_of_snapshots          |  Number of snapshots in the tree                                                            |
++------------------------------+---------------------------------------------------------------------------------------------+
 | Total_number_of_halos        |  Total number of halos across all snapshots                                                 |
++------------------------------+---------------------------------------------------------------------------------------------+
 | Merit_limit                  |  Merit limit used to determine whether a connection is viable to be a primary connection    |
++------------------------------+---------------------------------------------------------------------------------------------+
 | Number_of_steps              |  Number of snapshots searched for primary connections                                       |
++------------------------------+---------------------------------------------------------------------------------------------+
 | Search_next_step_criterion   |  Integer indicating type of criterion used to keep searching for primary connection         |
++------------------------------+---------------------------------------------------------------------------------------------+
 | Merit_limit_for_next_step    |  Merit limit below which more snaphots are search for viable primary connection             |
++------------------------------+---------------------------------------------------------------------------------------------+
 | Core_fraction                |  Fraction of most bound particles used to calculate merits                                  |
++------------------------------+---------------------------------------------------------------------------------------------+
 | Core_min_number_of_particles |  Minumum number of most bound particles used to calculate merits                            |
++------------------------------+---------------------------------------------------------------------------------------------+
 | Description                  |  String describing how tree was produced                                                    |
 +------------------------------+---------------------------------------------------------------------------------------------+
 | `Tree Data with arrays typically the size of number of halos in given snapshot`                                            |
 +------------------------------+---------------------------------------------------------------------------------------------+
 | ID                           |  Tree Halo IDs (index of halo + 1 + TEMPORALHALOIDVAL * Snapshot_value)                     |
++------------------------------+---------------------------------------------------------------------------------------------+
 | OrigID                       |  Original ID in halo catalog (IF compiled with HALOIDNOTINDEX. Otherwise not present)       |
++------------------------------+---------------------------------------------------------------------------------------------+
 | Npart                        |  Number of particles in a halo. Only produced if desired.                                   |
++------------------------------+---------------------------------------------------------------------------------------------+
 | NumDescen/NumProgen          |  Number of descendants/progenitors                                                          |
++------------------------------+---------------------------------------------------------------------------------------------+
 | DescenOffsets/ProgenOffsets  |  An offset array indicating where a halo's connections begin associated descen/progen array |
 +------------------------------+---------------------------------------------------------------------------------------------+
-| `Tree Data with arrays the size of the number of viable connections found. This can be larger than the number of halos     |
+| `Tree Data with arrays the size of the number of viable connections found. This can be larger than the number of halos`    |
 +------------------------------+---------------------------------------------------------------------------------------------+
 | Descendants/Progenitors      |  Array of Tree ID connections. Halos can have 0,1,>1 connections. Array read using          |
 |                              |  the NumDescen and DescenOffsets arrays                                                     |
++------------------------------+---------------------------------------------------------------------------------------------+
 | Merit                        |  Merit of the connection                                                                    |
++------------------------------+---------------------------------------------------------------------------------------------+
 | DescenNpart/ProgenNpart      |  Number of particles in descendant/progenitor. Only produced if desired.                    |
-+-------------------+-------------------------------------------------------------------------------------------------------+
++------------------------------+---------------------------------------------------------------------------------------------+
