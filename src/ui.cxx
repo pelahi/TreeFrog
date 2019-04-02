@@ -379,7 +379,7 @@ void usage(void)
     cerr<<"-i <file containing filelist>\n";
     cerr<<"-I <Input format ("<<opt.ioformat<<" [Sussing "<<DSUSSING<<", normal velociraptor catalog "<<DCATALOG<<", nIFTY "<<DNIFTY<<", Void "<<DVOID<<" ])\n";
     cerr<<"-s <number of files/snapshots>\n";
-    cerr<<"-C <produce cross catalog match (0 halo tree ,1 cross catalog ,2 full graph) default ("<<opt.icatalog<<")\n";
+    cerr<<"-C <Configuration file name (include the full path) ,please see examples/treefog_sample.confirgation for a example configuration>\n";
     cerr<<"-o <output filename>\n";
     cerr<<"-c <produce cross catalog match (0 halo tree ,1 cross catalog ,2 full graph) default ("<<opt.icatalog<<")\n";
     cerr<<"-o <output (base) filename (if HDF output separated into individual snapshots) >\n";
