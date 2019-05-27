@@ -51,7 +51,7 @@ HaloID_snapshot_offset=SNAPSHOTOFFSET
 
 # KEY OPTIONS
 #direction of tree, whether progenitor 0, descendant 1, or both 2
-Tree_direction=2
+Tree_direction=1
 #particle types used to build tree. All -1, gas 0, dark matter 1, star 4, gas+dark matter -2,
 Part_type=-1
 #number of steps used to search for candidate links. >1 suggested but value

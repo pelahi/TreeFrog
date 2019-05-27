@@ -9,13 +9,13 @@
 # assumes one OpenMP thread per MPI process.
 
 #set resources
-#PBS -N JOBNAME
-#PBS -P PROJECT
-#PBS -j oe
-#PBS -l ncpus=NCPUS
-#PBS -l mem=MEM
-#PBS -q QUEUE
-#PBS -l walltime=TIME
+#SBATCH -J=JOBNAME
+#SBATCH -n=NCPUS
+#SBATCH -t=TIME
+#SBATCH --mem=MEM
+#SBATCH -p=PARTITION
+#SBATCH --account=ACCOUNT
+
 
 nomp=NCPUS
 nmpi=1
@@ -50,8 +50,8 @@ rm ${inputfilelist}
 for ((i=${isnap};i<=${fsnap};i++))
 do
     #this writes a list of file names assuming some convention. Alter if necessary.
-  	ii=`printf %03d $i`
-    echo ${inputdir}/snapshot_${ii}.VELOCIraptor >> ${inputfilelist}
+	ii=`printf %03d $i`
+	echo ${inputdir}/snapshot_${ii}.VELOCIraptor >> ${inputfilelist}
 done
 
 
@@ -59,7 +59,7 @@ done
 # some specific things in base config file related to particle and halo IDs
 treefrogconfig=${outfile}.treefrog.config
 cp ${treefrogbaseconfig} ${treefrogconfig}
-# we set the max id and don't construct and id to index map
+# we set the 18609625000 id and don't construct and id to index map
 maxid=18609625000
 map=0
 temporalid=1000000000000
