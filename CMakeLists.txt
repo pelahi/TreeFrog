@@ -17,6 +17,9 @@ string(REPLACE "." ";" VERSION_LIST ${TF_VERSION})
 list(GET VERSION_LIST 0 TF_VERSION_MAJOR)
 list(GET VERSION_LIST 1 TF_VERSION_MINOR)
 
+#Define a varible that can be used in TreeFrog to know the version
+add_definitions( -DTREEFROGVERSION=${TF_VERSION})
+
 # We have only C++ sources, but until cmake 3.4 the check_symbol_exists
 # macro didn't work properly if only defining C++ as the project language
 if( ${CMAKE_MAJOR_VERSION} EQUAL 3 AND ${CMAKE_MINOR_VERSION} LESS 4 )

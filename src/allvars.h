@@ -241,6 +241,9 @@ typedef int unsigned IDTYPE;
 /// Options structure stores useful variables that have user determined values which are altered by \ref GetArgs in \ref ui.cxx
 struct Options
 {
+    //TreeFrog version
+    float version;
+
     ///\name filenames
     //@{
     char *fname,*outname, *configname;
@@ -346,6 +349,7 @@ struct Options
 
     Options()
     {
+        version=TREEFROGVERSION;
         fname=outname=NULL;
 
         numsnapshots=2;

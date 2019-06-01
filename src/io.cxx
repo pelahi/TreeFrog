@@ -337,6 +337,22 @@ void WriteHaloMergerTree(Options &opt, ProgenitorData **p, HaloTreeData *h) {
 
             //Header information
             Fhdf=H5File(fname,H5F_ACC_TRUNC);
+
+            /*  TreeBuilder info  */
+
+            // Create new string datatype for attribute
+            StrType strdatatypename(PredType::C_S1, 10);
+            // Set up write buffer for attribute
+            const H5std_string strwritebufname ("TreeFrog");
+            attrspace=DataSpace(H5S_SCALAR);
+            attr = Fhdf.createAttribute("Name", strdatatypename, attrspace);
+            attr.write(strdatatypename, strwritebufname);
+            attrspace=DataSpace(H5S_SCALAR);
+            attr=Fhdf.createAttribute("Version", PredType::NATIVE_DOUBLE, attrspace);
+            attr.write(PredType::NATIVE_DOUBLE,&opt.version);
+
+            /*  Input catalog info  */
+
             attrspace=DataSpace(H5S_SCALAR);
             attr=Fhdf.createAttribute("Number_of_snapshots", PredType::STD_U32LE, attrspace);
             attr.write(PredType::STD_U32LE,&opt.numsnapshots);
@@ -344,32 +360,68 @@ void WriteHaloMergerTree(Options &opt, ProgenitorData **p, HaloTreeData *h) {
             attr=Fhdf.createAttribute("Total_number_of_halos", PredType::STD_U64LE, attrspace);
             attr.write(PredType::STD_U64LE,&opt.TotalNumberofHalos);
             attrspace=DataSpace(H5S_SCALAR);
+            attr=Fhdf.createAttribute("Temporal_halo_id_value", PredType::STD_U64LE, attrspace);
+            attr.write(PredType::STD_U64LE,&opt.haloidval);
+            attrspace=DataSpace(H5S_SCALAR);
+            attr=Fhdf.createAttribute("HaloID_offset", PredType::STD_U32LE, attrspace);
+            attr.write(PredType::STD_U32LE,&opt.haloidoffset);
+            attrspace=DataSpace(H5S_SCALAR);
+            attr=Fhdf.createAttribute("HaloID_snapshot_offset", PredType::STD_U32LE, attrspace);
+            attr.write(PredType::STD_U32LE,&opt.snapshotvaloffset);
+
+            /*  Tree construction info */
+
+            attrspace=DataSpace(H5S_SCALAR);
             attr=Fhdf.createAttribute("Merit_limit", PredType::NATIVE_DOUBLE, attrspace);
             attr.write(PredType::NATIVE_DOUBLE,&opt.mlsig);
+            attrspace=DataSpace(H5S_SCALAR);
+            attr=Fhdf.createAttribute("Tree_direction", PredType::STD_U32LE, attrspace);
+            attr.write(PredType::STD_U32LE,&opt.isearchdirection);
+            attrspace=DataSpace(H5S_SCALAR);
+            attr=Fhdf.createAttribute("Part_type", PredType::STD_U32LE, attrspace);
+            attr.write(PredType::STD_U32LE,&opt.itypematch);
+            attrspace=DataSpace(H5S_SCALAR);
+            attr=Fhdf.createAttribute("Merit_type", PredType::STD_U32LE, attrspace);
+            attr.write(PredType::STD_U32LE,&opt.imerittype);
+
+            //Core matching info
+            attrspace=DataSpace(H5S_SCALAR);
+            attr=Fhdf.createAttribute("Core_match_type", PredType::STD_U32LE, attrspace);
+            attr.write(PredType::STD_U32LE,&opt.icorematchtype);
+            attrspace=DataSpace(H5S_SCALAR);
+            attr=Fhdf.createAttribute("Particle_core_fraction", PredType::NATIVE_FLOAT, attrspace);
+            attr.write(PredType::NATIVE_FLOAT,&opt.particle_frac);
+            attrspace=DataSpace(H5S_SCALAR);
+            attr=Fhdf.createAttribute("Particle_core_min_numpart", PredType::STD_U32LE, attrspace);
+            attr.write(PredType::STD_U32LE,&opt.min_numpart);
+
             //for multistep info
             attrspace=DataSpace(H5S_SCALAR);
-            attr=Fhdf.createAttribute("Number_of_steps", PredType::STD_U32LE, attrspace);
+            attr=Fhdf.createAttribute("Nsteps_search_new_links", PredType::STD_U32LE, attrspace);
             attr.write(PredType::STD_U32LE,&opt.numsteps);
             attrspace=DataSpace(H5S_SCALAR);
-            attr=Fhdf.createAttribute("Search_next_step_criterion", PredType::STD_U32LE, attrspace);
+            attr=Fhdf.createAttribute("Multistep_linking_criterion", PredType::STD_U32LE, attrspace);
             attr.write(PredType::STD_U32LE,&opt.imultsteplinkcrit);
             attrspace=DataSpace(H5S_SCALAR);
-            attr=Fhdf.createAttribute("Merit_limit_for_next_step", PredType::NATIVE_DOUBLE, attrspace);
-            attr.write(PredType::NATIVE_DOUBLE,&opt.meritlimit);
-            //for core matching info
+            attr=Fhdf.createAttribute("Merit_limit_continuing_search", PredType::NATIVE_FLOAT, attrspace);
+            attr.write(PredType::NATIVE_FLOAT,&opt.meritlimit);
             attrspace=DataSpace(H5S_SCALAR);
-            attr=Fhdf.createAttribute("Core_fraction", PredType::NATIVE_DOUBLE, attrspace);
-            attr.write(PredType::NATIVE_DOUBLE,&opt.particle_frac);
+            attr=Fhdf.createAttribute("Temporal_merit_type", PredType::STD_U32LE, attrspace);
+            attr.write(PredType::STD_U32LE,&opt.iopttemporalmerittype);
             attrspace=DataSpace(H5S_SCALAR);
-            attr=Fhdf.createAttribute("Core_min_number_of_particles", PredType::STD_U32LE, attrspace);
-            attr.write(PredType::STD_U32LE,&opt.min_numpart);
+            attr=Fhdf.createAttribute("Merit_ratio_limit", PredType::NATIVE_FLOAT, attrspace);
+            attr.write(PredType::NATIVE_FLOAT,&opt.meritratiolimit);
+            attrspace=DataSpace(H5S_SCALAR);
+            attr=Fhdf.createAttribute("Shared_particle_signal_to_noise_limit", PredType::NATIVE_FLOAT, attrspace);
+            attr.write(PredType::NATIVE_FLOAT,&opt.mlsig);
+
             // general description
             // Create new string datatype for attribute
-            StrType strdatatype(PredType::C_S1, 1000);
+            StrType strdatatypedesc(PredType::C_S1, 1000);
             // Set up write buffer for attribute
-            const H5std_string strwritebuf (opt.description);
-            attr = Fhdf.createAttribute("Description", strdatatype, attrspace);
-            attr.write(strdatatype, strwritebuf);
+            const H5std_string strwritebufdesc (opt.description);
+            attr = Fhdf.createAttribute("Description", strdatatypedesc, attrspace);
+            attr.write(strdatatypedesc, strwritebufdesc);
 
 
             //Set the datasets properties
@@ -616,6 +668,22 @@ void WriteHaloMergerTree(Options &opt, ProgenitorData **p, HaloTreeData *h) {
 
             //Header information
             Fhdf=H5File(fname,H5F_ACC_TRUNC);
+
+            /*  TreeBuilder info  */
+
+            // Create new string datatype for attribute
+            StrType strdatatypename(PredType::C_S1, 10);
+            // Set up write buffer for attribute
+            const H5std_string strwritebufname ("TreeFrog");
+            attrspace=DataSpace(H5S_SCALAR);
+            attr = Fhdf.createAttribute("Name", strdatatypename, attrspace);
+            attr.write(strdatatypename, strwritebufname);
+            attrspace=DataSpace(H5S_SCALAR);
+            attr=Fhdf.createAttribute("Version", PredType::NATIVE_DOUBLE, attrspace);
+            attr.write(PredType::NATIVE_DOUBLE,&opt.version);
+
+            /*  Input catalog info  */
+
             attrspace=DataSpace(H5S_SCALAR);
             attr=Fhdf.createAttribute("Number_of_snapshots", PredType::STD_U32LE, attrspace);
             attr.write(PredType::STD_U32LE,&opt.numsnapshots);
@@ -623,32 +691,68 @@ void WriteHaloMergerTree(Options &opt, ProgenitorData **p, HaloTreeData *h) {
             attr=Fhdf.createAttribute("Total_number_of_halos", PredType::STD_U64LE, attrspace);
             attr.write(PredType::STD_U64LE,&opt.TotalNumberofHalos);
             attrspace=DataSpace(H5S_SCALAR);
+            attr=Fhdf.createAttribute("Temporal_halo_id_value", PredType::STD_U64LE, attrspace);
+            attr.write(PredType::STD_U64LE,&opt.haloidval);
+            attrspace=DataSpace(H5S_SCALAR);
+            attr=Fhdf.createAttribute("HaloID_offset", PredType::STD_U32LE, attrspace);
+            attr.write(PredType::STD_U32LE,&opt.haloidoffset);
+            attrspace=DataSpace(H5S_SCALAR);
+            attr=Fhdf.createAttribute("HaloID_snapshot_offset", PredType::STD_U32LE, attrspace);
+            attr.write(PredType::STD_U32LE,&opt.snapshotvaloffset);
+
+            /*  Tree construction info */
+
+            attrspace=DataSpace(H5S_SCALAR);
             attr=Fhdf.createAttribute("Merit_limit", PredType::NATIVE_DOUBLE, attrspace);
             attr.write(PredType::NATIVE_DOUBLE,&opt.mlsig);
+            attrspace=DataSpace(H5S_SCALAR);
+            attr=Fhdf.createAttribute("Tree_direction", PredType::STD_U32LE, attrspace);
+            attr.write(PredType::STD_U32LE,&opt.isearchdirection);
+            attrspace=DataSpace(H5S_SCALAR);
+            attr=Fhdf.createAttribute("Part_type", PredType::STD_U32LE, attrspace);
+            attr.write(PredType::STD_U32LE,&opt.itypematch);
+            attrspace=DataSpace(H5S_SCALAR);
+            attr=Fhdf.createAttribute("Merit_type", PredType::STD_U32LE, attrspace);
+            attr.write(PredType::STD_U32LE,&opt.imerittype);
+
+            //Core matching info
+            attrspace=DataSpace(H5S_SCALAR);
+            attr=Fhdf.createAttribute("Core_match_type", PredType::STD_U32LE, attrspace);
+            attr.write(PredType::STD_U32LE,&opt.icorematchtype);
+            attrspace=DataSpace(H5S_SCALAR);
+            attr=Fhdf.createAttribute("Particle_core_fraction", PredType::NATIVE_FLOAT, attrspace);
+            attr.write(PredType::NATIVE_FLOAT,&opt.particle_frac);
+            attrspace=DataSpace(H5S_SCALAR);
+            attr=Fhdf.createAttribute("Particle_core_min_numpart", PredType::STD_U32LE, attrspace);
+            attr.write(PredType::STD_U32LE,&opt.min_numpart);
+
             //for multistep info
             attrspace=DataSpace(H5S_SCALAR);
-            attr=Fhdf.createAttribute("Number_of_steps", PredType::STD_U32LE, attrspace);
+            attr=Fhdf.createAttribute("Nsteps_search_new_links", PredType::STD_U32LE, attrspace);
             attr.write(PredType::STD_U32LE,&opt.numsteps);
             attrspace=DataSpace(H5S_SCALAR);
-            attr=Fhdf.createAttribute("Search_next_step_criterion", PredType::STD_U32LE, attrspace);
+            attr=Fhdf.createAttribute("Multistep_linking_criterion", PredType::STD_U32LE, attrspace);
             attr.write(PredType::STD_U32LE,&opt.imultsteplinkcrit);
             attrspace=DataSpace(H5S_SCALAR);
-            attr=Fhdf.createAttribute("Merit_limit_for_next_step", PredType::NATIVE_DOUBLE, attrspace);
-            attr.write(PredType::NATIVE_DOUBLE,&opt.meritlimit);
-            //for core matching info
+            attr=Fhdf.createAttribute("Merit_limit_continuing_search", PredType::NATIVE_FLOAT, attrspace);
+            attr.write(PredType::NATIVE_FLOAT,&opt.meritlimit);
             attrspace=DataSpace(H5S_SCALAR);
-            attr=Fhdf.createAttribute("Core_fraction", PredType::NATIVE_DOUBLE, attrspace);
-            attr.write(PredType::NATIVE_DOUBLE,&opt.particle_frac);
+            attr=Fhdf.createAttribute("Temporal_merit_type", PredType::STD_U32LE, attrspace);
+            attr.write(PredType::STD_U32LE,&opt.iopttemporalmerittype);
             attrspace=DataSpace(H5S_SCALAR);
-            attr=Fhdf.createAttribute("Core_min_number_of_particles", PredType::STD_U32LE, attrspace);
-            attr.write(PredType::STD_U32LE,&opt.min_numpart);
+            attr=Fhdf.createAttribute("Merit_ratio_limit", PredType::NATIVE_FLOAT, attrspace);
+            attr.write(PredType::NATIVE_FLOAT,&opt.meritratiolimit);
+            attrspace=DataSpace(H5S_SCALAR);
+            attr=Fhdf.createAttribute("Shared_particle_signal_to_noise_limit", PredType::NATIVE_FLOAT, attrspace);
+            attr.write(PredType::NATIVE_FLOAT,&opt.mlsig);
+
             // general description
             // Create new string datatype for attribute
-            StrType strdatatype(PredType::C_S1, 1000);
+            StrType strdatatypedesc(PredType::C_S1, 1000);
             // Set up write buffer for attribute
-            const H5std_string strwritebuf (opt.description);
-            attr = Fhdf.createAttribute("Description", strdatatype, attrspace);
-            attr.write(strdatatype, strwritebuf);
+            const H5std_string strwritebufdesc (opt.description);
+            attr = Fhdf.createAttribute("Description", strdatatypedesc, attrspace);
+            attr.write(strdatatypedesc, strwritebufdesc);
 
 
             ///last file has no connections
@@ -922,6 +1026,22 @@ void WriteHaloMergerTree(Options &opt, DescendantData **p, HaloTreeData *h) {
 
             //Header information
             Fhdf=H5File(fname,H5F_ACC_TRUNC);
+
+            /*  TreeBuilder info  */
+
+            // Create new string datatype for attribute
+            StrType strdatatypename(PredType::C_S1, 10);
+            // Set up write buffer for attribute
+            const H5std_string strwritebufname ("TreeFrog");
+            attrspace=DataSpace(H5S_SCALAR);
+            attr = Fhdf.createAttribute("Name", strdatatypename, attrspace);
+            attr.write(strdatatypename, strwritebufname);
+            attrspace=DataSpace(H5S_SCALAR);
+            attr=Fhdf.createAttribute("Version", PredType::NATIVE_FLOAT, attrspace);
+            attr.write(PredType::NATIVE_FLOAT,&opt.version);
+
+            /*  Input catalog info  */
+
             attrspace=DataSpace(H5S_SCALAR);
             attr=Fhdf.createAttribute("Number_of_snapshots", PredType::STD_U32LE, attrspace);
             attr.write(PredType::STD_U32LE,&opt.numsnapshots);
@@ -929,32 +1049,68 @@ void WriteHaloMergerTree(Options &opt, DescendantData **p, HaloTreeData *h) {
             attr=Fhdf.createAttribute("Total_number_of_halos", PredType::STD_U64LE, attrspace);
             attr.write(PredType::STD_U64LE,&opt.TotalNumberofHalos);
             attrspace=DataSpace(H5S_SCALAR);
+            attr=Fhdf.createAttribute("Temporal_halo_id_value", PredType::STD_U64LE, attrspace);
+            attr.write(PredType::STD_U64LE,&opt.haloidval);
+            attrspace=DataSpace(H5S_SCALAR);
+            attr=Fhdf.createAttribute("HaloID_offset", PredType::STD_U32LE, attrspace);
+            attr.write(PredType::STD_U32LE,&opt.haloidoffset);
+            attrspace=DataSpace(H5S_SCALAR);
+            attr=Fhdf.createAttribute("HaloID_snapshot_offset", PredType::STD_U32LE, attrspace);
+            attr.write(PredType::STD_U32LE,&opt.snapshotvaloffset);
+
+            /*  Tree construction info */
+
+            attrspace=DataSpace(H5S_SCALAR);
             attr=Fhdf.createAttribute("Merit_limit", PredType::NATIVE_DOUBLE, attrspace);
             attr.write(PredType::NATIVE_DOUBLE,&opt.mlsig);
+            attrspace=DataSpace(H5S_SCALAR);
+            attr=Fhdf.createAttribute("Tree_direction", PredType::STD_U32LE, attrspace);
+            attr.write(PredType::STD_U32LE,&opt.isearchdirection);
+            attrspace=DataSpace(H5S_SCALAR);
+            attr=Fhdf.createAttribute("Part_type", PredType::STD_U32LE, attrspace);
+            attr.write(PredType::STD_U32LE,&opt.itypematch);
+            attrspace=DataSpace(H5S_SCALAR);
+            attr=Fhdf.createAttribute("Merit_type", PredType::STD_U32LE, attrspace);
+            attr.write(PredType::STD_U32LE,&opt.imerittype);
+
+            //Core matching info
+            attrspace=DataSpace(H5S_SCALAR);
+            attr=Fhdf.createAttribute("Core_match_type", PredType::STD_U32LE, attrspace);
+            attr.write(PredType::STD_U32LE,&opt.icorematchtype);
+            attrspace=DataSpace(H5S_SCALAR);
+            attr=Fhdf.createAttribute("Particle_core_fraction", PredType::NATIVE_FLOAT, attrspace);
+            attr.write(PredType::NATIVE_FLOAT,&opt.particle_frac);
+            attrspace=DataSpace(H5S_SCALAR);
+            attr=Fhdf.createAttribute("Particle_core_min_numpart", PredType::STD_U32LE, attrspace);
+            attr.write(PredType::STD_U32LE,&opt.min_numpart);
+
             //for multistep info
             attrspace=DataSpace(H5S_SCALAR);
-            attr=Fhdf.createAttribute("Number_of_steps", PredType::STD_U32LE, attrspace);
+            attr=Fhdf.createAttribute("Nsteps_search_new_links", PredType::STD_U32LE, attrspace);
             attr.write(PredType::STD_U32LE,&opt.numsteps);
             attrspace=DataSpace(H5S_SCALAR);
-            attr=Fhdf.createAttribute("Search_next_step_criterion", PredType::STD_U32LE, attrspace);
+            attr=Fhdf.createAttribute("Multistep_linking_criterion", PredType::STD_U32LE, attrspace);
             attr.write(PredType::STD_U32LE,&opt.imultsteplinkcrit);
             attrspace=DataSpace(H5S_SCALAR);
-            attr=Fhdf.createAttribute("Merit_limit_for_next_step", PredType::NATIVE_DOUBLE, attrspace);
-            attr.write(PredType::NATIVE_DOUBLE,&opt.meritlimit);
-            //for core matching info
+            attr=Fhdf.createAttribute("Merit_limit_continuing_search", PredType::NATIVE_FLOAT, attrspace);
+            attr.write(PredType::NATIVE_FLOAT,&opt.meritlimit);
             attrspace=DataSpace(H5S_SCALAR);
-            attr=Fhdf.createAttribute("Core_fraction", PredType::NATIVE_DOUBLE, attrspace);
-            attr.write(PredType::NATIVE_DOUBLE,&opt.particle_frac);
+            attr=Fhdf.createAttribute("Temporal_merit_type", PredType::STD_U32LE, attrspace);
+            attr.write(PredType::STD_U32LE,&opt.iopttemporalmerittype);
             attrspace=DataSpace(H5S_SCALAR);
-            attr=Fhdf.createAttribute("Core_min_number_of_particles", PredType::STD_U32LE, attrspace);
-            attr.write(PredType::STD_U32LE,&opt.min_numpart);
+            attr=Fhdf.createAttribute("Merit_ratio_limit", PredType::NATIVE_FLOAT, attrspace);
+            attr.write(PredType::NATIVE_FLOAT,&opt.meritratiolimit);
+            attrspace=DataSpace(H5S_SCALAR);
+            attr=Fhdf.createAttribute("Shared_particle_signal_to_noise_limit", PredType::NATIVE_FLOAT, attrspace);
+            attr.write(PredType::NATIVE_FLOAT,&opt.mlsig);
+
             // general description
             // Create new string datatype for attribute
-            StrType strdatatype(PredType::C_S1, 1000);
+            StrType strdatatypedesc(PredType::C_S1, 1000);
             // Set up write buffer for attribute
-            const H5std_string strwritebuf (opt.description);
-            attr = Fhdf.createAttribute("Description", strdatatype, attrspace);
-            attr.write(strdatatype, strwritebuf);
+            const H5std_string strwritebufdesc (opt.description);
+            attr = Fhdf.createAttribute("Description", strdatatypedesc, attrspace);
+            attr.write(strdatatypedesc, strwritebufdesc);
 
 
             //Setup the datasets
@@ -1231,6 +1387,22 @@ void WriteHaloMergerTree(Options &opt, DescendantData **p, HaloTreeData *h) {
 
             //Header information
             Fhdf=H5File(fname,H5F_ACC_TRUNC);
+
+            /*  TreeBuilder info  */
+
+            // Create new string datatype for attribute
+            StrType strdatatypename(PredType::C_S1, 10);
+            // Set up write buffer for attribute
+            const H5std_string strwritebufname ("TreeFrog");
+            attrspace=DataSpace(H5S_SCALAR);
+            attr = Fhdf.createAttribute("Name", strdatatypename, attrspace);
+            attr.write(strdatatypename, strwritebufname);
+            attrspace=DataSpace(H5S_SCALAR);
+            attr=Fhdf.createAttribute("Version", PredType::NATIVE_DOUBLE, attrspace);
+            attr.write(PredType::NATIVE_DOUBLE,&opt.version);
+
+            /*  Input catalog info  */
+
             attrspace=DataSpace(H5S_SCALAR);
             attr=Fhdf.createAttribute("Number_of_snapshots", PredType::STD_U32LE, attrspace);
             attr.write(PredType::STD_U32LE,&opt.numsnapshots);
@@ -1238,34 +1410,68 @@ void WriteHaloMergerTree(Options &opt, DescendantData **p, HaloTreeData *h) {
             attr=Fhdf.createAttribute("Total_number_of_halos", PredType::STD_U64LE, attrspace);
             attr.write(PredType::STD_U64LE,&opt.TotalNumberofHalos);
             attrspace=DataSpace(H5S_SCALAR);
+            attr=Fhdf.createAttribute("Temporal_halo_id_value", PredType::STD_U64LE, attrspace);
+            attr.write(PredType::STD_U64LE,&opt.haloidval);
+            attrspace=DataSpace(H5S_SCALAR);
+            attr=Fhdf.createAttribute("HaloID_offset", PredType::STD_U32LE, attrspace);
+            attr.write(PredType::STD_U32LE,&opt.haloidoffset);
+            attrspace=DataSpace(H5S_SCALAR);
+            attr=Fhdf.createAttribute("HaloID_snapshot_offset", PredType::STD_U32LE, attrspace);
+            attr.write(PredType::STD_U32LE,&opt.snapshotvaloffset);
+
+            /*  Tree construction info */
+
+            attrspace=DataSpace(H5S_SCALAR);
             attr=Fhdf.createAttribute("Merit_limit", PredType::NATIVE_DOUBLE, attrspace);
             attr.write(PredType::NATIVE_DOUBLE,&opt.mlsig);
+            attrspace=DataSpace(H5S_SCALAR);
+            attr=Fhdf.createAttribute("Tree_direction", PredType::STD_U32LE, attrspace);
+            attr.write(PredType::STD_U32LE,&opt.isearchdirection);
+            attrspace=DataSpace(H5S_SCALAR);
+            attr=Fhdf.createAttribute("Part_type", PredType::STD_U32LE, attrspace);
+            attr.write(PredType::STD_U32LE,&opt.itypematch);
+            attrspace=DataSpace(H5S_SCALAR);
+            attr=Fhdf.createAttribute("Merit_type", PredType::STD_U32LE, attrspace);
+            attr.write(PredType::STD_U32LE,&opt.imerittype);
+
+            //Core matching info
+            attrspace=DataSpace(H5S_SCALAR);
+            attr=Fhdf.createAttribute("Core_match_type", PredType::STD_U32LE, attrspace);
+            attr.write(PredType::STD_U32LE,&opt.icorematchtype);
+            attrspace=DataSpace(H5S_SCALAR);
+            attr=Fhdf.createAttribute("Particle_core_fraction", PredType::NATIVE_FLOAT, attrspace);
+            attr.write(PredType::NATIVE_FLOAT,&opt.particle_frac);
+            attrspace=DataSpace(H5S_SCALAR);
+            attr=Fhdf.createAttribute("Particle_core_min_numpart", PredType::STD_U32LE, attrspace);
+            attr.write(PredType::STD_U32LE,&opt.min_numpart);
+
             //for multistep info
             attrspace=DataSpace(H5S_SCALAR);
-            attr=Fhdf.createAttribute("Number_of_steps", PredType::STD_U32LE, attrspace);
+            attr=Fhdf.createAttribute("Nsteps_search_new_links", PredType::STD_U32LE, attrspace);
             attr.write(PredType::STD_U32LE,&opt.numsteps);
             attrspace=DataSpace(H5S_SCALAR);
-            attr=Fhdf.createAttribute("Search_next_step_criterion", PredType::STD_U32LE, attrspace);
+            attr=Fhdf.createAttribute("Multistep_linking_criterion", PredType::STD_U32LE, attrspace);
             attr.write(PredType::STD_U32LE,&opt.imultsteplinkcrit);
             attrspace=DataSpace(H5S_SCALAR);
-            attr=Fhdf.createAttribute("Merit_limit_for_next_step", PredType::NATIVE_DOUBLE, attrspace);
-            attr.write(PredType::NATIVE_DOUBLE,&opt.meritlimit);
-            //for core matching info
+            attr=Fhdf.createAttribute("Merit_limit_continuing_search", PredType::NATIVE_FLOAT, attrspace);
+            attr.write(PredType::NATIVE_FLOAT,&opt.meritlimit);
             attrspace=DataSpace(H5S_SCALAR);
-            attr=Fhdf.createAttribute("Core_fraction", PredType::NATIVE_DOUBLE, attrspace);
-            attr.write(PredType::NATIVE_DOUBLE,&opt.particle_frac);
+            attr=Fhdf.createAttribute("Temporal_merit_type", PredType::STD_U32LE, attrspace);
+            attr.write(PredType::STD_U32LE,&opt.iopttemporalmerittype);
             attrspace=DataSpace(H5S_SCALAR);
-            attr=Fhdf.createAttribute("Core_min_number_of_particles", PredType::STD_U32LE, attrspace);
-            attr.write(PredType::STD_U32LE,&opt.min_numpart);
+            attr=Fhdf.createAttribute("Merit_ratio_limit", PredType::NATIVE_FLOAT, attrspace);
+            attr.write(PredType::NATIVE_FLOAT,&opt.meritratiolimit);
+            attrspace=DataSpace(H5S_SCALAR);
+            attr=Fhdf.createAttribute("Shared_particle_signal_to_noise_limit", PredType::NATIVE_FLOAT, attrspace);
+            attr.write(PredType::NATIVE_FLOAT,&opt.mlsig);
+
             // general description
             // Create new string datatype for attribute
-            StrType strdatatype(PredType::C_S1, 1000);
+            StrType strdatatypedesc(PredType::C_S1, 1000);
             // Set up write buffer for attribute
-            const H5std_string strwritebuf (opt.description);
-            attr = Fhdf.createAttribute("Description", strdatatype, attrspace);
-            attr.write(strdatatype, strwritebuf);
-
-
+            const H5std_string strwritebufdesc (opt.description);
+            attr = Fhdf.createAttribute("Description", strdatatypedesc, attrspace);
+            attr.write(strdatatypedesc, strwritebufdesc);
 
 
             ///last file has no connections
