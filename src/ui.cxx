@@ -568,6 +568,16 @@ inline void ConfigCheck(Options &opt)
     if (opt.outdataformat<0){
         cerr<<"Output data requested not valid, defaulting to minimal output"<<endl; opt.outdataformat=DATAOUTMATCHESONLY;
     }
+#ifndef USEHDF
+    if (opt.ibinary==2){
+        cerr<<"ERROR: You specified that the input data format is HDF5 but the code has not been compiled with the HDF5 library\n";
+#ifdef USEMPI
+            MPI_Abort(MPI_COMM_WORLD,8);
+#else
+            exit(8);
+#endif
+    }
+#endif
 
     //now set description
     opt.description=(char*)"Produce tree in direction of  ";
