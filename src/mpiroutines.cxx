@@ -100,7 +100,7 @@ void MPILoadBalanceSnapshots(Options &opt){
 
         //Do the growing of the smallest mpi domain taking from the others until we get equal amount of work.
         int iminindex,j = 0;
-        while(maxworkload/minworkload>MPILOADBALANCE){
+        while(maxworkload/minworkload>opt.impimaxloadimbalance){
 
             //Find the MPI thread with smallest amout of work
             iminindex = indexofSmallestMPIDomain(mpi_sum,NProcs);
@@ -149,9 +149,9 @@ void MPILoadBalanceSnapshots(Options &opt){
         delete[] numinfo;
         delete[] mpi_sum;
 
-        if (maxworkload/minworkload>MPILOADBALANCE) {
+        if (maxworkload/minworkload>opt.impimaxloadimbalance) {
             cerr<<"MPI theads number + number of desired steps less than optimal, load imbalance is "<<maxworkload/minworkload<<endl;
-            if (maxworkload/minworkload>=2.0*MPILOADBALANCE) {cerr<<"Exiting, adjust number of threads or number of items per thread to reduce load imbalance"<<endl;MPI_Abort(MPI_COMM_WORLD,1);}
+            if (maxworkload/minworkload>=2.0*opt.impimaxloadimbalance) {cerr<<"Exiting, adjust number of threads or number of items per thread to reduce load imbalance"<<endl;MPI_Abort(MPI_COMM_WORLD,1);}
         }
     }
 

@@ -342,6 +342,8 @@ struct Options
     int iwriteparallel;
     ///Set if the load balancing is either halo or particle based splitting
     int impiloadbalancesplitting;
+    ///Maximum load imbalance for the mpi splitting
+    float impimaxloadimbalance;
 
 #endif
 
@@ -394,7 +396,8 @@ struct Options
 #ifdef USEMPI
         ndesiredmpithreads=0;
         iwriteparallel=0;
-        impiloadbalancesplitting=MPIHALOBALANCE;
+        impimaxloadimbalance=1.1;
+        impiloadbalancesplitting=MPIPARTICLEBALANCE;
 #endif
     }
 };

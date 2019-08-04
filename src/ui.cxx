@@ -147,6 +147,9 @@ void GetParamFile(Options &opt)
                     else if (strcmp(tbuff, "Mpi_load_balance_splitting")==0) {
                         opt.impiloadbalancesplitting = atoi(vbuff);
                     }
+                    else if (strcmp(tbuff, "Mpi_load_balance_splitting")==0) {
+                        opt.impimaxloadimbalance = atof(vbuff);
+                    }
 #endif
                     //Other options
                     else if (strcmp(tbuff, "Verbose")==0){
@@ -171,7 +174,7 @@ void GetArgs(int argc, char *argv[], Options &opt)
     int option;
     int NumArgs = 0;
     int configflag=0;
-    while ((option = getopt(argc, argv, ":C:i:s:I:N:B:F:o:O:d:T:D:M:X:E:U:c:l:m:n:t:f:p:b:a:j:h:H:g:v:y:z:Z:S:q:")) != EOF)
+    while ((option = getopt(argc, argv, ":C:i:s:I:N:B:F:o:O:d:T:D:M:X:E:U:c:l:m:n:t:f:p:b:a:j:h:H:g:v:y:z:Z:S:q:L:")) != EOF)
     {
         switch(option)
         {
@@ -337,6 +340,10 @@ void GetArgs(int argc, char *argv[], Options &opt)
                 opt.impiloadbalancesplitting = atoi(optarg);
                 NumArgs += 2;
                 break;
+            case 'L':
+                opt.impimaxloadimbalance = atof(optarg);
+                NumArgs+=2;
+                break;
 #endif
             case '?':
                 usage();
@@ -460,6 +467,7 @@ void usage(void)
     cerr<<"-z <number of mpi theads used to calculate load balacing. If >0 this used with one actual mpi thread but determines load balancing based on desired number of mpi threads. Write load balancing file and terminates. If 0 (default) normal operation \n";
     cerr<<"-Z <whether to write output in parallel (0/1). \n";
     cerr<<"-S <how the files are split across MPI threads, 1 for halo based splitting, 0 for particle based splitting. ("<<opt.impiloadbalancesplitting<<")\n";
+    cerr<<"-L <maximum load imbalance allowed when the workload is shared among mpi processes. The code iterates to find the best splitting to reach this value. This must be >1 ("<<opt.impimaxloadimbalance<<")\n";
     cerr<<" ========================= "<<endl<<endl;
 #endif
 #ifdef USEMPI
