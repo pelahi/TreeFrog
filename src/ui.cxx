@@ -138,10 +138,6 @@ void GetParamFile(Options &opt)
                         opt.snapshotvaloffset = atoi(vbuff);
                     }
 #ifdef USEMPI
-                    //MPI load balancing options
-                    else if (strcmp(tbuff, "Num_per_mpi")==0) {
-                        opt.numpermpi = atoi(vbuff);
-                    }
                     else if (strcmp(tbuff, "Num_desired_mpi_threads")==0) {
                         opt.ndesiredmpithreads = atoi(vbuff);
                     }
@@ -329,10 +325,6 @@ void GetArgs(int argc, char *argv[], Options &opt)
                 break;
 #ifdef USEMPI
             //mpi related
-            case 'y':
-                opt.numpermpi = atol(optarg);
-                NumArgs += 2;
-                break;
             case 'z':
                 opt.ndesiredmpithreads = atoi(optarg);
                 NumArgs += 2;
@@ -465,7 +457,6 @@ void usage(void)
     cerr<<" ========================= "<<endl;
     cerr<<" For mpi load balancing "<<endl;
     cerr<<" ========================= "<<endl;
-    cerr<<"-y <number of items per mpi thead, use for load balacing. If 0, based on input ("<<opt.numpermpi<<")\n";
     cerr<<"-z <number of mpi theads used to calculate load balacing. If >0 this used with one actual mpi thread but determines load balancing based on desired number of mpi threads. Write load balancing file and terminates. If 0 (default) normal operation \n";
     cerr<<"-Z <whether to write output in parallel (0/1). \n";
     cerr<<"-S <how the files are split across MPI threads, 1 for halo based splitting, 0 for particle based splitting. ("<<opt.impiloadbalancesplitting<<")\n";
