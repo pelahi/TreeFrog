@@ -625,7 +625,7 @@ unsigned long MPIReadHaloGroupCatalogDataNum(string &infile, int mpi_ninput, int
     Int_t *numingroup,*numingroupbound,*offset,*uoffset;
     Int_t counter,nn;
     int nmpicount,itask,nprocs;
-    Int_t *idval;
+    IDTYPE *idval;
     UInt_t *typeval;
     numfiletypes=3;
     if (ifieldhalos) numfiletypes+=3;
@@ -722,7 +722,7 @@ unsigned long MPIReadHaloGroupCatalogDataParticleNum(string &infile, int mpi_nin
     Int_t *numingroup,*numingroupbound,*offset,*uoffset;
     Int_t counter,nn;
     int nmpicount,itask,nprocs;
-    Int_t *idval;
+    IDTYPE *idval;
     UInt_t *typeval;
     numfiletypes=3;
     if (ifieldhalos) numfiletypes+=3;
@@ -819,7 +819,7 @@ HaloData *MPIReadHaloGroupCatalogDataAllocation(string &infile, Int_t &numhalos,
     Int_t *numingroup,*numingroupbound,*offset,*uoffset;
     Int_t counter,nn;
     int nmpicount,itask,nprocs;
-    Int_t *idval;
+    IDTYPE *idval;
     UInt_t *typeval;
     numfiletypes=3;
     if (ifieldhalos) numfiletypes+=3;
@@ -960,7 +960,7 @@ void MPIReadHaloGroupCatalogData(string &infile, Int_t &numhalos, HaloData *&Hal
     float *X,*Y, *Z, *VX, *VY, *VZ, *Rmax, *Vmax;
     Int_t counter,nn;
     int nmpicount,itask,nprocs;
-    Int_t *idval;
+    IDTYPE *idval;
     UInt_t *typeval;
     numfiletypes=3;
     if (ifieldhalos) numfiletypes+=3;
@@ -1032,7 +1032,7 @@ void MPIReadHaloGroupCatalogData(string &infile, Int_t &numhalos, HaloData *&Hal
             offset=new Int_t[nglocal+1];
             uoffset=new Int_t[nglocal+1];
             numingroupbound=new Int_t[nglocal+1];
-            idval=new Int_t[nids+nuids+1];
+            idval=new IDTYPE[nids+nuids+1];
             if (itypematch!=ALLTYPEMATCH) typeval=new UInt_t[nids+nuids+1];
 
             if (ibinary==INBINARY) {
@@ -1164,7 +1164,7 @@ void MPIReadHaloGroupCatalogData(string &infile, Int_t &numhalos, HaloData *&Hal
                 offset=new Int_t[nsglocal];
                 uoffset=new Int_t[nsglocal];
                 numingroupbound=new Int_t[nsglocal];
-                idval=new Int_t[nsids+nsuids];
+                idval=new IDTYPE[nsids+nsuids];
                 if (itypematch!=ALLTYPEMATCH) typeval=new UInt_t[nids+nuids+1];
                 if (ibinary==INBINARY) {
                     Fsgroup.read((char*)numingroup,sizeof(Int_t)*nsglocal);
@@ -1335,7 +1335,7 @@ HaloData *ReadHaloGroupCatalogData(string &infile, Int_t &numhalos, int mpi_ninp
     Int_t *numingroup,*numingroupbound,*offset,*uoffset;
     Int_t counter,nn;
     int nmpicount,itask,nprocs;
-    Int_t *idval;
+    IDTYPE *idval;
     UInt_t *typeval;
 #ifndef USEMPI
     int ThisTask=0,NProcs=1;
@@ -1424,7 +1424,7 @@ HaloData *ReadHaloGroupCatalogData(string &infile, Int_t &numhalos, int mpi_ninp
             offset=new Int_t[nglocal+1];
             uoffset=new Int_t[nglocal+1];
             numingroupbound=new Int_t[nglocal+1];
-            idval=new Int_t[nids+nuids+1];
+            idval=new IDTYPE[nids+nuids+1];
             if (itypematch!=ALLTYPEMATCH) typeval=new UInt_t[nids+nuids+1];
 
             if (ibinary==INBINARY) {
@@ -1561,7 +1561,7 @@ HaloData *ReadHaloGroupCatalogData(string &infile, Int_t &numhalos, int mpi_ninp
             offset=new Int_t[nsglocal];
             uoffset=new Int_t[nsglocal];
             numingroupbound=new Int_t[nsglocal];
-            idval=new Int_t[nsids+nsuids];
+            idval=new IDTYPE[nsids+nsuids];
             if (itypematch!=ALLTYPEMATCH) typeval=new UInt_t[nids+nuids+1];
             if (ibinary==INBINARY) {
                 Fsgroup.read((char*)numingroup,sizeof(Int_t)*nsglocal);
