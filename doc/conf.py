@@ -17,6 +17,9 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 import os, sys, subprocess
+rst_prolog = '''
+.. |tf| replace:: **TreeFrog**
+'''
 # sys.path.insert(0, os.path.abspath('.'))
 
 # Run doxygen if we're in RTD to generate the XML documentation from C++
@@ -97,7 +100,7 @@ todo_include_todos = True
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'alabaster'
+html_theme = 'sphinx_rtd_theme'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -166,3 +169,12 @@ texinfo_documents = [
      author, 'TreeFrog', 'One line description of project.',
      'Miscellaneous'),
 ]
+
+#for html fix table sizes
+html_static_path = ['_static']
+
+html_context = {
+    'css_files': [
+        '_static/theme_overrides.css',  # override wide tables in RTD theme
+        ],
+     }

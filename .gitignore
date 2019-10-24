@@ -1,2 +1,6 @@
 
 \.tags
+
+build/
+
+doc/_build/

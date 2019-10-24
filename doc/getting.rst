@@ -1,18 +1,18 @@
 .. _getting:
 
-Getting **TreeFrog**
-########################
+Getting |tf|
+############
 
-**TreeFrog** is currently hosted in `GitHub <https://github.com/pelahi/TreeFrog>`_.
+|tf| is currently hosted in `GitHub <https://github.com/pelahi/TreeFrog>`_.
 To get a copy you can clone the repository
 ::
     git clone https://github.com/pelahi/TreeFrog
 
-**TreeFrog**'s compilation system is based on `cmake <https://www.cmake.org/>`_. ``cmake`` will
+|tf|'s compilation system is based on `cmake <https://www.cmake.org/>`_. ``cmake`` will
 check that you have a proper compiler (anything supporting C++14 or later should do),
 and scan the system for all required dependencies.
 
-To compile **TreeFrog** run (assuming you are inside the ``TreeFrog`` directory already)::
+To compile |tf| run (assuming you are inside the ``TreeFrog`` directory already)::
 
  $> mkdir build
  $> cd build
@@ -33,13 +33,15 @@ Other ``cmake`` options that can be given in the command-line include:
 
 A list of compile time options is found below in :ref:`compileoptions`.
 
+.. _requirements:
+
 Requirments
 ===========
 
-**TreeFrog** depends on:
+|tf| depends on:
 
 * `GSL <https://www.gnu.org/software/gsl/>`_ - the GNU Scientific Library
-* **NBodylib** - a internal scientific library included with **TreeFrog**. **TreeFrog** needs this library for a number of structures, classes, and methods it provides.
+* **NBodylib** - a internal scientific library included with |tf| as a submodule.
 
 Optional requirements
 ---------------------
@@ -54,7 +56,7 @@ depending on the compilation flags used:
 
 * `OpenMP <http://www.openmp.org/>`_ - API, generally included with many compilers
 
-**TreeFrog** also can output in a variety of formats: ASCII, and HDF.
+|tf| also can output in a variety of formats: ASCII, and HDF.
 HDF can be enabled and disabled, and requires libraries.
 
 * `Hiearchical Data Format (HDF) <https://www.hdfgroup.org/>`_ - self describing data format.
