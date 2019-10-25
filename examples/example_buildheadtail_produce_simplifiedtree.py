@@ -11,7 +11,6 @@ Example of loading a raw tree, building the head/tail, root head/ root tail info
 import sys
 import os
 import glob
-import psutil
 import time
 import numpy as np
 import copy
@@ -41,7 +40,7 @@ numsnaps=int(sys.argv[3])
 outputfname=sys.argv[4]
 
 #if post-process for branch swaps, more time consuming and requires more memory.
-ibranchfix=bool(sys.argv[5])
+ibranchfix=bool(int(sys.argv[5]))
 #define properties of interest
 if (ibranchfix):
     requestedfields=[
@@ -89,7 +88,7 @@ for i in range(numsnaps):
     halodata[i],numhalos[i]=vpt.ReadPropertyFile(basepropfname+'%03d.VELOCIraptor'%i, 2, 0, 1, requestedfields)
     atime[i]=halodata[i]['SimulationInfo']['ScaleFactor']
     for key in halodata[i].keys():
-        if (key == 'SimulationInfo' or key == 'UnitInfo'): continue
+        if (key == 'SimulationInfo' or key == 'UnitInfo' or key == "ConfigurationInfo"): continue
         if (halodata[i][key].dtype==np.float64):
             halodata[i][key] = np.array(halodata[i][key],dtype=np.float32)
 print('Finished reading halo properties')
