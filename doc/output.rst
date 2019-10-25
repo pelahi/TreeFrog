@@ -1,9 +1,9 @@
 .. _output:
 
-Understanding and Analysing **TreeFrog** Output
-###################################################
+Understanding and Analysing |tf| Output
+#######################################
 
-**TreeFrog** produces several different types of trees. A descendant tree, a progenitor tree,
+|tf| produces several different types of trees. A descendant tree, a progenitor tree,
 and a cross catalog. The output is set by the runtime mode of operation, whether
 the code is building a descendant tree, progenitor tree or simple comparing two input catalogs.
 
@@ -17,7 +17,7 @@ each thread writes a file, adding the rank of the mpi thread writing the file.
 
 
 TreeFile
-==========
+========
 
 The exact format of a tree file depends on whether the code produces a descendant tree
 or progenitor tree. The information contain also depends on the output format. As the suggetsion

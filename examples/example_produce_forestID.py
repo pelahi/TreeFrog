@@ -130,7 +130,7 @@ vpt.GenerateProgenitorLinks(numsnaps,numhalos,halodata)
 ireverseorder = False
 iverbose = 1
 iforestcheck = True
-ForestSize=vpt.GenerateForest(numsnaps,numhalos,halodata,atime,maxnsnapsearch, ireverseorder, TEMPORALHALOIDVAL, iverbose, iforestcheck))
+ForestStats=vpt.GenerateForest(numsnaps,numhalos,halodata,atime,maxnsnapsearch, ireverseorder, TEMPORALHALOIDVAL, iverbose, iforestcheck))
 
 #strip out simulation and unit data
 SimulationInfo=copy.deepcopy(halodata[0]['SimulationInfo'])

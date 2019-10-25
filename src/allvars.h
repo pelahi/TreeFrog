@@ -312,7 +312,7 @@ struct Options
     long long haloidval;
 
     ///for adjusting halo ids by a simple offset
-    Int_t haloidoffset;
+    long long haloidoffset;
 
     ///whether to use core particles only or not, 0 is use all particles to identify matches, PARTLISTCORE is only core particles defined by particle fraction, and PARTLISTCORECORE only match
     ///core particles to other core particles
@@ -335,8 +335,6 @@ struct Options
     int idefaultvalues;
 
 #ifdef USEMPI
-    ///number of items (halos or particles in halos) across various snapshots desired. Used for load balancing
-    Int_t numpermpi;
     ///number of expected mpi threads, useful for running code with a single thread to determine load balancing
     ///which then writes the mpi load balancing file and exists
     int ndesiredmpithreads;
@@ -344,6 +342,8 @@ struct Options
     int iwriteparallel;
     ///Set if the load balancing is either halo or particle based splitting
     int impiloadbalancesplitting;
+    ///Maximum load imbalance for the mpi splitting
+    float impimaxloadimbalance;
 
 #endif
 
@@ -394,10 +394,10 @@ struct Options
         iverbose=1;
         idefaultvalues=1;
 #ifdef USEMPI
-        numpermpi=0;
         ndesiredmpithreads=0;
         iwriteparallel=0;
-        impiloadbalancesplitting=MPIHALOBALANCE;
+        impimaxloadimbalance=1.1;
+        impiloadbalancesplitting=MPIPARTICLEBALANCE;
 #endif
     }
 };

@@ -18,6 +18,16 @@ int NSnap,StartSnap,EndSnap;
 int *mpi_startsnap,*mpi_endsnap;
 //@}
 
+unsigned long indexofSmallestMPIDomain(unsigned long array[], int size)
+{
+    unsigned long index = 0;
+    for(unsigned long i = 1; i < size; i++)
+    {
+        if(array[i] < array[index])
+            index = i;
+    }
+    return index;
+}
 
 ///load balance how snapshots are split across mpi domains
 ///\todo improvement of the load balancing so splits better and checks if the data can be loaded into RAM
@@ -59,6 +69,7 @@ void MPILoadBalanceSnapshots(Options &opt){
         //there are two ways to load balance the data, halos or particles in haloes
         //load balancing via particles is the defaul option but could compile with halo load balancing
         unsigned long *numinfo=new unsigned long[opt.numsnapshots];
+        unsigned long *mpi_sum=new unsigned long[NProcs]();
         unsigned long totpart;
         if(opt.impiloadbalancesplitting==1){
             cout<<"Halo based splitting"<<endl;
@@ -69,61 +80,88 @@ void MPILoadBalanceSnapshots(Options &opt){
             totpart=ReadNumberofParticlesInHalos(opt,numinfo);
         }
 
-        //now number of particles per mpi thread
-        if (opt.numpermpi==0) opt.numpermpi=totpart/NProcs;
-        unsigned long sum=0;
-        int itask=NProcs-1, inumsteps=-1;
-        mpi_endsnap[itask]=opt.numsnapshots;
-        cout<<" Total number of items is "<<totpart<<" and should have "<<opt.numpermpi<<" per mpi"<<endl;
-        //split the information such that each mpi domain has at least
-        //opt.numsteps+1 locally.
-        for (int i=opt.numsnapshots-1;i>=0;i--) {
-            sum+=numinfo[i];
-            inumsteps++;
-            if (sum>opt.numpermpi && inumsteps>=opt.numsteps) {
-                mpi_startsnap[itask]=i;
-                mpi_endsnap[itask-1]=i+opt.numsteps;
-                itask--;
-                //inumsteps=-1;
-                //sum=0;
-                inumsteps=opt.numsteps-1;
-                sum=0;for (int j=0;j<=opt.numsteps;j++) sum+=numinfo[i+j];
-                if (itask==0) break;
-            }
+        ///Setup the inital guess for the mpiloadbalancing
+        int nsnapspermpi = opt.numsnapshots/NProcs;
+        int itask, offset = 0;
+        for(int i=0; i<NProcs; i++){
+            mpi_startsnap[i] = offset;
+            offset+=nsnapspermpi;
+            mpi_endsnap[i] = offset +opt.numsteps;
         }
-        mpi_startsnap[itask]=0;
-        //if there too many mpi threads then some tasks might be empty with no work
-        if (itask!=0) {
-            cerr<<"Some MPI theads have no work: number of threads with no work "<<itask+1<<" out of "<<NProcs<<" running "<<endl;
-            for (itask=0;itask<NProcs;itask++)
-            {
-                sum=0;
-                for (int i=mpi_startsnap[itask];i<mpi_endsnap[itask];i++) sum+=numinfo[i];
-                cerr<<itask<<" will use snaps "<<mpi_startsnap[itask]<<" to "<<mpi_endsnap[itask]-1<<" with overlap of "<<opt.numsteps<<" that contains "<<sum<<" item"<<endl;
-            }
-            cerr<<"Exiting, adjust to "<<NProcs-itask-1<<" number of mpi theads "<<endl;MPI_Abort(MPI_COMM_WORLD,1);
+        mpi_endsnap[NProcs-1]=opt.numsnapshots;
+
+        //Find the number of work per thread
+        for (itask=0;itask<NProcs;itask++){
+            for (int i=mpi_startsnap[itask];i<mpi_endsnap[itask];i++) mpi_sum[itask]+=numinfo[i];
+            if (mpi_sum[itask]>maxworkload) maxworkload=mpi_sum[itask];
+            if (mpi_sum[itask]<minworkload) minworkload=mpi_sum[itask];
         }
+
+
+        //Do the growing of the smallest mpi domain taking from the others until we get equal amount of work.
+        int iminindex,j = 0;
+        while(maxworkload/minworkload>opt.impimaxloadimbalance){
+
+            //Find the MPI thread with smallest amout of work
+            iminindex = indexofSmallestMPIDomain(mpi_sum,NProcs);
+
+            //Grow the smallest domain and decrease the workload of the surrounding MPI domains
+            if(iminindex==0){
+                mpi_startsnap[1]++;
+                mpi_endsnap[0]++;
+                mpi_sum[1]-=numinfo[mpi_startsnap[1]];
+                mpi_sum[0]+=numinfo[mpi_endsnap[0]];
+            }
+            else if(iminindex==NProcs-1){
+                mpi_startsnap[NProcs-1]--;
+                mpi_endsnap[NProcs-2]--;
+                mpi_sum[NProcs-1]+=numinfo[mpi_startsnap[NProcs-1]];
+                mpi_sum[NProcs-2]-=numinfo[mpi_endsnap[NProcs-2]];
+            }
+            else{
+                mpi_startsnap[iminindex+1]++;
+                mpi_endsnap[iminindex]++;
+                mpi_startsnap[iminindex]--;
+                mpi_endsnap[iminindex-1]--;
+                mpi_sum[iminindex-1]-=numinfo[mpi_endsnap[iminindex-1]];
+                mpi_sum[iminindex]+=numinfo[mpi_startsnap[iminindex]] + numinfo[mpi_endsnap[iminindex]];
+                mpi_sum[iminindex+1]-=numinfo[mpi_startsnap[iminindex+1]];
+            }
+
+            // Find the minimum/ maximum amout of work
+            maxworkload=0;
+            minworkload=1e32;
+            for (itask=0;itask<NProcs;itask++){
+                if (mpi_sum[itask]>maxworkload) maxworkload=mpi_sum[itask];
+                if (mpi_sum[itask]<minworkload) minworkload=mpi_sum[itask];
+            }
+
+            //Stop iterating when reach numsnapshot * NProcessors^2 (found to be the optimal value)
+            if(j==opt.numsnapshots*NProcs*NProcs)
+                break;
+            j++;
+        }
+
+        //Say how much work MPI process has
         for (itask=0;itask<NProcs;itask++)
-        {
-            sum=0;
-            for (int i=mpi_startsnap[itask];i<mpi_endsnap[itask];i++) sum+=numinfo[i];
-            cout<<itask<<" will use snaps "<<mpi_startsnap[itask]<<" to "<<mpi_endsnap[itask]-1<<" with overlap of "<<opt.numsteps<<" that contains "<<sum<<" item"<<endl;
-            if (sum>maxworkload) maxworkload=sum;
-            if (sum<minworkload) minworkload=sum;
-        }
+            cout<<itask<<" will use snaps "<<mpi_startsnap[itask]<<" to "<<mpi_endsnap[itask]-1<<" with overlap of "<<opt.numsteps<<" that contains "<<mpi_sum[itask]<<" item"<<endl;
+
         delete[] numinfo;
-        if (maxworkload/minworkload>MPILOADBALANCE) {
+        delete[] mpi_sum;
+
+        if (maxworkload/minworkload>opt.impimaxloadimbalance) {
             cerr<<"MPI theads number + number of desired steps less than optimal, load imbalance is "<<maxworkload/minworkload<<endl;
-            if (maxworkload/minworkload>=2.0*MPILOADBALANCE) {cerr<<"Exiting, adjust number of threads or number of items per thread to reduce load imbalance"<<endl;MPI_Abort(MPI_COMM_WORLD,1);}
+            if (maxworkload/minworkload>=2.0*opt.impimaxloadimbalance) {cerr<<"Exiting, adjust number of threads or number of items per thread to reduce load imbalance"<<endl;MPI_Abort(MPI_COMM_WORLD,1);}
         }
     }
+
     //task 0 has finished determining which snapshots a given mpi thread will process
     //write the data into a file
     MPIWriteLoadBalance(opt);
     ///if code was operating under one mpi thread to determine the load balance for an expected number of threads (which was stored in opt.nummpithreads but now in NProcs)
     //then terminate here after writing the file
     if (opt.ndesiredmpithreads==1) {
-        cout<<"Finished load balancing and exiting"<<endl;
+        cout<<"Finished load balancing and exiting "<<MyGetTime()-t0<<endl;
         MPI_Finalize();
         exit(0);
     }

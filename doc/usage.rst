@@ -1,15 +1,15 @@
 .. _usage:
 
-Using **TreeFrog**
-######################
+Using |tf|
+##########
 
 .. _running:
 
 Running the code
 ================
 
-**TreeFrog** is a stand alone executable (with the executable named stf (or STructure Finder for historical reasons)).
-It can be run in serial, with OpenMP, or MPI APIs. A typical command to start the code looks like:
+|tf| is a stand alone executable. It can be run in serial, with OpenMP, or MPI APIs.
+A typical command to start the code looks like:
 ::
 
  ./treefrog < args >
@@ -24,15 +24,12 @@ With MPI using 8 MPI threads:
 where here we assume that the parallel
 environment uses the ``mpirun`` command to start MPI
 applications. Depending on the operating system, other commands may be
-required for this task, e.g. ``srun`` on some Cray machines. Note that
-the code can in principle be started using an arbitrary number of
-mpi threads, but the mpi decomposition is most efficient for powers of 2.
+required for this task, e.g. ``srun`` on some Cray machines.
 
-The output produced by TreeFrog will typically consist of several files containing:
-bulk properties of structures found; particles belonging to these structures; and several
-additional files containing configuration information.
-
-When running in MPI, currently each mpi thread writes its own output.
+The output produced by |tf| will consist of either a single ASCII file or multiple
+HDF5 files (on per snapshot). The information contained in it this output is a
+raw halo merger tree listing the connections halos have at one snapshot in time
+to later (or earlier) snapshots. More details of the output can be found in :ref:`output`.
 
 .. _cmdargs:
 
@@ -57,8 +54,7 @@ The code has several command line arguements. To list the arguments, type
     **-C** ``< configuration file name (see`` :ref:`configoptions` ``) >``
 
 Of these arguements, only an input file, number of files (snapshots) in input
-and an output name must be provided.
-In such a case, default values for all other confirguration options are used.
+and an output name must be provided. In such a case, default values for all other confirguration options are used.
 We suggest you do NOT run the code in this fashion.
 Instead we suggest the code be run with at least a configuration file passed.
 ::
@@ -72,6 +68,18 @@ A more typical command for a large cosmological simulation might be something li
 
     export OMP_NUM_THREADS=4
     mpirun -np 2 ./treefrog -i listofsnaphots -s 128 -o halotree -C configfile.txt > treefrog.log
+
+
+By default the code is works natively with output from the **VELOCIraptor** halo finder
+(which can be obtained via `<https://github.com/pelahi/VELOCIraptor-STF>`_, and which has associated
+`online documetation <https://velociraptor-stf.readthedocs.io/en/latest/>`_).
+
+The code is able to process other types of halo finder input (see :ref:`AHF`
+for a description of running |tf| on output from AHF).
+
+Finally, |tf| can be used to produce halo merger trees used as input for semi-analytic
+models of galaxy formation (see :ref:`sammergertree`).
+
 
 .. _configoptions:
 
@@ -177,6 +185,47 @@ There are numerous key words that can be passed. Here we list them, grouped into
 
 .. topic:: MPI related options
 
+    Related to MPI options
+
 .. _config_misc:
 
-.. topic:: Miscellaneous
+.. topic:: Miscellaneous options
+
+    Miscellaneous options
+
+    ``Verbose = 0/1/2``
+        * Indicates how verbose the code is while running. 0 is minimial, 1 verbose, 2 chatterbox.
+
+.. _othercats:
+
+Running on Other Catalogs
+=========================
+
+.. _AHF:
+
+**AHF** catalogue
+-----------------
+
+To process the ASCII output produced by the `AHF halo finder <http://popia.ft.uam.es/AHF/Download.html>`_, the mpi flag needs to be switched off and the flag that tells TreeFrog the ID's do not correspond to an index (as with AHF halo ID's) needs to be switched on. These flags are
+::
+
+	TF_MPI:BOOL=ON
+	TF_HALOIDNOTINDEX:BOOL=OFF
+
+There are several configuration options that must be set. The input format must be set appropriately.
+::
+
+	Input_tree_format = 3
+
+The next one is the maximum particle id value that should be set to the total amount of all particles in the simulation.
+::
+
+	Max_ID_Value
+
+
+The code can run with
+::
+
+	./treefrog -C ../treefrog.cfg -i <filelist> -s <numsnapshots> -o <baseoutputfilename>
+
+Where `<filelist>` is a file containing the _particles files for each snapshot from the **AHF** output.

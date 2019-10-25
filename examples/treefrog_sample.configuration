@@ -97,17 +97,16 @@ Merit_limit_continuing_search=0.025
 #Thus when running in mpi, can get significant load imbalances
 #particularly if multiple snapshots are being searched. Early
 #cosmological times have few objects were as late times have many.
-#can set the minimum number of times per thread (either halos or raw particle numbers)
-
-#set the min number per mpi, if 0, determined by TreeFrog
-Num_per_mpi=0
 
 #also can run treefrog with a single thread to examine what the mpi load balance would be
 #using below
 #Num_desired_mpi_threads=
 
-#maximum allowed load imbalance
-Mpi_load_balance_splitting=3.0
+#Type of load balance splitting 0 for particles, 1 for halos
+Mpi_load_balance_splitting=0
+
+#maximum allowed load imbalance between the mpi threads this must be >1
+Mpi_max_load_imbalance=1.1
 
 #write output in parallel
 Write_parallel=1
