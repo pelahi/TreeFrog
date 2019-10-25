@@ -29,8 +29,8 @@ else:
 #base raw tree file name to load the raw tree if necessary
 basetreefname=sys.argv[1]
 
-#base halo properties
-basepropfname=sys.argv[2]
+#director that contains the halo catalogs
+halocatalogdir=sys.argv[2]
 
 #file name for the simplified tree file
 outputfname=sys.argv[3]
@@ -107,7 +107,7 @@ numhalos=np.zeros(numsnaps,dtype=np.uint64)
 halodata=[dict() for i in range(numsnaps)]
 atime=np.zeros(numsnaps)
 for i in range(numsnaps):
-    halodata[i],numhalos[i]=vpt.ReadPropertyFile(basepropfname+'%03d.VELOCIraptor'%i, 2, 0, 1, requestedfields)
+    halodata[i],numhalos[i]=vpt.ReadPropertyFile(halocatalogdir+'/snapshot_%03d.VELOCIraptor'%i, 2, 0, 1, requestedfields)
     atime[i]=halodata[i]['SimulationInfo']['ScaleFactor']
     for key in halodata[i].keys():
         if (key == 'SimulationInfo' or key == 'UnitInfo' or key == "ConfigurationInfo"): continue

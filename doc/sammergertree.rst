@@ -13,6 +13,12 @@ interested in producing an output can skip the background and simply follow the
 steps described in :ref:`samhmtwalkabletree` and subsequent sections
 or just follow the steps listed in :ref:`samhmtsummarysteps`.
 
+We note that the default mode of |tf| is to process snapshots walking forward in
+time, identifying descendants but it can operate in a mode walking backward in
+time identifying progenitors. Halo merger trees for SAMs are better built identifying
+links by walking forward in time. Thus we focus here on using `Descendant Trees` but
+it is possible to use `Progenitor Trees`.
+
 .. _samhmtbackground:
 
 Background
@@ -60,8 +66,8 @@ we make use of the function
         TEMPORALHALOIDVAL : long = 1000000000000, iverbose : int = 1)
 
 This code uses the raw |tf| data and the information from halo catalogues to
-produce a simple wakable tree. An example script is located at
-:download:`sample <../examples/example_produce_walkabletree.py>`.
+produce a simple wakable tree. An example script is located
+:download:`here <../examples/example_produce_walkabletree.py>`.
 
 The process is as follows:
 
@@ -146,10 +152,18 @@ We now save the data
     vpt.WriteWalkableHDFTree(outputfname, numsnaps, treefrogdata,
         numhalos, halodata, scalefactors, DescriptionInfo)
 
-Using the script simply requires altering it to the desired naming convention
-and running it.
+Using the :download:`script <../examples/example_produce_walkabletree.py>`
+simply requires altering it to the desired naming convention and running it.
 
+.. code-block:: shell
 
+    #we set the appropriate variables
+    base_treefrog_filename='treedir/treefrog'
+    #base halo catalog where we assume the names are in directory and follow
+    #a specific naming convention
+    halocatalog_dir='halos'
+    output_filename='treedir/walkabletree.hdf5'
+    python3 ${base_treefrog_filename} ${halocatalog_dir} ${output_filename}
 
 .. _samhmtforshark:
 
