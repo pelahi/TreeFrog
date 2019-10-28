@@ -125,13 +125,16 @@ print("Finished head/tail ", time.clock()-start)
 #store the description
 DescriptionInfo={
         'Title':'Walkable Tree',
-        'TreeBuilder':'TreeFrog',
-        'TreeBuilder_version':TFVERSION,
-        'Temporal_linking_length':NSNAPSEARCH,
-        'Temporal_halo_id_value':TEMPORALHALOIDVAL,
-        'HaloFinder':HFNAME,
-        'HaloFinder_version':HFVERSION,
-        'Particle_num_threshold':NPARTTHRESHOLD,
+        'TreeBuilder' : {
+            'Name' : 'TreeFrog',
+            'Version' : TFVERSION,
+            'Temporal_linking_length' : NSNAPSEARCH,
+            'Temporal_halo_id_value' : TEMPORALHALOIDVAL,
+        },
+        'HaloFinder' : {
+            'Name' : HFNAME, 'Version' : HFVERSION,
+            'Particle_num_threshold' : NPARTTHRESHOLD,
+            },
         }
 
 vpt.WriteWalkableHDFTree(outputfname, numsnaps, rawtreedata, numhalos, halodata,

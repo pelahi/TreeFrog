@@ -2,9 +2,10 @@
 """
 Created on Wed Aug 16 11:05:33 2017
 
-Example of loading a tree, associated halo properties and building sublinks, progenitor links and forest IDs
+Example of loading a walkable tree, associated halo properties and
+building sublinks, progenitor links and forest ID.
+The information is then saved in a forest file.
 @author: Pascal Jahan Elahi
-
 
 """
 
@@ -29,18 +30,18 @@ else:
     import velociraptor_python_tools as vpt
 
 #load the hdf tree file
-inputhdftreefname=sys.argv[1]
-
-#base raw tree file name to load the raw tree if necessary
-basetreefname=sys.argv[2]
+walkabletreefile=sys.argv[1]
 
 #base halo properties
-basepropfname=sys.argv[3]
+basepropfname=sys.argv[2]
 
 #file name for the unified file
-outputfname=sys.argv[4]
+outputfname=sys.argv[3]
 
 #define properties of interest
+#this list can be updated as desired
+#for the information you would like
+#accessible in the resulting forest file.
 requestedfields=[
     'ID', 'hostHaloID',
     'numSubStruct', 'npart',
@@ -57,60 +58,45 @@ requestedfields=[
     'Efrac','Structuretype'
     ]
 
-#define different types of input
+# define different types of input
 ASCIIINPUT=0
 HDFINPUT=2
 
-#could alter to have user indicate input type but currently assume all is HDF
+#here we can easily get the version of TF
+TFVERSION = np.loadtxt('../VERSION')
+#halo finder would need some updates
+HFNAME = 'VELOCIraptor'
+HFVERSION = 1.50
+
+# could alter to have user indicate input type but currently assume all is HDF
 RAWTREEFORMAT=HDFINPUT
 RAWPROPFORMAT=HDFINPUT
-TEMPORALHALOIDVAL=1000000000000
-#number of snapshots searched when producing the tree
-NSNAPSEARCH=4
 
+# load the tree information stored in the file
+# such as temporal halo id, number of snapshots searched when producing the tree
+treedata,numsnaps=vpt.ReadWalkableHDFTree(inputhdftreefname)
+numsnaps = treedata['Header']['TreeBuilder']['Number_of_snapshots']
+TEMPORALHALOIDVAL = treedata['Header']['TreeBuilder']['Temporal_halo_id_value']
+NSNAPSEARCH = treedata['Header']['TreeBuilder']['Nsteps_search_new_links']
+TREEDIRECTION = treedata['Header']['TreeBuilder']['Tree_direction']
 
-#load walkable tree information.
-if (os.path.exists(inputhdftreefname)):
-    rawtreedata=[]
-    halodata,numsnaps=vpt.ReadWalkableHDFTree(inputhdftreefname)
-    #if loading walkable tree, assume tree processed for branch swapping events and need to update the halodata dictionary
-    numhalos=np.zeros(numsnaps,dtype=np.int64)
-    atime=np.zeros(numsnaps)
-    print(numsnaps)
-    #load halo properties file
-    for i in range(numsnaps):
-        fname=basepropfname+'%03d.VELOCIraptor'%i
-        print(fname)
-        halos,numhalos[i] = vpt.ReadPropertyFile(fname,RAWPROPFORMAT,0,0,requestedfields)
-        atime[i]=halos['SimulationInfo']['ScaleFactor']
-        halodata[i].update(halos)
-        for key in halodata[i].keys():
-            if (key == 'SimulationInfo' or key == 'UnitInfo'): continue
-            if (halodata[i][key].dtype==np.float64):
-                halodata[i][key] = np.array(halodata[i][key],dtype=np.float32)
-else:
-    #load raw tree information if necessary. if tree is HDF input then write a txt file that lists all the snapshots produced by treefrog
-    snaptreelist=open(basetreefname+'.snaptreelist.txt','w')
-    for i in range(numsnaps):
-        snaptreelist.write(basetreefname+'.snapshot_%03d.VELOCIraptor\n'%i)
-    snaptreelist.close()
-    rawtreedata=vpt.ReadHaloMergerTreeDescendant(basetreefname+'.snaptreelist.txt',False,HDFINPUT,1,True)
-    #if raw tree, then next load the halodata properties
-    numhalos=np.zeros(numsnaps,dtype=np.int64)
-    atime=np.zeros(numsnaps)
-    #load halo properties file
-    for i in range(numsnaps):
-        fname=basepropfname+'_%03d.VELOCIraptor'%i
-        halodata[i],numhalos[i] = vpt.ReadPropertyFile(fname,RAWPROPFORMAT,0,0,requestedfields)
-        atime[i]=halodata[i]['SimulationInfo']['ScaleFactor']
-        for key in halodata[i].keys():
-            if (halodata[i][key].dtype==np.float64):
-                halodata[i][key] = np.array(halodata[i][key],dtype=np.float32)
-    #build tree
-    start=time.clock()
-    #produce head tail in ascending order
-    vpt.BuildTemporalHeadTailDescendant(numsnaps,rawtreedata,numhalos,halodata,TEMPORALHALOIDVAL)
-    print("finished head tail ", time.clock()-start)
+#alis tree data to halo data as forest file will combine the data
+halodata = treedata['Snapshots']
+
+numhalos = np.zeros(numsnaps, dtype=np.int64)
+scalefactors = np.zeros(numsnaps)
+halodata = [None for i in range(numsnaps)]
+
+#load halo properties file
+for i in range(numsnaps):
+    fname=basepropfname+'%03d.VELOCIraptor'%i
+    halos, numhalos[i] = vpt.ReadPropertyFile(fname,RAWPROPFORMAT,0,0,requestedfields)
+    scalefactor[i]=halos['SimulationInfo']['ScaleFactor']
+    if (ireducememfootprintflag and numhalos[i] > 0):
+        for key in requestedfields:
+            if (halos[key].dtype==np.float64):
+                halos[key] = np.array(halos[key],dtype=np.float32)
+    halodata[i].update(halos)
 
 #given walkable tree, determine the largest difference in snapshots between an object and its head
 maxnsnapsearch=0
@@ -129,8 +115,9 @@ vpt.GenerateProgenitorLinks(numsnaps,numhalos,halodata)
 #building forest
 ireverseorder = False
 iverbose = 1
-iforestcheck = True
-ForestStats=vpt.GenerateForest(numsnaps,numhalos,halodata,atime,maxnsnapsearch, ireverseorder, TEMPORALHALOIDVAL, iverbose, iforestcheck))
+iforestcheck = True #this uses extra compute and is generally unnecessary
+forestdata = vpt.GenerateForest(numsnaps, numhalos, halodata, scalefactor,
+    maxnsnapsearch, ireverseorder, TEMPORALHALOIDVAL, iverbose, iforestcheck))
 
 #strip out simulation and unit data
 SimulationInfo=copy.deepcopy(halodata[0]['SimulationInfo'])
@@ -153,11 +140,12 @@ igas=istar=ibh=0
 #write the unified file that contains forest ids, properties,
 #description will have to be updated so as to use appropriate version numbers
 DescriptionInfo={
-        'Title':'Tree and Halo', 'HaloFinder':'VELOCIraptor', 'TreeBuilder':'TreeFrog',
-        'HaloFinder_version':1.25, 'TreeBuilder_version':1.2,
-        'Particle_num_threshold':20, 'Temporal_linking_length':4, 'Temporal_halo_id_value':TEMPORALHALOIDVAL,
+        'Title':'Forest',
+        'TreeBuilder' : copy.deepcopy(treedata['Header']['TreeBuilder']),
+        'HaloFinder' : copy.deepcopy(treedata['Header']['HaloFinder']),
         'Flag_gas':(igas==1), 'Flag_star':(istar==1), 'Flag_bh':(ibh==1),
         'Flag_subhalo_links':True, 'Flag_progenitor_links':True, 'Flag_forest_ids':True, 'Flag_sorted_forest':False
         }
-vpt.WriteUnifiedTreeandHaloCatalog(outputfname, numsnaps, rawtreedata, numhalos, halodata, atime,
+
+vpt.WriteForest(outputfname, numsnaps, numhalos, halodata, forestdata, scalefactor,
                                    DescriptionInfo, SimulationInfo, UnitInfo)
