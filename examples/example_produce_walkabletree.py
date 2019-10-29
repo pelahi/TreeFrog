@@ -13,6 +13,7 @@ import glob
 import time
 import numpy as np
 import copy
+import h5py
 
 #load python routines
 scriptpath=os.path.abspath(__file__)
@@ -45,7 +46,7 @@ ASCIIINPUT=0
 HDFINPUT=2
 
 #here we can easily get the version of TF
-TFVERSION = np.loadtxt('../VERSION')
+TFVERSION = np.loadtxt(basecodedir+'../VERSION')
 #halo finder would need some updates
 HFNAME = 'VELOCIraptor'
 HFVERSION = 1.50
@@ -57,7 +58,7 @@ RAWPROPFORMAT=HDFINPUT
 # load the tree information stored in the file
 # such as temporal halo id, number of snapshots searched when producing the tree
 if (RAWTREEFORMAT == HDFINPUT):
-    hfile = h5py.File(basetreefname+'.snapshot_000.VELOCIraptor')
+    hfile = h5py.File(basetreefname+'.snapshot_000.VELOCIraptor.tree')
     numsnaps = hfile.attrs['Number_of_snapshots']
     TEMPORALHALOIDVAL = hfile.attrs['Temporal_halo_id_value']
     NSNAPSEARCH = hfile.attrs['Nsteps_search_new_links']
