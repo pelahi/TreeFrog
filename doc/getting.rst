@@ -4,8 +4,8 @@ Getting |tf|
 ############
 
 |tf| is currently hosted in `GitHub <https://github.com/pelahi/TreeFrog>`_.
-To get a copy you can clone the repository
-::
+To get a copy you can clone the repository::
+
     git clone https://github.com/pelahi/TreeFrog
 
 |tf|'s compilation system is based on `cmake <https://www.cmake.org/>`_. ``cmake`` will
@@ -104,5 +104,6 @@ These can be passed to ``cmake``
             ``TF_HALOIDNOTINDEX``: boolean on whether ids and indices map. Default is OFF
 
 .. topic:: Executable flags
+
     * Enable debugging
         ``DEBUG``: boolean on whether to run with debug flags on and no optimisation.
