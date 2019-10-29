@@ -19,6 +19,14 @@ time identifying progenitors. Halo merger trees for SAMs are better built identi
 links by walking forward in time. Thus we focus here on using `Descendant Trees` but
 it is possible to use `Progenitor Trees`.
 
+.. note::
+
+   We focus on using **VELOCIraptor** halo catalogs as these catalogs can have
+   temporally unique halo ids that contain both snapshot that a halo is found
+   at an the index of the halo in the catalog.
+   Example: **halo ID = snapshot_number * Temporal_halo_id_value + index + 1**,
+   where typically Temporal_halo_id_value = 1000000000000
+
 .. _samhmtbackground:
 
 Background
@@ -139,13 +147,17 @@ We now save the data
     # from the input.
     DescriptionInfo={
             'Title':'Walkable Tree',
-            'TreeBuilder':'TreeFrog',
-            'TreeBuilder_version':1.20,
-            'Temporal_linking_length':NSNAPSEARCH,
-            'Temporal_halo_id_value':TEMPORALHALOIDVAL,
-            'HaloFinder':'VELOCIraptor',
-            'HaloFinder_version':1.11,
-            'Particle_num_threshold':20,
+            'TreeBuilder':{
+                'Name': 'TreeFrog',
+                'Version':1.20,
+                'Temporal_linking_length':NSNAPSEARCH,
+                'Temporal_halo_id_value':TEMPORALHALOIDVAL,
+            },
+            'HaloFinder': {
+                'Name': 'VELOCIraptor',
+                'Version': 1.11,
+                'Particle_num_threshold':20,
+            },
             }
     # write file
     outputfname = 'walkablehalomergertree.hdf5'
@@ -158,20 +170,21 @@ simply requires altering it to the desired naming convention and running it.
 .. code-block:: shell
 
     #we set the appropriate variables
-    base_treefrog_filename='treedir/treefrog'
+    treefrog_base_filename=treedir/treefrog
     #base halo catalog where we assume the names are in directory and follow
     #a specific naming convention
-    halocatalog_dir='halos'
-    output_filename='treedir/walkabletree.hdf5'
-    python3 ${base_treefrog_filename} ${halocatalog_dir} ${output_filename}
+    halocatalog_dir=halos
+    output_filename=treedir/walkabletree.hdf5
+    script=/dir/to/treefrog/examples/example_produce_walkabletree.py
+    python3 ${script} ${treefrog_base_filename} ${halocatalog_dir} ${output_filename}
 
 .. _samhmtforshark:
 
 Generating Input for **shark**
 ------------------------------
 
-The semi-analytic code shark is designed to load the this walkable tree and
-the halo catalogues. No further process of |tf| is required.
+The semi-analytic code **shark** is designed to load the this walkable tree and
+the halo catalogues. No further processing of |tf| is required.
 
 .. _samhmtforest:
 
@@ -188,17 +201,172 @@ such a concept can be generalised to halos that entire some factor of the virial
 radius of another halo. Here we limit the forest to objects that have become
 subhalos of another halo as defined by the FOF envelop.
 
-.. _samhmtforsage:
+For brevity we simply show code snippets that could be added to the snippets
+for constructing a walkable tree. Script can be found
+:download:`here <../examples/example_produce_forestID.py>`
 
-Generating Input for **sage**
------------------------------
+
+.. code-block:: python3
+
+    # load the tree information stored in the file in a dictionary structure
+    halodata,numsnaps=vpt.ReadWalkableHDFTree(walkabletreefile)
+
+For forest files, we suggest that all the desired halo properties be included.
+
+.. code-block:: python3
+
+    requestedfields=[
+        'ID', 'hostHaloID',
+        'numSubStruct', 'npart',
+        'Mass_tot', 'Mass_FOF', 'Mass_200mean', 'Mass_200crit',
+        'R_size', 'R_HalfMass', 'R_200mean', 'R_200crit',
+        'Xc', 'Yc', 'Zc',
+        'Xcminpot', 'Ycminpot', 'Zcminpot',
+        'VXc', 'VYc', 'VZc',
+        'lambda_B',
+        'Lx','Ly','Lz',
+        'RVmax_Lx','RVmax_Ly','RVmax_Lz',
+        'sigV', 'RVmax_sigV',
+        'Rmax', 'Vmax',
+        'cNFW',
+        'Efrac','Structuretype'
+        ]
+
+    #load halo properties file
+    time1 = time.clock()
+    mp = -1
+    for i in range(numsnaps):
+        fname=halocatalogdir+'snapshot_%03d.VELOCIraptor'%i
+        halos, numhalos[i] = vpt.ReadPropertyFile(fname,RAWPROPFORMAT,0,0,requestedfields)
+        scalefactors[i]=halos['SimulationInfo']['ScaleFactor']
+        halodata[i].update(halos)
+
+We suggest you add to the halo catalog entries that allow quick access to substructures
+and progenitors. These links are used by **sage** and all its variants.
+
+.. code-block:: python3
+
+    #generate subhalo links
+    vpt.GenerateSubhaloLinks(numsnaps,numhalos,halodata)
+    #generate progenitor links
+    vpt.GenerateProgenitorLinks(numsnaps,numhalos,halodata)
+
+Now we generate forest IDs.
+
+.. code-block:: python3
+
+    #building forest
+    #first determine how many snapshots ahead an halo's descendant can be.
+    maxnsnapsearch=0
+    for i in range(numsnaps):
+        if (numhalos[i] == 0): continue
+        headsnap = np.int64(halodata[i]['Head']/TEMPORALHALOIDVAL)
+        maxs = np.max(headsnap-i)
+        maxnsnapsearch = max(maxnsnapsearch, maxs)
+
+    ireverseorder = False
+    iverbose = 0
+    iforestcheck = False #this uses extra compute and is generally unnecessary
+    forestdata = vpt.GenerateForest(numsnaps, numhalos, halodata, scalefactors,
+        maxnsnapsearch, ireverseorder, TEMPORALHALOIDVAL, iverbose, iforestcheck)
+
+Save the data, seting the information regarding the simulation, tree construction, etc. These can be
+stored in dictionaries. Here we show the dictionary structure need to write the file.
+
+.. code-block:: python3
+
+    DescriptionInfo={
+            'Title':'Forest',
+            'TreeBuilder' : copy.deepcopy(treedata['Header']['TreeBuilder']),
+            'HaloFinder' : copy.deepcopy(treedata['Header']['HaloFinder']),
+            'Flag_subhalo_links':True, 'Flag_progenitor_links':True, 'Flag_forest_ids':True, 'Flag_sorted_forest':False,
+            'ParticleInfo':{
+                'Flag_dm':True, 'Flag_gas':(igas==1), 'Flag_star':(istar==1), 'Flag_bh':(ibh==1), 'Flag_zoom': False,
+                'Particle_mass' : {'dm':mp, 'gas':-1, 'star':-1, 'bh':-1, 'lowres':-1}
+                }
+            }
+    vpt.WriteForest(outputfname, numsnaps, numhalos, halodata, forestdata, scalefactors,
+        DescriptionInfo, SimulationInfo, UnitInfo, HaloFinderConfigurationInfo
+    )
+
+Using the :download:`script <../examples/example_produce_forestID.py>`
+simply requires altering it to the desired naming convention and running it after
+having having run the :download:`walkable tree script <../examples/example_produce_walkabletree.py>`.
+
+.. code-block:: shell
+
+    #we set the appropriate variables
+    #a specific naming convention
+    halocatalog_dir=halos
+    walkable_filename=treedir/walkabletree.hdf5
+    output_filename=treedir/forest
+    script=/dir/to/treefrog/examples/example_produce_forestID.py
+    python3 ${script} ${walkable_filename} ${halocatalog_dir} ${output_filename}
 
 .. _samhmtformeraxes:
 
 Generating Input for **meraxes**
 --------------------------------
 
+The semi-analytic code **meraxes** is designed to load the forest file, which contains
+halo properties, tree information and forest information. No further processing
+of |tf| is required.
+
+
+.. _samhmtforsage:
+
+Generating Input for **sage**
+-----------------------------
+
+The semi-analytic code **sage** is designed to load the forest file, which contains
+halo properties, tree information and forest information. The code has in-built
+converters to convert the information stored in the HDF5 file to its native binary
+format. HDF5 readers are in development. No further processing of |tf| is required.
+
 .. _samhmtsummarysteps:
 
 Summary of steps
 ================
+
+To produce halo merger trees for **shark** using scripts:
+
+.. code-block:: shell
+
+    #we set the appropriate variables
+    treefrog_base_filename=treedir/treefrog
+    #base halo catalog where we assume the names are in directory and follow
+    #a specific naming convention
+    halocatalog_dir=halos
+    #input snapshot list
+    snaplist = ${treefrog_base_filename}/snaplist.txt
+    #num of snaps
+    nsnaps=200
+    #walkable tree
+    walkabletree_filename=treedir/walkabletree.hdf5
+
+    #tree frog stuff
+    tfdir=/dir/to/treefrog/
+    tf=${tfdir}/build/bin/treefrog
+    tfconfig=${tfdir}/examples/treefrog_sample.configuration
+
+    #post processing scripts
+    walkablescript=${tfdir}/examples/example_produce_walkabletree.py
+
+    #run tree frog
+    ${tf} -i ${snaplist} -s ${nsnaps} -C ${tfconfig} -o ${base_treefrog_filename}
+
+    #walkable tree
+    python3 ${walkablescript} ${treefrog_base_filename} ${halocatalog_dir} ${walkabletree_filename}
+
+Now to also produce output for **sage** and **meraxes** also run:
+
+.. code-block:: shell
+
+    #walkable tree
+    forest_base_filename=treedir/walkabletree.hdf5
+
+    #post processing scripts
+    forestscript=${tfdir}/examples/example_produce_forestID.py
+
+    #forest file
+    python3 ${forestscript} ${walkabletree_filename} ${halocatalog_dir} ${forest_base_filename}
