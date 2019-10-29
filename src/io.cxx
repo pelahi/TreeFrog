@@ -90,7 +90,7 @@ HaloTreeData *ReadData(Options &opt)
     fstream Fin;//file is list of halo data files
     long unsigned j,nparts,haloid;
     HaloTree=new HaloTreeData[opt.numsnapshots];
-    string *buf=new string[opt.numsnapshots];
+    vector<string> buf(opt.numsnapshots);
     Int_t tothalos=0;
     Double_t t0;
     t0=MyGetTime();
@@ -1108,7 +1108,8 @@ void WriteHaloMergerTree(Options &opt, DescendantData **p, HaloTreeData *h) {
             // Create new string datatype for attribute
             StrType strdatatypedesc(PredType::C_S1, 1000);
             // Set up write buffer for attribute
-            const H5std_string strwritebufdesc (opt.description);
+            const H5std_string strwritebufdesc (opt.description.c_str());
+            attrspace=DataSpace(H5S_SCALAR);
             attr = Fhdf.createAttribute("Description", strdatatypedesc, attrspace);
             attr.write(strdatatypedesc, strwritebufdesc);
 

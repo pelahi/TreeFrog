@@ -280,6 +280,7 @@ int CrossMatchProgenitorIndividual(Options &opt, Int_t i,
             numshared--;
         }
     }
+    //p1[i].ProgenitorList=NULL;p1[i].Merit=NULL;p1[i].nsharedfrac=NULL;
     //now calculate merits and sort according to best merit.
     if (numshared>0) {
         //store all viable matches
@@ -310,8 +311,6 @@ int CrossMatchProgenitorIndividual(Options &opt, Int_t i,
         p1[i].istep=istepval;
         delete pq;
     }
-    //if the number shared is zero, do nothing
-    else {p1[i].ProgenitorList=NULL;p1[i].Merit=NULL;}
 
     //if matching core to core
     if (opt.icorematchtype==PARTLISTCORECORE && opt.particle_frac<1 && opt.particle_frac>0 && numshared>0) {
@@ -369,8 +368,8 @@ int CrossMatchProgenitorIndividual(Options &opt, Int_t i,
                         break;
                     }
                     p1[i].istep=istepval;
-                    delete pq2;
                 }
+                delete pq2;
             }
             //end of numshared>0 check
         }
@@ -613,6 +612,7 @@ int CrossMatchDescendantIndividual(Options &opt, Int_t i,
         }
     }
     //now calculate merits and sort according to best merit.
+    //d1[i].DescendantList=NULL;d1[i].Merit=NULL;d1[i].dtoptype=NULL;
     if (numshared>0) {
         ////store all viable matches. Merits are calculated here using full number of particles
         //np1=h1[i].NumberofParticles;
@@ -643,7 +643,7 @@ int CrossMatchDescendantIndividual(Options &opt, Int_t i,
         delete pq;
     }
     //if the number shared is zero, do nothing
-    else {d1[i].DescendantList=NULL;d1[i].Merit=NULL;}
+    else {}
 
     //if weighted merit function is to be calculated then use the most bound fraction of particles to construct share list
     if (opt.icorematchtype!=PARTLISTNOCORE && opt.particle_frac<1 && opt.particle_frac>0 && numshared>0) {

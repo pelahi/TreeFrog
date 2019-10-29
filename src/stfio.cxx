@@ -1387,7 +1387,8 @@ HaloData *ReadHaloGroupCatalogData(string &infile, Int_t &numhalos, int mpi_ninp
         //allocate memory for halos
         if (k==0) {
             if (iverbose) cout<<"reading "<<infile<<" split into "<<nmpicount<<" files "<<endl<<"Total number of halos in all files is "<<TotalNumberofHalos<<endl;
-            Halo=new HaloData[TotalNumberofHalos];
+            if (TotalNumberofHalos > 0) Halo=new HaloData[TotalNumberofHalos];
+            else Halo = NULL;
             numhalos=TotalNumberofHalos;
             //if no haloes close file and return
             if (numhalos==0) {

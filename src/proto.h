@@ -290,6 +290,17 @@ void UpdateHaloIDs(Options &opt, HaloTreeData *&pht);
 int CheckType(unsigned int t, int tmatch);
 //@}
 
+/// \name memory management
+/// see \ref utilities.cxx for implementation
+//@{]
+/// free memory of particle ids in array of halo data 
+void FreeParticleIDMemory(const Int_t numhalos, HaloData *&h);
+/// clear progenitor based tree related memory
+void FreeProgenitorMemory(Options &opt, ProgenitorData **&pprogen, DescendantDataProgenBased **&pprogendescen);
+/// clear descendant based tree related memory
+void FreeDescendantMemory(Options &opt, DescendantData **&pdescen, ProgenitorDataDescenBased **&pdescenprogen);
+//@}
+
 /// \name Extra utility routines
 /// see \ref utilities.cxx for implementation
 //@{

@@ -45,6 +45,9 @@ tf_option(HDF5 "Attempt to include HDF5 support in TreeFrog " ON)
 # MPI options
 tf_option(MPI               "Attempt to include MPI support in TreeFrog" ON)
 
+# OpenMP options
+tf_option(OPENMP            "Attempt to include OpenMP support in TreeFrog" ON)
+
 # Precison options
 tf_option(UNSIGNED_IDS "Use unsigned ID's in TreeFrog" OFF)
 tf_option(LONG_INT "Use long ints ID's in TreeFrog, this will be set by NBODY_LONG_INT if not explicity set" ON)
@@ -62,6 +65,17 @@ set(TF_LIBS "")
 set(TF_CXX_FLAGS "")
 set(TF_LINK_FLAGS "")
 
+# Define macros depending on the user's choices
+macro(tf_option_defines varname define)
+	if (TF_${varname})
+		list(APPEND TF_DEFINES ${define})
+		set(TF_HAS_${varname} Yes)
+	else()
+		set(TF_HAS_${varname} No)
+	endif()
+endmacro()
+
+tf_option_defines(OPENMP                    USEOPENMP)
 
 #
 # How we find HDF5 and set it up
@@ -168,12 +182,12 @@ include_directories(${TF_INCLUDE_DIRS})
 #
 # Find what has been defined in NBodylib thats relevant to TreeFrog
 #
-list (FIND TF_DEFINES USEOPENMP _index)
-if (${_index} GREATER -1)
-      set(TF_HAS_OPENMP Yes)
-else()
-      set(TF_HAS_OPENMP No)
-endif()
+#list (FIND TF_DEFINES USEOPENMP _index)
+#if (${_index} GREATER -1)
+#      set(TF_HAS_OPENMP Yes)
+#else()
+#      set(TF_HAS_OPENMP No)
+#endif()
 
 #Only if the treefrog longID's have been explicity set
 if(NOT TF_LONG_INT)

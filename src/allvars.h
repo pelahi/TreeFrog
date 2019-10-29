@@ -479,6 +479,22 @@ struct ProgenitorData
         nsharedfrac=NULL;
         istep=0;
     }
+    ProgenitorData(const ProgenitorData &p){
+        NumberofProgenitors=p.NumberofProgenitors;
+        istep=p.istep;
+        if (NumberofProgenitors > 0) {
+            ProgenitorList=new long unsigned[NumberofProgenitors];
+            Merit=new float[NumberofProgenitors];
+            for (int i=0;i<NumberofProgenitors;i++) {
+                ProgenitorList[i]=p.ProgenitorList[i];
+                Merit[i]=p.Merit[i];
+            }
+            if (p.nsharedfrac!=NULL) {
+                nsharedfrac=new float[NumberofProgenitors];
+                for (int i=0;i<NumberofProgenitors;i++) nsharedfrac[i]=p.nsharedfrac[i];
+            }
+        }
+    }
     ~ProgenitorData(){
         if (NumberofProgenitors>0) {
             delete[] ProgenitorList;
@@ -493,15 +509,17 @@ struct ProgenitorData
             if (nsharedfrac!=NULL) delete[] nsharedfrac;
         }
         NumberofProgenitors=p.NumberofProgenitors;
-        ProgenitorList=new long unsigned[NumberofProgenitors];
-        Merit=new float[NumberofProgenitors];
-        for (int i=0;i<NumberofProgenitors;i++) {
-            ProgenitorList[i]=p.ProgenitorList[i];
-            Merit[i]=p.Merit[i];
-        }
-        if (p.nsharedfrac!=NULL) {
-            nsharedfrac=new float[NumberofProgenitors];
-            for (int i=0;i<NumberofProgenitors;i++) nsharedfrac[i]=p.nsharedfrac[i];
+        if (NumberofProgenitors > 0) {
+            ProgenitorList=new long unsigned[NumberofProgenitors];
+            Merit=new float[NumberofProgenitors];
+            for (int i=0;i<NumberofProgenitors;i++) {
+                ProgenitorList[i]=p.ProgenitorList[i];
+                Merit[i]=p.Merit[i];
+            }
+            if (p.nsharedfrac!=NULL) {
+                nsharedfrac=new float[NumberofProgenitors];
+                for (int i=0;i<NumberofProgenitors;i++) nsharedfrac[i]=p.nsharedfrac[i];
+            }
         }
         istep=p.istep;
     }

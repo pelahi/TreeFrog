@@ -219,9 +219,7 @@ int main(int argc,char **argv)
                 pprogendescen[i]=NULL;
             }
             //free up memory if not needed
-            if (opt.isearchdirection!=SEARCHALL) for (j=0;j<pht[i].numhalos;j++) {
-                delete[] pht[i].Halo[j].ParticleID;pht[i].Halo[j].ParticleID=NULL;
-            }
+            FreeParticleIDMemory(pht[i].numhalos, pht[i].Halo);
             if (opt.iverbose) cout<<ThisTask<<" finished Progenitor processing for snapshot "<<i<<" in "<<MyGetTime()-time2<<endl;
         }
         else pprogen[i]=NULL;
@@ -331,12 +329,7 @@ int main(int argc,char **argv)
                     pfofd[pht[i+istep].Halo[j].ParticleID[k]]=0;
                 }
             }
-            if (opt.numsteps==1) {
-                //to free up some memory, no need to keep particle ids
-                for (j=0;j<pht[i].numhalos;j++) {
-                    delete[] pht[i].Halo[j].ParticleID;pht[i].Halo[j].ParticleID=NULL;
-                }
-            }
+            if (opt.numsteps==1) FreeParticleIDMemory(pht[i].numhalos, pht[i].Halo);
             if (opt.iverbose) cout<<ThisTask<<" finished first pass for descendant processing for snapshot "<<i<<" in "<<MyGetTime()-time2<<endl;
         }
 
@@ -412,9 +405,7 @@ int main(int argc,char **argv)
                     }
                 }
                 //to free up some memory, no need to keep particle ids
-                for (j=0;j<pht[i].numhalos;j++) {
-                    delete[] pht[i].Halo[j].ParticleID;pht[i].Halo[j].ParticleID=NULL;
-                }
+                FreeParticleIDMemory(pht[i].numhalos, pht[i].Halo);
                 if (opt.iverbose) cout<<ThisTask<<" finished descendant processing for snapshot "<<i<<" in "<<MyGetTime()-time2<<endl;
             }
             /*
@@ -510,40 +501,8 @@ int main(int argc,char **argv)
     }
     else WriteCrossComp(opt,pprogen,pht);
 
-    //free up memory
-    if (opt.isearchdirection!=SEARCHDESCEN) {
-        for (i=0;i<opt.numsnapshots;i++) if (pprogen[i]!=NULL) delete[] pprogen[i];
-        delete[] pprogen;
-        //if used multiple time steps
-        if (opt.numsteps>1) {
-            for (i=opt.numsnapshots-1;i>=0;i--) {
-    #ifdef USEMPI
-            //check if data is load making sure i is in appropriate range
-            if (i>=StartSnap && i<EndSnap) {
-    #endif
-                if (pprogendescen[i]!=NULL) delete[] pprogendescen[i];
-    #ifdef USEMPI
-            }
-    #endif
-            }
-        }
-    }
-    if (opt.isearchdirection!=SEARCHPROGEN) {
-        for (i=0;i<opt.numsnapshots;i++) if (pdescen[i]!=NULL) delete[] pdescen[i];delete[] pdescen;
-        //if used multiple time steps
-        if (opt.numsteps>1) {
-            for (i=0;i<opt.numsnapshots;i++) {
-    #ifdef USEMPI
-            //check if data is load making sure i is in appropriate range
-            if (i>=StartSnap && i<EndSnap) {
-    #endif
-                if (pdescenprogen[i]!=NULL) delete[] pdescenprogen[i];
-    #ifdef USEMPI
-            }
-    #endif
-            }
-        }
-    }
+    FreeProgenitorMemory(opt, pprogen, pprogendescen);
+    FreeDescendantMemory(opt, pdescen, pdescenprogen);
 
 #ifdef USEMPI
     delete[] mpi_startsnap;
