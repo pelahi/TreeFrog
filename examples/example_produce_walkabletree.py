@@ -131,6 +131,7 @@ DescriptionInfo={
             'Version' : TFVERSION,
             'Temporal_linking_length' : NSNAPSEARCH,
             'Temporal_halo_id_value' : TEMPORALHALOIDVAL,
+            'Tree_direction' : TREEDIRECTION,
         },
         'HaloFinder' : {
             'Name' : HFNAME, 'Version' : HFVERSION,
