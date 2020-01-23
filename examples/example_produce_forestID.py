@@ -161,6 +161,9 @@ DescriptionInfo={
             }
         }
 
+DescriptionInfo['HaloFinder']['Subhalo_Particle_num_threshold'] = 20
+DescriptionInfo['TreeBuilder']['Temporally_Unique_Halo_ID_Description'] = 'Snap_num*Temporal_linking_length+Index+1'
+
 vpt.WriteForest(outputfname, numsnaps, numhalos, halodata, forestdata, scalefactors,
     DescriptionInfo, SimulationInfo, UnitInfo, HaloFinderConfigurationInfo
     )
