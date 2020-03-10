@@ -80,10 +80,9 @@ RAWPROPFORMAT=HDFINPUT
 # such as temporal halo id, number of snapshots searched when producing the tree
 treedata,numsnaps=vpt.ReadWalkableHDFTree(walkabletreefile)
 numsnaps = treedata['Header']['Number_of_snapshots']
-TEMPORALHALOIDVAL = treedata['Header']['Temporal_halo_id_value']
-NSNAPSEARCH = treedata['Header']['Nsteps_search_new_links']
-TREEDIRECTION = treedata['Header']['Tree_direction']
-
+TEMPORALHALOIDVAL = treedata['Header']['TreeBuilder']['Temporal_halo_id_value']
+NSNAPSEARCH = treedata['Header']['TreeBuilder']['Temporal_linking_length']
+TREEDIRECTION = treedata['Header']['TreeBuilder']['Tree_direction']
 
 #alias tree data to halo data as forest file will combine the data
 halodata = treedata
@@ -161,6 +160,9 @@ DescriptionInfo={
             'Particle_mass' : {'dm':mp, 'gas':-1, 'star':-1, 'bh':-1, 'lowres':-1}
             }
         }
+
+DescriptionInfo['HaloFinder']['Subhalo_Particle_num_threshold'] = 20
+DescriptionInfo['TreeBuilder']['Temporally_Unique_Halo_ID_Description'] = 'Snap_num*Temporal_linking_length+Index+1'
 
 vpt.WriteForest(outputfname, numsnaps, numhalos, halodata, forestdata, scalefactors,
     DescriptionInfo, SimulationInfo, UnitInfo, HaloFinderConfigurationInfo
