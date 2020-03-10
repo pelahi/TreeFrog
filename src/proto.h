@@ -138,6 +138,12 @@ void MPIWriteLoadBalance(Options &);
 int MPIReadLoadBalance(Options &);
 //@}
 
+
+///\name for mpi related id mapping
+//@{
+/// produce either global or local maps
+map<IDTYPE, IDTYPE> MPIGatherIDs(Options &opt, vector<IDTYPE> &idvec);
+//@}
 ///\name  for mpi related meshing of data
 /// see \ref mpiroutines.cxx for implementation
 //@{

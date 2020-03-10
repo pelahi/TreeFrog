@@ -150,6 +150,9 @@ void GetParamFile(Options &opt)
                     else if (strcmp(tbuff, "Mpi_load_balance_splitting")==0) {
                         opt.impimaxloadimbalance = atof(vbuff);
                     }
+                    else if (strcmp(tbuff, "Mpi_local_id_to_index_map")==0) {
+                        opt.impilocalmap = atoi(vbuff);
+                    }
 #endif
                     //Other options
                     else if (strcmp(tbuff, "Verbose")==0){

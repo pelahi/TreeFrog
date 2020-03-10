@@ -344,7 +344,8 @@ struct Options
     int impiloadbalancesplitting;
     ///Maximum load imbalance for the mpi splitting
     float impimaxloadimbalance;
-
+    ///whether to produce a mpi local id to index map or a global one
+    int impilocalmap;
 #endif
 
     Options()
@@ -398,6 +399,7 @@ struct Options
         iwriteparallel=0;
         impimaxloadimbalance=1.1;
         impiloadbalancesplitting=MPIPARTICLEBALANCE;
+        impilocalmap=1;
 #endif
     }
 };
