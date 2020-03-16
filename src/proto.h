@@ -83,13 +83,13 @@ inline void STFReadNumFileInfoAndCorrectNumFile(int &itask, int &nprocs, int &nm
 #endif
     int ibinary, int ifieldhalos);
 ///read information from the group catalog file and correct the number of files if necessary
-inline void STFReadNumGroups(unsigned long &nglocal, unsigned long &TotalNumberofHalos, unsigned long &nsglocal, fstream &Fgroup, fstream &Fsgroup,
+inline void STFReadNumGroups(unsigned long long &nglocal, unsigned long long &TotalNumberofHalos, unsigned long long &nsglocal, fstream &Fgroup, fstream &Fsgroup,
 #ifdef USEHDF
     H5File &Fhdfgroup, H5File &Fhdfsgroup, DataSet &dataset, DataSpace &dataspace,
 #endif
     int ibinary, int ifieldhalos);
-inline void STFReadNumData(unsigned long &nids, unsigned long &nsids, unsigned long &nuids, unsigned long &nsuids,
-    unsigned long &nidstot, unsigned long &nsidstot, unsigned long &nuidstot, unsigned long &nsuidstot,
+inline void STFReadNumData(unsigned long long &nids, unsigned long long &nsids, unsigned long long &nuids, unsigned long long &nsuids,
+    unsigned long long &nidstot, unsigned long long &nsidstot, unsigned long long &nuidstot, unsigned long long &nsuidstot,
     fstream &Fpart, fstream &Fupart, fstream &Fspart, fstream &Fsupart,
     fstream &Fparttype, fstream &Fuparttype, fstream &Fsparttype, fstream &Fsuparttype,
 #ifdef USEHDF
@@ -119,13 +119,13 @@ void WriteCrossComp(Options &opt, ProgenitorData **p, HaloTreeData *h);
 /// see \ref io.cxx, \ref stfio.cxx, \ref mpiroutines.cxx for implementation
 //@{
 ///Reads the number of haloes in the files, wrapper routine
-unsigned long ReadNumberofHalos(Options &opt, unsigned long *numhalos);
+unsigned long long ReadNumberofHalos(Options &opt, unsigned long long *numhalos);
 ///Reads the number of particle in haloes in the files, wrapper routine
-unsigned long ReadNumberofParticlesInHalos(Options &opt, unsigned long *numpartinhalos);
+unsigned long long ReadNumberofParticlesInHalos(Options &opt, unsigned long long *numpartinhalos);
 ///Reads Number of halos from VELOCIraptor Group catalogs
-unsigned long MPIReadHaloGroupCatalogDataNum(string &infile, int mpi_ninput=0, int ibinary=1, int ifieldhalos=1, int itypesort=ALLTYPEMATCH);
+unsigned long long MPIReadHaloGroupCatalogDataNum(string &infile, int mpi_ninput=0, int ibinary=1, int ifieldhalos=1, int itypesort=ALLTYPEMATCH);
 ///Reads Number of particles in halos from VELOCIraptor Group catalogs
-unsigned long MPIReadHaloGroupCatalogDataParticleNum(string &infile, int mpi_ninput=0, int ibinary=1, int ifieldhalos=1, int itypesort=ALLTYPEMATCH);
+unsigned long long MPIReadHaloGroupCatalogDataParticleNum(string &infile, int mpi_ninput=0, int ibinary=1, int ifieldhalos=1, int itypesort=ALLTYPEMATCH);
 ///Reads data to allocate memory, useful for mpi
 HaloData *MPIReadHaloGroupCatalogDataAllocation(string &infile, Int_t &numhalos, int mpi_ninput=0, int ibinary=1, int ifieldhalos=1, int itypesort=ALLTYPEMATCH);
 ///Reads VELOCIraptor like Group Catalog Data with memory already allocated for MPI version.
@@ -144,6 +144,7 @@ int MPIReadLoadBalance(Options &);
 /// produce either global or local maps
 map<IDTYPE, IDTYPE> MPIGatherIDs(Options &opt, vector<IDTYPE> &idvec);
 //@}
+
 ///\name  for mpi related meshing of data
 /// see \ref mpiroutines.cxx for implementation
 //@{
@@ -186,24 +187,24 @@ Double_t CalculateMerit(Options &opt, UInt_t n1, UInt_t n2, HaloData &h1, HaloDa
 /// the routine can also be provided a reference list and the time step of the current halo list used to identify progenitors
 /// and will only search current halo list if the reference list doesn't meet the criteria for viable progenitors
 /// which is currently whether there are any in the reference list
-ProgenitorData *CrossMatch(Options &opt, const long unsigned nhalos1, const long unsigned nhalos2, HaloData *&h1, HaloData* &h2, unsigned int*&pfof2, int &ilistupdated, int istepval=1, ProgenitorData *refprogen=NULL);
+ProgenitorData *CrossMatch(Options &opt, const unsigned long long nhalos1, const unsigned long long nhalos2, HaloData *&h1, HaloData* &h2, unsigned int*&pfof2, int &ilistupdated, int istepval=1, ProgenitorData *refprogen=NULL);
 ///get Progenitor match for individual object, return if match found
 int CrossMatchProgenitorIndividual(Options &opt, Int_t i,
-    const long unsigned nhalos1, const long unsigned nhalos2,
+    const unsigned long long nhalos1, const unsigned long long nhalos2,
     HaloData *&h1, HaloData *&h2,
     unsigned int *&pfof2,
     int istepval,
     ProgenitorData *&p1,
     unsigned int *&sharelist,
     unsigned int *&halolist,
-    long unsigned offset
+    unsigned long long offset
     //unsigned int *&sharepartlist,
     //unsigned int *&pranking2,
     //Double_t *&rankingsum
 );
 
 ///clean cross matches of duplicate entries so that a progenitor can have ONLY ONE descendent.
-void CleanCrossMatch(const int istepval, const long unsigned nhalos1, const long unsigned nhalos2, HaloData *&h1, HaloData *&h2, ProgenitorData *&pprogen);
+void CleanCrossMatch(const int istepval, const unsigned long long nhalos1, const unsigned long long nhalos2, HaloData *&h1, HaloData *&h2, ProgenitorData *&pprogen);
 ///fill in empty links of the reference list with another progenitor list produced using same reference snapshot but different linking snapshot.
 ///Allows for multiple steps in snapshots to be used.
 void UpdateRefProgenitors(Options &opt, const Int_t numhalos,ProgenitorData *&pref, ProgenitorData *&ptemp, DescendantDataProgenBased **&pprogendescen, Int_t itime);
@@ -215,24 +216,24 @@ void RemoveLinksProgenitorBasedDescendantList(Int_t itimedescen, Int_t ihaloinde
 void CleanProgenitorsUsingDescendants(Int_t i, HaloTreeData *&pht, DescendantDataProgenBased **&pprogendescen, ProgenitorData **&pprogen, int iopttemporalmerittype);
 
 ///similar to \ref CrossMatch but for descendants
-DescendantData *CrossMatchDescendant(Options &opt, const long unsigned nhalos1, const long unsigned nhalos2, HaloData *&h1, HaloData* &h2, unsigned int*&pfof2, int &ilistupdated, int istepval=1, unsigned int *ranking2=0, DescendantData *refdescen=NULL);
+DescendantData *CrossMatchDescendant(Options &opt, const unsigned long long nhalos1, const unsigned long long nhalos2, HaloData *&h1, HaloData* &h2, unsigned int*&pfof2, int &ilistupdated, int istepval=1, unsigned int *ranking2=0, DescendantData *refdescen=NULL);
 ///get descendant match for individual object, return if match found
 int CrossMatchDescendantIndividual(Options &opt, Int_t i,
-    const long unsigned nhalos1, const long unsigned nhalos2,
+    const unsigned long long nhalos1, const unsigned long long nhalos2,
     HaloData *&h1, HaloData *&h2,
     unsigned int *&pfof2,
     int istepval, int initdtopval,
     DescendantData *&d1,
     unsigned int *&sharelist,
     unsigned int *&halolist,
-    long unsigned offset, long unsigned offset2,
+    unsigned long long offset, unsigned long long offset2,
     unsigned int *&sharepartlist,
     unsigned int *&pranking2,
     Double_t *&rankingsum
 );
 
 ///updates the haloids stored in the descendant list
-void UpdateDescendantIndexing(const int istepval, const long unsigned nhalos1, const long unsigned nhalos2, HaloData *&h1, HaloData *&h2, DescendantData *&p1);
+void UpdateDescendantIndexing(const int istepval, const unsigned long long nhalos1, const unsigned long long nhalos2, HaloData *&h1, HaloData *&h2, DescendantData *&p1);
 ///prunes the descendant list
 void CleanCrossMatchDescendant(Options &opt, Int_t itime, HaloTreeData *&pht, ProgenitorDataDescenBased **&pdescenprogen, DescendantData **&pdescen);
 
@@ -259,6 +260,18 @@ void CleanDescendantsForMissingProgenitors(Options &opt, Int_t itime, HaloTreeDa
 void RerankDescendants(Options &opt, HaloTreeData *&pht, DescendantData **&pdescen);
 
 
+//@}
+
+///\name cosmolog relate fucionts
+/// see \ref cosmology.cxx for implementation
+//@{
+void CalcOmegak(Options &opt);
+void CalcCriticalDensity(Options &opt, Double_t a);
+void CalcBackgroundDensity(Options &opt, Double_t a);
+void CalcCosmoParams(Options &opt, Double_t a);
+Double_t GetHubble(Options &opt, Double_t a);
+double GetInvaH(double a, void * params);
+Double_t CalcCosmicTime(Options &opt, Double_t a1, Double_t a2);
 //@}
 
 /// \name for mapping ids to index routines

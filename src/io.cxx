@@ -21,11 +21,11 @@ bool FileExists(const char *fname) {
 //@{
 ///Reads number of halos at each snapshot, useful for mpi decomposition
 #ifdef USEMPI
-unsigned long ReadNumberofHalos(Options &opt, unsigned long *numhalos)
+unsigned long long ReadNumberofHalos(Options &opt, unsigned long long *numhalos)
 {
     fstream Fin;//file is list of halo data files
     string *buf=new string[opt.numsnapshots];
-    unsigned long tothalos=0;
+    unsigned long long tothalos=0;
 
     Fin.open(opt.fname);
     if (!Fin.is_open()) {
@@ -50,11 +50,11 @@ unsigned long ReadNumberofHalos(Options &opt, unsigned long *numhalos)
     return tothalos;
 }
 
-unsigned long ReadNumberofParticlesInHalos(Options &opt, unsigned long *numpartinhalos)
+unsigned long long ReadNumberofParticlesInHalos(Options &opt, unsigned long long *numpartinhalos)
 {
     fstream Fin;//file is list of halo data files
     string *buf=new string[opt.numsnapshots];
-    unsigned long tothalos=0,totpart=0;
+    unsigned long long tothalos=0,totpart=0;
 
     Fin.open(opt.fname);
     if (!Fin.is_open()) {
@@ -88,7 +88,7 @@ HaloTreeData *ReadData(Options &opt)
 {
     HaloTreeData *HaloTree;
     fstream Fin;//file is list of halo data files
-    long unsigned j,nparts,haloid;
+    unsigned long long j,nparts,haloid;
     HaloTree=new HaloTreeData[opt.numsnapshots];
     string *buf=new string[opt.numsnapshots];
     Int_t tothalos=0;
@@ -428,7 +428,7 @@ void WriteHaloMergerTree(Options &opt, ProgenitorData **p, HaloTreeData *h) {
             dims[0]=h[i].numhalos;
             rank=1;
             // Set the minmum chunk size
-            chunk_dims[0]=min((unsigned long)HDFOUTPUTCHUNKSIZE,(unsigned long)h[i].numhalos);
+            chunk_dims[0]=min((unsigned long long)HDFOUTPUTCHUNKSIZE,(unsigned long long)h[i].numhalos);
 
             // ID
             dataspace = DataSpace(rank,dims);
@@ -448,7 +448,7 @@ void WriteHaloMergerTree(Options &opt, ProgenitorData **p, HaloTreeData *h) {
             }
 
             //Write out the dataset
-            long unsigned *data0 = new long unsigned[h[i].numhalos];
+            unsigned long long *data0 = new unsigned long long[h[i].numhalos];
             for(Int_t j=0;j<h[i].numhalos;j++) data0[j]=h[i].Halo[j].haloID;
             dataset.write(data0,PredType::STD_U64LE);
 
@@ -473,7 +473,7 @@ void WriteHaloMergerTree(Options &opt, ProgenitorData **p, HaloTreeData *h) {
             }
 
             //Write out the dataset
-            long unsigned *data1 = new long unsigned[h[i].numhalos];
+            unsigned long long *data1 = new unsigned long long[h[i].numhalos];
             for(Int_t j=0;j<h[i].numhalos;j++) data1[j]=h[i].Halo[j].origID;
             dataset.write(data1,PredType::STD_U64LE);
 
@@ -523,7 +523,7 @@ void WriteHaloMergerTree(Options &opt, ProgenitorData **p, HaloTreeData *h) {
                 }
 
                 //Write out the dataset
-                long unsigned *data3 = new long unsigned[h[i].numhalos];
+                unsigned long long *data3 = new unsigned long long[h[i].numhalos];
                 for(Int_t j=0;j<h[i].numhalos;j++)  data3[j]=h[i].Halo[j].NumberofParticles;
                 dataset.write(data3,PredType::STD_U64LE);
 
@@ -531,7 +531,7 @@ void WriteHaloMergerTree(Options &opt, ProgenitorData **p, HaloTreeData *h) {
             }
 
             // Keep track of the number of progenitors
-            long unsigned totnprogen=0;
+            unsigned long long totnprogen=0;
 
             //Progenitors offsets
             dataspace = DataSpace(rank,dims);
@@ -551,7 +551,7 @@ void WriteHaloMergerTree(Options &opt, ProgenitorData **p, HaloTreeData *h) {
             }
 
             //Write out the dataset
-            long unsigned *data4 = new long unsigned[h[i].numhalos];
+            unsigned long long *data4 = new unsigned long long[h[i].numhalos];
             for(Int_t j=0;j<h[i].numhalos;j++){
                 data4[j]=totnprogen;
                 totnprogen+=p[i][j].NumberofProgenitors;
@@ -562,11 +562,11 @@ void WriteHaloMergerTree(Options &opt, ProgenitorData **p, HaloTreeData *h) {
 
 
             //Set the new dataset parameters
-            long unsigned itemp=0;
+            unsigned long long itemp=0;
             dims[0]=totnprogen;
             rank=1;
             //Set minimum chunk size
-            chunk_dims[0]=min((unsigned long)HDFOUTPUTCHUNKSIZE,totnprogen);
+            chunk_dims[0]=min((unsigned long long)HDFOUTPUTCHUNKSIZE,totnprogen);
 
             //Progenitor IDs
             dataspace = DataSpace(rank,dims);
@@ -587,7 +587,7 @@ void WriteHaloMergerTree(Options &opt, ProgenitorData **p, HaloTreeData *h) {
             }
 
             //Write out the dataset
-            long unsigned *data5= new long unsigned[totnprogen];
+            unsigned long long *data5= new unsigned long long[totnprogen];
             for(Int_t j=0;j<h[i].numhalos;j++)
                 for (Int_t k=0;k<p[i][j].NumberofProgenitors;k++)
                     data5[itemp++] = h[i-p[i][j].istep].Halo[p[i][j].ProgenitorList[k]-1].haloID;
@@ -645,7 +645,7 @@ void WriteHaloMergerTree(Options &opt, ProgenitorData **p, HaloTreeData *h) {
                 }
 
                 //Write out the dataset
-                long unsigned *data7 = new long unsigned[totnprogen];
+                unsigned long long *data7 = new unsigned long long[totnprogen];
                 for(Int_t j=0;j<h[i].numhalos;j++)
                     for (Int_t k=0;k<p[i][j].NumberofProgenitors;k++)
                         data7[itemp++] = h[i-p[i][j].istep].Halo[p[i][j].ProgenitorList[k]-1].NumberofParticles;
@@ -759,7 +759,7 @@ void WriteHaloMergerTree(Options &opt, ProgenitorData **p, HaloTreeData *h) {
             dims[0]=h[0].numhalos;
             rank=1;
             //Set minimum chunk size
-            chunk_dims[0]=min((unsigned long)HDFOUTPUTCHUNKSIZE,(unsigned long)h[0].numhalos);
+            chunk_dims[0]=min((unsigned long long)HDFOUTPUTCHUNKSIZE,(unsigned long long)h[0].numhalos);
 
             //ID
             dataspace = DataSpace(rank,dims);
@@ -780,7 +780,7 @@ void WriteHaloMergerTree(Options &opt, ProgenitorData **p, HaloTreeData *h) {
 
 
             //Write out the dataset
-            long unsigned *data8 = new long unsigned[h[0].numhalos];
+            unsigned long long *data8 = new unsigned long long[h[0].numhalos];
             for(Int_t j=0;j<h[0].numhalos;j++) data8[j]=h[0].Halo[j].haloID;
             dataset.write(data8,PredType::STD_U64LE);
 
@@ -805,7 +805,7 @@ void WriteHaloMergerTree(Options &opt, ProgenitorData **p, HaloTreeData *h) {
             }
 
             //Write out the dataset
-            long unsigned *data9 = new long unsigned[h[0].numhalos];
+            unsigned long long *data9 = new unsigned long long[h[0].numhalos];
             for(Int_t j=0;j<h[0].numhalos;j++) data9[j]=h[0].Halo[j].origID;
             dataset.write(data9,PredType::STD_U64LE);
 
@@ -855,7 +855,7 @@ void WriteHaloMergerTree(Options &opt, ProgenitorData **p, HaloTreeData *h) {
                 }
 
                 //Write out the dataset
-                long unsigned *data11 = new long unsigned[h[0].numhalos];
+                unsigned long long *data11 = new unsigned long long[h[0].numhalos];
                 for(Int_t j=0;j<h[0].numhalos;j++)  data11[j]=h[0].Halo[j].NumberofParticles;
                 dataset.write(data11,PredType::STD_U64LE);
 
@@ -1117,7 +1117,7 @@ void WriteHaloMergerTree(Options &opt, DescendantData **p, HaloTreeData *h) {
             dims[0]=h[i].numhalos;
             rank=1;
             // Set the minmum chunk size
-            chunk_dims[0]=min((unsigned long)HDFOUTPUTCHUNKSIZE,(unsigned long)h[i].numhalos);
+            chunk_dims[0]=min((unsigned long long)HDFOUTPUTCHUNKSIZE,(unsigned long long)h[i].numhalos);
 
             //ID
             dataspace = DataSpace(rank,dims);
@@ -1137,7 +1137,7 @@ void WriteHaloMergerTree(Options &opt, DescendantData **p, HaloTreeData *h) {
             }
 
             //Write out the dataset
-            long unsigned *data0 = new long unsigned[h[i].numhalos];
+            unsigned long long *data0 = new unsigned long long[h[i].numhalos];
             for(Int_t j=0;j<h[i].numhalos;j++) data0[j]=h[i].Halo[j].haloID;
             dataset.write(data0,PredType::STD_U64LE);
 
@@ -1162,7 +1162,7 @@ void WriteHaloMergerTree(Options &opt, DescendantData **p, HaloTreeData *h) {
             }
 
             //Write out the dataset
-            long unsigned *data1 = new long unsigned[h[i].numhalos];
+            unsigned long long *data1 = new unsigned long long[h[i].numhalos];
             for(Int_t j=0;j<h[i].numhalos;j++) data1[j]=h[i].Halo[j].origID;
             dataset.write(data1,PredType::STD_U64LE);
 
@@ -1213,7 +1213,7 @@ void WriteHaloMergerTree(Options &opt, DescendantData **p, HaloTreeData *h) {
                 }
 
                 //Write out the dataset
-                long unsigned *data3 = new long unsigned[h[i].numhalos];
+                unsigned long long *data3 = new unsigned long long[h[i].numhalos];
                 for(Int_t j=0;j<h[i].numhalos;j++)  data3[j]=h[i].Halo[j].NumberofParticles;
                 dataset.write(data3,PredType::STD_U64LE);
 
@@ -1222,7 +1222,7 @@ void WriteHaloMergerTree(Options &opt, DescendantData **p, HaloTreeData *h) {
 
 
             // Store the total number of decendants
-            long unsigned totndesc=0;
+            unsigned long long totndesc=0;
 
             //Decendants offsets
             dataspace = DataSpace(rank,dims);
@@ -1242,7 +1242,7 @@ void WriteHaloMergerTree(Options &opt, DescendantData **p, HaloTreeData *h) {
             }
 
             //Write out the dataset
-            long unsigned *data4 = new long unsigned[h[i].numhalos];
+            unsigned long long *data4 = new unsigned long long[h[i].numhalos];
             for(Int_t j=0;j<h[i].numhalos;j++){
                 data4[j]=totndesc;
                 totndesc+=p[i][j].NumberofDescendants;
@@ -1252,11 +1252,11 @@ void WriteHaloMergerTree(Options &opt, DescendantData **p, HaloTreeData *h) {
             delete[] data4;
 
             //Set the new dataset parameters
-            long unsigned itemp=0;
+            unsigned long long itemp=0;
             dims[0]=totndesc;
             rank=1;
             // Set the minmum chunk size
-            chunk_dims[0]=min((unsigned long)HDFOUTPUTCHUNKSIZE,totndesc);
+            chunk_dims[0]=min((unsigned long long)HDFOUTPUTCHUNKSIZE,totndesc);
             //Create dataset proplist
             DSetCreatPropList hdfdatasetproplist;
 
@@ -1278,7 +1278,7 @@ void WriteHaloMergerTree(Options &opt, DescendantData **p, HaloTreeData *h) {
             }
 
             //Write out the dataset
-            long unsigned *data5 = new long unsigned[totndesc];
+            unsigned long long *data5 = new unsigned long long[totndesc];
             for(Int_t j=0;j<h[i].numhalos;j++)
                 for (Int_t k=0;k<p[i][j].NumberofDescendants;k++)
                     data5[itemp++] = h[i+p[i][j].istep].Halo[p[i][j].DescendantList[k]-1].haloID;
@@ -1363,7 +1363,7 @@ void WriteHaloMergerTree(Options &opt, DescendantData **p, HaloTreeData *h) {
                 }
 
                 //Write out the dataset
-                long unsigned *data8 = new long unsigned[totndesc];
+                unsigned long long *data8 = new unsigned long long[totndesc];
                 for(Int_t j=0;j<h[i].numhalos;j++)
                     for (Int_t k=0;k<p[i][j].NumberofDescendants;k++)
                         data8[itemp++] = h[i+p[i][j].istep].Halo[p[i][j].DescendantList[k]-1].NumberofParticles;
@@ -1478,7 +1478,7 @@ void WriteHaloMergerTree(Options &opt, DescendantData **p, HaloTreeData *h) {
             dims[0]=h[opt.numsnapshots-1].numhalos;
             rank=1;
             // Set the minmum chunk size
-            chunk_dims[0]=min((unsigned long)HDFOUTPUTCHUNKSIZE,(unsigned long)h[opt.numsnapshots-1].numhalos);
+            chunk_dims[0]=min((unsigned long long)HDFOUTPUTCHUNKSIZE,(unsigned long long)h[opt.numsnapshots-1].numhalos);
 
             //ID
             dataspace = DataSpace(rank,dims);
@@ -1498,7 +1498,7 @@ void WriteHaloMergerTree(Options &opt, DescendantData **p, HaloTreeData *h) {
             }
 
             //Write out the dataset
-            long unsigned *data9 = new long unsigned[h[opt.numsnapshots-1].numhalos];
+            unsigned long long *data9 = new unsigned long long[h[opt.numsnapshots-1].numhalos];
             for(Int_t j=0;j<h[opt.numsnapshots-1].numhalos;j++) data9[j]=h[opt.numsnapshots-1].Halo[j].haloID;
             dataset.write(data9,PredType::STD_U64LE);
 
@@ -1524,7 +1524,7 @@ void WriteHaloMergerTree(Options &opt, DescendantData **p, HaloTreeData *h) {
             }
 
             //Write out the dataset
-            long unsigned *data10 = new long unsigned[h[0].numhalos];
+            unsigned long long *data10 = new unsigned long long[h[0].numhalos];
             for(Int_t j=0;j<h[0].numhalos;j++) data10[j]=h[0].Halo[j].origID;
             dataset.write(data10,PredType::STD_U64LE);
 
@@ -1574,7 +1574,7 @@ void WriteHaloMergerTree(Options &opt, DescendantData **p, HaloTreeData *h) {
                 }
 
                 //Write out the dataset
-                long unsigned *data12 = new long unsigned[h[opt.numsnapshots-1].numhalos];
+                unsigned long long *data12 = new unsigned long long[h[opt.numsnapshots-1].numhalos];
                 for(Int_t j=0;j<h[opt.numsnapshots-1].numhalos;j++)  data12[j]=h[opt.numsnapshots-1].Halo[j].NumberofParticles;
                 dataset.write(data12,PredType::STD_U64LE);
 
@@ -1684,7 +1684,7 @@ void SavePIDStoIndexMap(Options &opt,map<IDTYPE, IDTYPE>&idmap)
     IDTYPE *keys,*indices;
     Int_t i;
     size_t idsize,mapsize;
-    unsigned long chunksize,offset,oldchunksize;
+    unsigned long long chunksize,offset,oldchunksize;
     unsigned int nchunks;
 #ifndef USEMPI
     int ThisTask=0, NProcs=1;
@@ -1696,7 +1696,7 @@ void SavePIDStoIndexMap(Options &opt,map<IDTYPE, IDTYPE>&idmap)
         cout<<"Writing unique memory efficent mapping for particle IDS to index to "<<fname<<endl;
         //write header information
         Fout.write((char*)&opt.numsnapshots,sizeof(int));
-        Fout.write((char*)&opt.TotalNumberofHalos,sizeof(long unsigned));
+        Fout.write((char*)&opt.TotalNumberofHalos,sizeof(unsigned long long));
         idsize=sizeof(IDTYPE);
         Fout.write((char*)&idsize,sizeof(size_t));
         mapsize=idmap.size();
@@ -1746,10 +1746,10 @@ int ReadPIDStoIndexMap(Options &opt,map<IDTYPE, IDTYPE>&idmap)
     IDTYPE *keys,*indices;
     Int_t i;
     size_t idsize,mapsize;
-    unsigned long chunksize,offset;
+    unsigned long long chunksize,offset;
     unsigned int nchunks;
     int numsnap;
-    long unsigned tothalo;
+    unsigned long long tothalo;
     int iflag=0;
     double time1;
 #ifndef USEMPI
@@ -1763,7 +1763,7 @@ int ReadPIDStoIndexMap(Options &opt,map<IDTYPE, IDTYPE>&idmap)
         cout<<"Attempting to read unique memory efficent mapping for particle IDS to index to "<<fname<<endl;
         //write header information
         Fin.read((char*)&numsnap,sizeof(int));
-        Fin.read((char*)&tothalo,sizeof(long unsigned));
+        Fin.read((char*)&tothalo,sizeof(unsigned long long));
         Fin.read((char*)&idsize,sizeof(size_t));
         //if all is well then keep reading
         if (opt.numsnapshots==numsnap && opt.TotalNumberofHalos && idsize==sizeof(IDTYPE)) {
@@ -1793,7 +1793,7 @@ int ReadPIDStoIndexMap(Options &opt,map<IDTYPE, IDTYPE>&idmap)
     if (ThisTask==0) {
         cout<<"Map will have "<<opt.MaxIDValue<<" elements and need roughly "<<opt.MaxIDValue*(sizeof(IDTYPE)*2+3*4)/1024./1024./1024.<<"GB of mem "<<endl;
         //offset to start of indices
-        Fin2.seekg(mapsize*sizeof(IDTYPE)+sizeof(int)+sizeof(long unsigned)+sizeof(size_t)+sizeof(size_t));
+        Fin2.seekg(mapsize*sizeof(IDTYPE)+sizeof(int)+sizeof(unsigned long long)+sizeof(size_t)+sizeof(size_t));
     }
     //and send information in chunks
     chunksize=floor(2147483648/((Double_t)NProcs*sizeof(IDTYPE)));

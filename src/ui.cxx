@@ -12,6 +12,8 @@ void GetParamFile(Options &opt)
     string tag,val;
     char buff[1024],*pbuff,tbuff[1024],vbuff[1024],fname[1024];
     fstream paramfile,cfgfile;
+    size_t pos;
+    string dataline, token, delimiter = ",";
     if (!FileExists(opt.configname)){
             cerr<<"Config file does not exist or can't be read, terminating"<<endl;
 #ifdef USEMPI
@@ -79,6 +81,15 @@ void GetParamFile(Options &opt)
                     else if (strcmp(tbuff, "Nsteps_search_new_links")==0) {
                         opt.numsteps = atoi(vbuff);
                     }
+                    else if (strcmp(tbuff, "Nsteps_search_new_links_for_each_snap")==0) {
+                        pos=0;
+                        dataline=string(vbuff);
+                        while ((pos = dataline.find(delimiter)) != string::npos) {
+                            token = dataline.substr(0, pos);
+                            opt.numstepsarray.push_back(stof(token));
+                            dataline.erase(0, pos + delimiter.length());
+                        }
+                    }
                     else if (strcmp(tbuff, "Default_values")==0) {
                         idefaultflag = atoi(vbuff);
                     }
@@ -132,7 +143,7 @@ void GetParamFile(Options &opt)
                         opt.haloidval = atol(vbuff);
                     }
                     else if (strcmp(tbuff, "HaloID_offset")==0) {
-                        opt.haloidoffset = atoi(vbuff);
+                        opt.haloidoffset = atol(vbuff);
                     }
                     else if (strcmp(tbuff, "HaloID_snapshot_offset")==0) {
                         opt.snapshotvaloffset = atoi(vbuff);
@@ -154,6 +165,29 @@ void GetParamFile(Options &opt)
                         opt.impilocalmap = atoi(vbuff);
                     }
 #endif
+
+                    //cosmology stuff
+                    else if (strcmp(tbuff, "Hubble_little_h")==0)
+                        opt.hval = atof(vbuff);
+                    else if (strcmp(tbuff, "Omega_m")==0)
+                        opt.Omega_m = atof(vbuff);
+                    else if (strcmp(tbuff, "Omega_Lambda")==0)
+                        opt.Omega_Lambda = atof(vbuff);
+                    else if (strcmp(tbuff, "Omega_DE")==0)
+                        opt.Omega_de = atof(vbuff);
+                    else if (strcmp(tbuff, "Omega_k")==0)
+                        opt.Omega_k = atof(vbuff);
+                    else if (strcmp(tbuff, "Omega_cdm")==0)
+                        opt.Omega_cdm= atof(vbuff);
+                    else if (strcmp(tbuff, "Omega_b")==0)
+                        opt.Omega_b= atof(vbuff);
+                    else if (strcmp(tbuff, "Omega_r")==0)
+                        opt.Omega_r= atof(vbuff);
+                    else if (strcmp(tbuff, "Omega_nu")==0)
+                        opt.Omega_nu= atof(vbuff);
+                    else if (strcmp(tbuff, "w_of_DE")==0)
+                        opt.w_de= atof(vbuff);
+
                     //Other options
                     else if (strcmp(tbuff, "Verbose")==0){
                         opt.iverbose = atoi(vbuff);
@@ -580,6 +614,14 @@ inline void ConfigCheck(Options &opt)
 #endif
     }
 #endif
+    if (opt.numstepsarray.size() > 0 && opt.numstepsarray.size() != opt.numsnapshots) {
+        cerr<<"ERROR: You specified a numsteps array so each step searchs a different number of steps but the size of the list does not match the number of snaphots "<<endl;
+        #ifdef USEMPI
+                    MPI_Abort(MPI_COMM_WORLD,8);
+        #else
+                    exit(8);
+        #endif
+    }
 
     //now set description
     opt.description=(char*)"Produce tree in direction of  ";

@@ -65,8 +65,8 @@ int main(int argc,char **argv)
     unsigned int *prank=NULL;
     //int *ibuildrankflag;
     long long i,j;
-    long unsigned nh,nhp,nhd;
-    long unsigned newnp;
+    unsigned long long nh,nhp,nhd;
+    unsigned long long newnp;
     //flags indicating whether updates to list are necessary
     int ilistupdated;
 
@@ -88,7 +88,7 @@ int main(int argc,char **argv)
         cout<<"Found "<<opt.TotalNumberofHalos<<" halos "<<endl;
     }
     if (opt.iverbose) {
-        long unsigned sum=0;
+        unsigned long long sum=0;
         for (i=StartSnap;i<EndSnap;i++)
             for (j=0;j<pht[i].numhalos;j++) sum+=pht[i].Halo[j].NumberofParticles;
         cout<<ThisTask<<" has allocated at least "<<sum*sizeof(IDTYPE)/1024./1024./1024.<<"GB of memory to store particle ids"<<endl;

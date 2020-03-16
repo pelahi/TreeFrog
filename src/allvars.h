@@ -231,7 +231,7 @@ using namespace NBody;
 #ifdef TREEFROGLONGIDS
 typedef long long IDTYPE;
 #elif defined(TREEFROGLONGUIDS)
-typedef long unsigned IDTYPE;
+typedef unsigned long long IDTYPE;
 #elif defined(TREEFROGINTIDS)
 typedef int IDTYPE;
 #else
@@ -250,12 +250,17 @@ struct Options
     //@}
     ///number of snapshots
     int numsnapshots;
-    ///nubmer of steps integrated over to find links (two steps needs three snapshots)
+    ///number of steps integrated over to find links (two steps needs three snapshots)
     int numsteps;
+    ///if the number of steps is a function of the current step, can store in vector
+    vector<int> numstepsarray;
+    ///store delta t, delta a, that dictates the size of the steps for which you
+    ///search forward or backward
+    double deltaT, deltascalefactor;
     ///maximum id value, used to allocate an array of this size so that ids can be mapped to an index and thus easily accessible.
-    long unsigned MaxIDValue;
+    unsigned long long MaxIDValue;
     ///total number of haloes across all snapshots
-    long unsigned TotalNumberofHalos;
+    unsigned long long TotalNumberofHalos;
     ///read halo positions
     int iposinfoflag;
 
@@ -348,6 +353,13 @@ struct Options
     int impilocalmap;
 #endif
 
+    ///\name scale factor, Hubble in km/s/Mpc, cosmology, virial density. These are used if linking lengths are scaled or trying to define virlevel using the cosmology
+    //@{
+    Double_t Gravity, hval, H;
+    Double_t Omega_m, Omega_b, Omega_cdm, Omega_Lambda, Omega_k, Omega_r, Omega_nu, Omega_de, w_de;
+    Double_t rhocrit, rhobg;
+    //@}
+
     Options()
     {
         version=TREEFROGVERSION;
@@ -401,6 +413,10 @@ struct Options
         impiloadbalancesplitting=MPIPARTICLEBALANCE;
         impilocalmap=1;
 #endif
+
+        //set units of comology to km/s/kpc  and solar mass
+        H = 0.1;
+        Gravity = 4.3022682e-6;
     }
 };
 
@@ -408,23 +424,23 @@ struct Options
     Halo data structure
 */
 struct HaloData{
-    long unsigned haloID;
+    long long unsigned haloID;
 #ifdef HALOIDNOTINDEX
     long long unsigned origID;
 #endif
-    long unsigned NumberofParticles;
+    long long unsigned NumberofParticles;
 
     IDTYPE *ParticleID;
     float Xcm[3], Vcm[3];
     float Rmax, Vmax;
-    HaloData(long unsigned np=0){
+    HaloData(unsigned long long np=0){
         NumberofParticles=np;
         ParticleID=NULL;
         if (NumberofParticles>0) {
             ParticleID=new IDTYPE[NumberofParticles];
         }
     }
-    void Alloc(long unsigned np=0){
+    void Alloc(unsigned long long np=0){
         //if (NumberofParticles>0){
         if (ParticleID!=NULL){
             delete[] ParticleID;
@@ -466,7 +482,7 @@ struct ProgenitorData
     int NumberofProgenitors;
     //@}
     ///store list of progenitors
-    long unsigned* ProgenitorList;
+    unsigned long long* ProgenitorList;
     ///store the merit value
     float *Merit;
     ///store the fraction of shared particles
@@ -495,7 +511,7 @@ struct ProgenitorData
             if (nsharedfrac!=NULL) delete[] nsharedfrac;
         }
         NumberofProgenitors=p.NumberofProgenitors;
-        ProgenitorList=new long unsigned[NumberofProgenitors];
+        ProgenitorList=new unsigned long long[NumberofProgenitors];
         Merit=new float[NumberofProgenitors];
         for (int i=0;i<NumberofProgenitors;i++) {
             ProgenitorList[i]=p.ProgenitorList[i];
@@ -521,7 +537,7 @@ struct DescendantData
     int NumberofDescendants;
     //@}
     ///store list of descendants
-    long unsigned* DescendantList;
+    unsigned long long* DescendantList;
     ///store the merit value
     float *Merit;
     ///store the fraction of shared particles
@@ -540,9 +556,9 @@ struct DescendantData
         dtoptype=NULL;
         istep=0;
     }
-    DescendantData(int &nd, long unsigned *dl, float *m, unsigned short *dtop, int &step, float *ns=NULL){
+    DescendantData(int &nd, unsigned long long *dl, float *m, unsigned short *dtop, int &step, float *ns=NULL){
         NumberofDescendants=nd;
-        DescendantList=new long unsigned[NumberofDescendants];
+        DescendantList=new unsigned long long[NumberofDescendants];
         Merit=new float[NumberofDescendants];
         for (int i=0;i<NumberofDescendants;i++) {
             DescendantList[i]=dl[i];
@@ -564,7 +580,7 @@ struct DescendantData
             if (nsharedfrac!=NULL) delete[] nsharedfrac;
         }
     }
-    void Set(int &nd, long unsigned *dl, float *m, unsigned short *dtop, int &step, float *ns=NULL){
+    void Set(int &nd, unsigned long long *dl, float *m, unsigned short *dtop, int &step, float *ns=NULL){
         if (NumberofDescendants>0) {
             delete[] DescendantList;
             delete[] Merit;
@@ -572,7 +588,7 @@ struct DescendantData
             if (nsharedfrac!=NULL) delete[] nsharedfrac;
         }
         NumberofDescendants=nd;
-        DescendantList=new long unsigned[NumberofDescendants];
+        DescendantList=new unsigned long long[NumberofDescendants];
         Merit=new float[NumberofDescendants];
         for (int i=0;i<NumberofDescendants;i++) {
             DescendantList[i]=dl[i];
@@ -595,7 +611,7 @@ struct DescendantData
             if (nsharedfrac!=NULL) delete[] nsharedfrac;
         }
         NumberofDescendants=d.NumberofDescendants;
-        DescendantList=new long unsigned[NumberofDescendants];
+        DescendantList=new unsigned long long[NumberofDescendants];
         Merit=new float[NumberofDescendants];
         for (int i=0;i<NumberofDescendants;i++) {
             DescendantList[i]=d.DescendantList[i];
@@ -626,7 +642,7 @@ struct DescendantDataProgenBased
     //@}
 
     ///store list of descendants in the form of halo index and temporal index
-    vector<long unsigned> haloindex;
+    vector<unsigned long long> haloindex;
     vector<int unsigned> halotemporalindex;
     ///store the merit value
     vector<float> Merit;
@@ -641,7 +657,7 @@ struct DescendantDataProgenBased
     vector<int> MPITask;
     //if using mpi, need to keep track of items removed that
     //stuff can be properly mergered
-    vector<long unsigned> removalhaloindex;
+    vector<unsigned long long> removalhaloindex;
     vector<int unsigned> removalhalotemporalindex;
 #endif
     DescendantDataProgenBased(int reservesize=4){
@@ -698,7 +714,7 @@ struct DescendantDataProgenBased
         int imax=0;
         Double_t generalizedmerit=Merit[0]/pow((Double_t)deltat[0],ALPHADELTAT), newgenmerit;
         int curdescentype=descentype[0];
-        long unsigned optimalhaloindex;
+        unsigned long long optimalhaloindex;
         int unsigned optimalhalotemporalindex;
 
         for (int i=1;i<NumberofDescendants;i++) {
@@ -724,7 +740,7 @@ struct DescendantDataProgenBased
         }
 #endif
         if (imax>0) {
-            long unsigned hid, htid;
+            unsigned long long hid, htid;
             Double_t merit;
             int dt;
             int dtype;
@@ -758,7 +774,7 @@ struct DescendantDataProgenBased
         }
     }
 #ifdef USEMPI
-    void Merge(int thistask, int &numdescen, long unsigned *hid,int unsigned *htid, float *m, int *dt, int *dtype, int *task) {
+    void Merge(int thistask, int &numdescen, unsigned long long *hid,int unsigned *htid, float *m, int *dt, int *dtype, int *task) {
         for (Int_t i=0;i<numdescen;i++) if (task[i]!=thistask)
         {
             //first check to see if halo already present
@@ -776,7 +792,7 @@ struct DescendantDataProgenBased
         }
     }
     //remove entries from the list
-    void Removal(int &nremove, long unsigned *hid,int unsigned *htid) {
+    void Removal(int &nremove, unsigned long long *hid,int unsigned *htid) {
         for (Int_t i=0;i<nremove;i++)
         {
             //find entry
@@ -809,7 +825,7 @@ struct ProgenitorDataDescenBased
     //@}
 
     ///store list of progenitors in the form of halo index and temporal index
-    vector<long unsigned> haloindex;
+    vector<unsigned long long> haloindex;
     vector<int unsigned> halotemporalindex;
     ///store the merit value
     vector<float> Merit;
@@ -825,7 +841,7 @@ struct ProgenitorDataDescenBased
     //store which task this halo progenitor is located on
     vector<int> MPITask;
     //store items removed
-    vector<long unsigned> removalhaloindex;
+    vector<unsigned long long> removalhaloindex;
     vector<int unsigned> removalhalotemporalindex;
 #endif
     ProgenitorDataDescenBased(int reservesize=4){
@@ -885,7 +901,7 @@ struct ProgenitorDataDescenBased
         int imax=0;
         Double_t generalizedmerit=Merit[0]/pow((Double_t)deltat[0],ALPHADELTAT), newgenmerit;
         int curprogenindex=progenindex[0];
-        long unsigned optimalhaloindex;
+        unsigned long long optimalhaloindex;
         int unsigned optimalhalotemporalindex;
         for (int i=1;i<NumberofProgenitors;i++) {
             newgenmerit=Merit[i]/pow((Double_t)deltat[i],ALPHADELTAT);
@@ -910,7 +926,7 @@ struct ProgenitorDataDescenBased
         }
 #endif
         if (imax>0) {
-            long unsigned hid, htid;
+            unsigned long long hid, htid;
             Double_t merit;
             int dt;
             int pindex;
@@ -947,7 +963,7 @@ struct ProgenitorDataDescenBased
         }
     }
 #ifdef USEMPI
-    void Merge(int thistask, int &numprogen, long unsigned *hid,int unsigned *htid, float *m, int *dt, int *pindex, int* dtop, int *task) {
+    void Merge(int thistask, int &numprogen, unsigned long long *hid,int unsigned *htid, float *m, int *dt, int *pindex, int* dtop, int *task) {
         for (Int_t i=0;i<numprogen;i++) if (task[i]!=thistask)
         {
             //first check to see if halo already present
@@ -966,7 +982,7 @@ struct ProgenitorDataDescenBased
         }
     }
     //remove entries from the list
-    void Removal(int &nremove, long unsigned *hid,int unsigned *htid) {
+    void Removal(int &nremove, unsigned long long *hid,int unsigned *htid) {
         for (Int_t i=0;i<nremove;i++)
         {
             //find entry

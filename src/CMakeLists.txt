@@ -10,6 +10,7 @@
 
 set(TF_SOURCES
     allvars.cxx
+    cosmology.cxx
     crosscheck.cxx
     idroutines.cxx
     io.cxx

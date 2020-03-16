@@ -72,11 +72,11 @@ Double_t CalculateMerit(Options &opt, UInt_t n1, UInt_t n2, UInt_t nsh, HaloData
   \todo still need to clean up core matching section and implement \ref PARTLISTCORECOREONLY
 */
 
-ProgenitorData *CrossMatch(Options &opt, const long unsigned nhalos1, const long unsigned nhalos2, HaloData *&h1, HaloData *&h2, unsigned int*&pfof2, int &ilistupdated, int istepval, ProgenitorData *refprogen)
+ProgenitorData *CrossMatch(Options &opt, const unsigned long long nhalos1, const unsigned long long nhalos2, HaloData *&h1, HaloData *&h2, unsigned int*&pfof2, int &ilistupdated, int istepval, ProgenitorData *refprogen)
 {
     long int i,j,k,n;
     int nthreads=1,tid,maxnthreads=1,chunksize;
-    long unsigned offset;
+    unsigned long long offset;
     //temp variable to store the openmp reduction value for ilistupdated
     int newilistupdated;
     //setup openmp environment
@@ -94,8 +94,8 @@ ProgenitorData *CrossMatch(Options &opt, const long unsigned nhalos1, const long
 
     ProgenitorData *p1=new ProgenitorData[nhalos1];
     unsigned int *sharelist,*halolist;
-    long unsigned num_noprogen, ntotitems;
-    long unsigned *needprogenlist;
+    unsigned long long num_noprogen, ntotitems;
+    unsigned long long *needprogenlist;
     //init that list is updated if no reference list is provided
     if (refprogen==NULL) ilistupdated=1;
     //otherwise assume list is not updated
@@ -106,7 +106,7 @@ ProgenitorData *CrossMatch(Options &opt, const long unsigned nhalos1, const long
     if (nhalos2>0){
     //if a reference list is not provided, then build for every halo
     if (refprogen==NULL) {
-    ntotitems=nhalos2*(long unsigned)nthreads;
+    ntotitems=nhalos2*(unsigned long long)nthreads;
     sharelist=new unsigned int[ntotitems];
     halolist=new unsigned int[ntotitems];
     //to store haloes that share links and the halo index of those shared haloes
@@ -119,7 +119,7 @@ private(i,tid,offset)
 {
         //initialize variables
         tid=omp_get_thread_num();
-        offset=((long unsigned)tid)*nhalos2;
+        offset=((unsigned long long)tid)*nhalos2;
 #pragma omp for schedule(dynamic,chunksize) nowait
 #endif
     for (i=0;i<nhalos1;i++){
@@ -158,7 +158,7 @@ private(i,tid,offset)
         nthreads=min((int)ceil((double)num_noprogen/(double)OMPCHUNKSIZE),maxnthreads);
         omp_set_num_threads(nthreads);
 #endif
-        needprogenlist=new long unsigned[num_noprogen];
+        needprogenlist=new unsigned long long[num_noprogen];
         num_noprogen=0;
         for (i=0;i<nhalos1;i++){
             if (refprogen[i].NumberofProgenitors==0){
@@ -170,7 +170,7 @@ private(i,tid,offset)
             }
         }
 
-        ntotitems=nhalos2*(long unsigned)nthreads;
+        ntotitems=nhalos2*(unsigned long long)nthreads;
         sharelist=new unsigned int[ntotitems];
         halolist=new unsigned int[ntotitems];
         for (i=0;i<ntotitems;i++)sharelist[i]=0;
@@ -182,7 +182,7 @@ private(i,k,tid,offset)
 {
         //initialize variables
         tid=omp_get_thread_num();
-        offset=((long unsigned)tid)*nhalos2;
+        offset=((unsigned long long)tid)*nhalos2;
 #pragma omp parallel for schedule(dynamic,chunksize) reduction(+:newilistupdated)
 #endif
         for (k=0;k<num_noprogen;k++){
@@ -218,14 +218,14 @@ private(i,k,tid,offset)
 }
 
 int CrossMatchProgenitorIndividual(Options &opt, Int_t i,
-    const long unsigned nhalos1, const long unsigned nhalos2,
+    const unsigned long long nhalos1, const unsigned long long nhalos2,
     HaloData *&h1, HaloData *&h2,
     unsigned int *&pfof2,
     int istepval,
     ProgenitorData *&p1,
     unsigned int *&sharelist,
     unsigned int *&halolist,
-    long unsigned offset
+    unsigned long long offset
     //unsigned int *&sharepartlist,
     //unsigned int *&pranking2,
     //Double_t *&rankingsum
@@ -299,7 +299,7 @@ int CrossMatchProgenitorIndividual(Options &opt, Int_t i,
             sharelist[index]=0;
         }
         p1[i].NumberofProgenitors=numshared;
-        p1[i].ProgenitorList=new long unsigned[numshared];
+        p1[i].ProgenitorList=new unsigned long long[numshared];
         p1[i].Merit=new float[numshared];
         p1[i].nsharedfrac=new float[numshared];
         for (j=0;j<numshared;j++){
@@ -382,13 +382,13 @@ int CrossMatchProgenitorIndividual(Options &opt, Int_t i,
 
 ///effectively the same code as \ref CrossMatch but allows for the possibility of matching descendant/child nodes using a different merit function
 ///here the lists are different as input order is reverse of that used in \ref CrossMatch
-DescendantData *CrossMatchDescendant(Options &opt, const long unsigned nhalos1, const long unsigned nhalos2,
+DescendantData *CrossMatchDescendant(Options &opt, const unsigned long long nhalos1, const unsigned long long nhalos2,
     HaloData *&h1, HaloData *&h2, unsigned int *&pfof2, int &ilistupdated, int istepval, unsigned int *pranking2,
     DescendantData *refdescen)
 {
     long int i,j,k,n;
     int nthreads=1,tid,maxnthreads=1,chunksize;
-    long unsigned offset, offset2;
+    unsigned long long offset, offset2;
     //temp variable to store the openmp reduction value for ilistupdated
     int newilistupdated;
     int initdtopval;
@@ -409,12 +409,12 @@ DescendantData *CrossMatchDescendant(Options &opt, const long unsigned nhalos1, 
     unsigned int *sharelist, *halolist, *sharepartlist=NULL;
     Double_t *rankingsum=NULL;
     UInt_t nbiggest;
-    long unsigned num_nodescen, ntotitems;
-    long unsigned *needdescenlist;
+    unsigned long long num_nodescen, ntotitems;
+    unsigned long long *needdescenlist;
     if (refdescen==NULL) ilistupdated=1;
     else ilistupdated=0;
     newilistupdated=ilistupdated;
-    ntotitems=nhalos2*(long unsigned)nthreads;
+    ntotitems=nhalos2*(unsigned long long)nthreads;
 
     //if a core-core matching follows core-all matching then mark core-all matches
     //as worse initial rank of 1, otherwise use zero
@@ -426,7 +426,7 @@ DescendantData *CrossMatchDescendant(Options &opt, const long unsigned nhalos1, 
     if (opt.imerittype==MERITRankWeighted||opt.imerittype==MERITRankWeightedBoth) {
         nbiggest=h1[0].NumberofParticles;
         for (i=1;i<nhalos1;i++) if (nbiggest<h1[i].NumberofParticles) nbiggest=h1[i].NumberofParticles;
-        sharepartlist=new unsigned int[nbiggest*(long unsigned)nthreads];
+        sharepartlist=new unsigned int[nbiggest*(unsigned long long)nthreads];
     }
     if (opt.imerittype==MERITRankWeightedBoth) {
         rankingsum=new Double_t[ntotitems];
@@ -445,8 +445,8 @@ private(i,tid,offset,offset2)
 {
         //initialize variables
         tid=omp_get_thread_num();
-        offset=((long unsigned)tid)*nhalos2;
-        offset2=((long unsigned)tid)*nbiggest;
+        offset=((unsigned long long)tid)*nhalos2;
+        offset2=((unsigned long long)tid)*nbiggest;
 #pragma omp for schedule(dynamic,chunksize) nowait
 #endif
     for (i=0;i<nhalos1;i++){
@@ -485,7 +485,7 @@ private(i,tid,offset,offset2)
         nthreads=min((int)ceil((double)num_nodescen/(double)OMPCHUNKSIZE),maxnthreads);
         omp_set_num_threads(nthreads);
 #endif
-        needdescenlist=new long unsigned[num_nodescen];
+        needdescenlist=new unsigned long long[num_nodescen];
         num_nodescen=0;
         for (i=0;i<nhalos1;i++){
             if (refdescen[i].NumberofDescendants==0){
@@ -511,8 +511,8 @@ private(i,k,tid,offset,offset2)
 {
         //initialize variables
         tid=omp_get_thread_num();
-        offset=((long unsigned)tid)*nhalos2;
-        offset2=((long unsigned)tid)*nbiggest;
+        offset=((unsigned long long)tid)*nhalos2;
+        offset2=((unsigned long long)tid)*nbiggest;
 #pragma omp parallel for schedule(dynamic,chunksize) reduction(+:newilistupdated)
 #endif
         for (k=0;k<num_nodescen;k++){
@@ -552,14 +552,14 @@ private(i,k,tid,offset,offset2)
 }
 
 int CrossMatchDescendantIndividual(Options &opt, Int_t i,
-    const long unsigned nhalos1, const long unsigned nhalos2,
+    const unsigned long long nhalos1, const unsigned long long nhalos2,
     HaloData *&h1, HaloData *&h2,
     unsigned int *&pfof2,
     int istepval, int initdtopval,
     DescendantData *&d1,
     unsigned int *&sharelist,
     unsigned int *&halolist,
-    long unsigned offset, long unsigned offset2,
+    unsigned long long offset, unsigned long long offset2,
     unsigned int *&sharepartlist,
     unsigned int *&pranking2,
     Double_t *&rankingsum
@@ -629,7 +629,7 @@ int CrossMatchDescendantIndividual(Options &opt, Int_t i,
             sharelist[index]=0;
         }
         d1[i].NumberofDescendants=numshared;
-        d1[i].DescendantList=new long unsigned[numshared];
+        d1[i].DescendantList=new unsigned long long[numshared];
         d1[i].Merit=new float[numshared];
         d1[i].dtoptype=new unsigned short[numshared];
         //d1[i].nsharedfrac=new float[numshared];
@@ -738,7 +738,7 @@ int CrossMatchDescendantIndividual(Options &opt, Int_t i,
 //@{
 
 ///ensure cross match is exclusive
-void CleanCrossMatch(const int istepval, const long unsigned nhalos1, const long unsigned nhalos2, HaloData *&h1, HaloData *&h2, ProgenitorData *&p1)
+void CleanCrossMatch(const int istepval, const unsigned long long nhalos1, const unsigned long long nhalos2, HaloData *&h1, HaloData *&h2, ProgenitorData *&p1)
 {
     Int_t i,j,k;
     int nthreads=1,tid;
@@ -809,7 +809,7 @@ private(i,j,k)
 
 
 ///adjust descendant list to store halo ids not halo indices but does not prune the list descendant list.
-void UpdateDescendantIndexing(const int istepval, const long unsigned nhalos1, const long unsigned nhalos2, HaloData *&h1, HaloData *&h2, DescendantData *&p1)
+void UpdateDescendantIndexing(const int istepval, const unsigned long long nhalos1, const unsigned long long nhalos2, HaloData *&h1, HaloData *&h2, DescendantData *&p1)
 {
     Int_t i,j,k;
     int nthreads=1,tid;

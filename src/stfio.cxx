@@ -311,7 +311,7 @@ inline void STFReadNumFileInfoAndCorrectNumFile(int &itask, int &nprocs, int &nm
 
 
 ///read information from the group catalog file and correct the number of files if necessary
-inline void STFReadNumGroups(unsigned long &nglocal, unsigned long &TotalNumberofHalos, unsigned long &nsglocal, fstream &Fgroup, fstream &Fsgroup,
+inline void STFReadNumGroups(unsigned long long &nglocal, unsigned long long &TotalNumberofHalos, unsigned long long &nsglocal, fstream &Fgroup, fstream &Fsgroup,
 #ifdef USEHDF
     H5File &Fhdfgroup, H5File &Fhdfsgroup, DataSet &dataset, DataSpace &dataspace,
 #endif
@@ -321,18 +321,18 @@ inline void STFReadNumGroups(unsigned long &nglocal, unsigned long &TotalNumbero
     HDFCatalogNames hdfnames;
 #endif
     int itemp;
-    unsigned long ltemp;
+    unsigned long long ltemp;
 
     //now read data
     if (ibinary==INBINARY) {
-        Fgroup.read((char*)&ltemp,sizeof(unsigned long));
+        Fgroup.read((char*)&ltemp,sizeof(unsigned long long));
         nglocal=ltemp;
-        Fgroup.read((char*)&ltemp,sizeof(unsigned long));
+        Fgroup.read((char*)&ltemp,sizeof(unsigned long long));
         TotalNumberofHalos=ltemp;
         if (ifieldhalos) {
-            Fsgroup.read((char*)&ltemp,sizeof(unsigned long));
+            Fsgroup.read((char*)&ltemp,sizeof(unsigned long long));
             nsglocal=ltemp;
-            Fsgroup.read((char*)&ltemp,sizeof(unsigned long));
+            Fsgroup.read((char*)&ltemp,sizeof(unsigned long long));
         }
     }
 #ifdef USEHDF
@@ -367,8 +367,8 @@ inline void STFReadNumGroups(unsigned long &nglocal, unsigned long &TotalNumbero
     }
 }
 
-inline void STFReadNumData(unsigned long &nids, unsigned long &nsids, unsigned long &nuids, unsigned long &nsuids,
-    unsigned long &nidstot, unsigned long &nsidstot, unsigned long &nuidstot, unsigned long &nsuidstot,
+inline void STFReadNumData(unsigned long long &nids, unsigned long long &nsids, unsigned long long &nuids, unsigned long long &nsuids,
+    unsigned long long &nidstot, unsigned long long &nsidstot, unsigned long long &nuidstot, unsigned long long &nsuidstot,
     fstream &Fpart, fstream &Fupart, fstream &Fspart, fstream &Fsupart,
     fstream &Fparttype, fstream &Fuparttype, fstream &Fsparttype, fstream &Fsuparttype,
 #ifdef USEHDF
@@ -383,7 +383,7 @@ inline void STFReadNumData(unsigned long &nids, unsigned long &nsids, unsigned l
     HDFCatalogNames hdfnames;
 #endif
     int itemp;
-    unsigned long ltemp;
+    unsigned long long ltemp;
     int itask,nprocs;
     nids=nsids=nuids=nsuids=nidstot=nsidstot=nuidstot=nsuidstot=0;
     //read the header info before reading lengths of the halos
@@ -393,10 +393,10 @@ inline void STFReadNumData(unsigned long &nids, unsigned long &nsids, unsigned l
         Fupart.read((char*)&itask,sizeof(int));
         Fupart.read((char*)&nprocs,sizeof(int));
 
-        Fpart.read((char*)&nids,sizeof(unsigned long));
-        Fpart.read((char*)&nidstot,sizeof(unsigned long));//total ids
-        Fupart.read((char*)&nuids,sizeof(unsigned long));
-        Fupart.read((char*)&nuidstot,sizeof(unsigned long));//total ids
+        Fpart.read((char*)&nids,sizeof(unsigned long long));
+        Fpart.read((char*)&nidstot,sizeof(unsigned long long));//total ids
+        Fupart.read((char*)&nuids,sizeof(unsigned long long));
+        Fupart.read((char*)&nuidstot,sizeof(unsigned long long));//total ids
 
         if (ifieldhalos) {
             Fspart.read((char*)&itask,sizeof(int));
@@ -404,10 +404,10 @@ inline void STFReadNumData(unsigned long &nids, unsigned long &nsids, unsigned l
             Fsupart.read((char*)&itask,sizeof(int));
             Fsupart.read((char*)&nprocs,sizeof(int));
 
-            Fspart.read((char*)&nsids,sizeof(unsigned long));
-            Fspart.read((char*)&nsidstot,sizeof(unsigned long));//total ids
-            Fsupart.read((char*)&nsuids,sizeof(unsigned long));
-            Fsupart.read((char*)&nsuidstot,sizeof(unsigned long));//total ids
+            Fspart.read((char*)&nsids,sizeof(unsigned long long));
+            Fspart.read((char*)&nsidstot,sizeof(unsigned long long));//total ids
+            Fsupart.read((char*)&nsuids,sizeof(unsigned long long));
+            Fsupart.read((char*)&nsuidstot,sizeof(unsigned long long));//total ids
         }
 
         if (itypematch!=ALLTYPEMATCH) {
@@ -416,10 +416,10 @@ inline void STFReadNumData(unsigned long &nids, unsigned long &nsids, unsigned l
             Fuparttype.read((char*)&itask,sizeof(int));
             Fuparttype.read((char*)&nprocs,sizeof(int));
 
-            Fparttype.read((char*)&nids,sizeof(unsigned long));
-            Fparttype.read((char*)&nidstot,sizeof(unsigned long));//total ids
-            Fuparttype.read((char*)&nuids,sizeof(unsigned long));
-            Fuparttype.read((char*)&nuidstot,sizeof(unsigned long));//total ids
+            Fparttype.read((char*)&nids,sizeof(unsigned long long));
+            Fparttype.read((char*)&nidstot,sizeof(unsigned long long));//total ids
+            Fuparttype.read((char*)&nuids,sizeof(unsigned long long));
+            Fuparttype.read((char*)&nuidstot,sizeof(unsigned long long));//total ids
 
             if (ifieldhalos) {
                 Fsparttype.read((char*)&itask,sizeof(int));
@@ -427,10 +427,10 @@ inline void STFReadNumData(unsigned long &nids, unsigned long &nsids, unsigned l
                 Fsuparttype.read((char*)&itask,sizeof(int));
                 Fsuparttype.read((char*)&nprocs,sizeof(int));
 
-                Fsparttype.read((char*)&nsids,sizeof(unsigned long));
-                Fsparttype.read((char*)&nsidstot,sizeof(unsigned long));//total ids
-                Fsuparttype.read((char*)&nsuids,sizeof(unsigned long));
-                Fsuparttype.read((char*)&nsuidstot,sizeof(unsigned long));//total ids
+                Fsparttype.read((char*)&nsids,sizeof(unsigned long long));
+                Fsparttype.read((char*)&nsidstot,sizeof(unsigned long long));//total ids
+                Fsuparttype.read((char*)&nsuids,sizeof(unsigned long long));
+                Fsuparttype.read((char*)&nsuidstot,sizeof(unsigned long long));//total ids
             }
         }
     }
@@ -509,7 +509,7 @@ inline void STFReadNumData(unsigned long &nids, unsigned long &nsids, unsigned l
 
 
 ///read information from the group catalog file and correct the number of files if necessary
-inline void STFReadHaloProperties(const unsigned long nglocal, HaloData *Halo, fstream &Fhaloinfo,
+inline void STFReadHaloProperties(const unsigned long long nglocal, HaloData *Halo, fstream &Fhaloinfo,
 #ifdef USEHDF
     H5File &Fhdfhaloinfo, DataSet &dataset, DataSpace &dataspace,
 #endif
@@ -519,15 +519,15 @@ inline void STFReadHaloProperties(const unsigned long nglocal, HaloData *Halo, f
     HDFCatalogNames hdfnames;
 #endif
     int itemp;
-    unsigned long ltemp;
+    unsigned long long ltemp;
     void *data;
     //now read data
     if (ibinary==INBINARY) {
         //offset by header
         Fhaloinfo.read((char*)&itemp,sizeof(int));
         Fhaloinfo.read((char*)&itemp,sizeof(int));
-        Fhaloinfo.read((char*)&itemp,sizeof(unsigned long));
-        Fhaloinfo.read((char*)&ltemp,sizeof(unsigned long));
+        Fhaloinfo.read((char*)&itemp,sizeof(unsigned long long));
+        Fhaloinfo.read((char*)&ltemp,sizeof(unsigned long long));
     }
 #ifdef USEHDF
     else if (ibinary==INHDF) {
@@ -595,13 +595,13 @@ int CheckType(unsigned int t, int tmatch){
 ///\name mpi related routines that open files for load balancing calculations
 //@{
 ///Read halo data from an idividual snapshot;
-unsigned long MPIReadHaloGroupCatalogDataNum(string &infile, int mpi_ninput, int ibinary, int ifieldhalos, int itypematch)
+unsigned long long MPIReadHaloGroupCatalogDataNum(string &infile, int mpi_ninput, int ibinary, int ifieldhalos, int itypematch)
 {
     Int_t itemp;
-    unsigned long ltemp;
+    unsigned long long ltemp;
     Int_t noffset,numfiletypes;
-    long unsigned nparts,haloid;
-    long unsigned TotalNumberofHalos;
+    unsigned long long nparts,haloid;
+    unsigned long long TotalNumberofHalos;
     fstream Fgroup,Fpart,Fupart; //field objects
     fstream Fsgroup,Fspart,Fsupart; //sublevels
     fstream Fparttype,Fuparttype; //field objects
@@ -620,8 +620,8 @@ unsigned long MPIReadHaloGroupCatalogDataNum(string &infile, int mpi_ninput, int
 #endif
     //void pointer to
     void * Farray;
-    unsigned long nids,nuids,nsids,nsuids,nglocal,nsglocal;
-    unsigned long nidstot,nuidstot,nsidstot,nsuidstot;
+    unsigned long long nids,nuids,nsids,nsuids,nglocal,nsglocal;
+    unsigned long long nidstot,nuidstot,nsidstot,nsuidstot;
     Int_t *numingroup,*numingroupbound,*offset,*uoffset;
     Int_t counter,nn;
     int nmpicount,itask,nprocs;
@@ -692,15 +692,15 @@ unsigned long MPIReadHaloGroupCatalogDataNum(string &infile, int mpi_ninput, int
 ///Read the number of particles in halos from an idividual snapshot, useful for splitting snaphots across threads in load balanced fashion
 ///\todo need to update the particle number to be just read from .catalog_particles and .catalog_particles.unbound directly
 ///instead of looping over files and loading arrays
-unsigned long MPIReadHaloGroupCatalogDataParticleNum(string &infile, int mpi_ninput, int ibinary, int ifieldhalos, int itypematch)
+unsigned long long MPIReadHaloGroupCatalogDataParticleNum(string &infile, int mpi_ninput, int ibinary, int ifieldhalos, int itypematch)
 {
 
     HaloData *Halo;
     Int_t itemp;
-    unsigned long ltemp;
+    unsigned long long ltemp;
     Int_t noffset,numfiletypes;
-    long unsigned nparts,haloid;
-    long unsigned TotalNumberofParticles=0;
+    unsigned long long nparts,haloid;
+    unsigned long long TotalNumberofParticles=0;
     fstream Fgroup,Fpart,Fupart; //field objects
     fstream Fsgroup,Fspart,Fsupart; //sublevels
     fstream Fparttype,Fuparttype; //field objects
@@ -717,8 +717,8 @@ unsigned long MPIReadHaloGroupCatalogDataParticleNum(string &infile, int mpi_nin
     HDFCatalogNames hdfnames;
     void * data;
 #endif
-    unsigned long nids,nuids,nsids,nsuids,nglocal,nsglocal,ngtot;
-    unsigned long nidstot,nuidstot,nsidstot,nsuidstot;
+    unsigned long long nids,nuids,nsids,nsuids,nglocal,nsglocal,ngtot;
+    unsigned long long nidstot,nuidstot,nsidstot,nsuidstot;
     Int_t *numingroup,*numingroupbound,*offset,*uoffset;
     Int_t counter,nn;
     int nmpicount,itask,nprocs;
@@ -793,10 +793,10 @@ HaloData *MPIReadHaloGroupCatalogDataAllocation(string &infile, Int_t &numhalos,
 {
     HaloData *Halo;
     Int_t itemp;
-    unsigned long ltemp;
+    unsigned long long ltemp;
     Int_t noffset,numfiletypes;
-    long unsigned nparts,haloid;
-    long unsigned TotalNumberofHalos;
+    unsigned long long nparts,haloid;
+    unsigned long long TotalNumberofHalos;
     fstream Fgroup,Fpart,Fupart; //field objects
     fstream Fsgroup,Fspart,Fsupart; //sublevels
     fstream Fparttype,Fuparttype; //field objects
@@ -813,9 +813,9 @@ HaloData *MPIReadHaloGroupCatalogDataAllocation(string &infile, Int_t &numhalos,
     HDFCatalogNames hdfnames;
     void * data;
 #endif
-    unsigned long nids,nuids,nsids,nsuids,nglocal,nsglocal;
-    unsigned long ngtot;
-    unsigned long nidstot,nuidstot,nsidstot,nsuidstot;
+    unsigned long long nids,nuids,nsids,nsuids,nglocal,nsglocal;
+    unsigned long long ngtot;
+    unsigned long long nidstot,nuidstot,nsidstot,nsuidstot;
     Int_t *numingroup,*numingroupbound,*offset,*uoffset;
     Int_t counter,nn;
     int nmpicount,itask,nprocs;
@@ -934,10 +934,10 @@ HaloData *MPIReadHaloGroupCatalogDataAllocation(string &infile, Int_t &numhalos,
 void MPIReadHaloGroupCatalogData(string &infile, Int_t &numhalos, HaloData *&Halo, int mpi_ninput, int ibinary, int ifieldhalos, int itypematch, int iverbose)
 {
     Int_t itemp;
-    unsigned long ltemp;
+    unsigned long long ltemp;
     Int_t noffset,numfiletypes;
-    long unsigned nparts,haloid;
-    long unsigned TotalNumberofHalos;
+    unsigned long long nparts,haloid;
+    unsigned long long TotalNumberofHalos;
     fstream Fgroup,Fpart,Fupart; //field objects
     fstream Fsgroup,Fspart,Fsupart; //sublevels
     fstream Fparttype,Fuparttype; //field objects
@@ -954,8 +954,8 @@ void MPIReadHaloGroupCatalogData(string &infile, Int_t &numhalos, HaloData *&Hal
     HDFCatalogNames hdfnames;
     void * data;
 #endif
-    unsigned long nids,nuids,nsids,nsuids,nglocal,nsglocal;
-    unsigned long nidstot,nuidstot,nsidstot,nsuidstot;
+    unsigned long long nids,nuids,nsids,nsuids,nglocal,nsglocal;
+    unsigned long long nidstot,nuidstot,nsidstot,nsuidstot;
     Int_t *numingroup,*numingroupbound,*offset,*uoffset;
     float *X,*Y, *Z, *VX, *VY, *VZ, *Rmax, *Vmax;
     Int_t counter,nn;
@@ -1310,10 +1310,10 @@ HaloData *ReadHaloGroupCatalogData(string &infile, Int_t &numhalos, int mpi_ninp
 {
     HaloData *Halo;
     Int_t itemp;
-    unsigned long ltemp;
+    unsigned long long ltemp;
     Int_t noffset,numfiletypes;
-    long unsigned nparts,haloid;
-    long unsigned TotalNumberofHalos;
+    unsigned long long nparts,haloid;
+    unsigned long long TotalNumberofHalos;
     fstream Fgroup,Fpart,Fupart; //field objects
     fstream Fsgroup,Fspart,Fsupart; //sublevels
     fstream Fparttype,Fuparttype; //field objects
@@ -1330,8 +1330,8 @@ HaloData *ReadHaloGroupCatalogData(string &infile, Int_t &numhalos, int mpi_ninp
     HDFCatalogNames hdfnames;
     void * data;
 #endif
-    unsigned long nids,nuids,nsids,nsuids,nglocal,nsglocal;
-    unsigned long nidstot,nuidstot,nsidstot,nsuidstot;
+    unsigned long long nids,nuids,nsids,nsuids,nglocal,nsglocal;
+    unsigned long long nidstot,nuidstot,nsidstot,nsuidstot;
     Int_t *numingroup,*numingroupbound,*offset,*uoffset;
     Int_t counter,nn;
     int nmpicount,itask,nprocs;
