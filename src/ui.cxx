@@ -622,6 +622,10 @@ inline void ConfigCheck(Options &opt)
                     exit(8);
         #endif
     }
+    if (opt.numstepsarray.size()>0) {
+        opt.numsteps = 0;
+        for (auto &i:opt.numstepsarray) if (opt.numsteps < i) opt.numsteps = i;
+    }
 
     //now set description
     opt.description=(char*)"Produce tree in direction of  ";

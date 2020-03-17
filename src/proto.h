@@ -187,12 +187,12 @@ Double_t CalculateMerit(Options &opt, UInt_t n1, UInt_t n2, HaloData &h1, HaloDa
 /// the routine can also be provided a reference list and the time step of the current halo list used to identify progenitors
 /// and will only search current halo list if the reference list doesn't meet the criteria for viable progenitors
 /// which is currently whether there are any in the reference list
-ProgenitorData *CrossMatch(Options &opt, const unsigned long long nhalos1, const unsigned long long nhalos2, HaloData *&h1, HaloData* &h2, unsigned int*&pfof2, int &ilistupdated, int istepval=1, ProgenitorData *refprogen=NULL);
+ProgenitorData *CrossMatch(Options &opt, const unsigned long long nhalos1, const unsigned long long nhalos2, HaloData *&h1, HaloData* &h2, PFOFTYPE *&pfof2, int &ilistupdated, int istepval=1, ProgenitorData *refprogen=NULL);
 ///get Progenitor match for individual object, return if match found
 int CrossMatchProgenitorIndividual(Options &opt, Int_t i,
     const unsigned long long nhalos1, const unsigned long long nhalos2,
     HaloData *&h1, HaloData *&h2,
-    unsigned int *&pfof2,
+    PFOFTYPE *&pfof2,
     int istepval,
     ProgenitorData *&p1,
     unsigned int *&sharelist,
@@ -216,19 +216,19 @@ void RemoveLinksProgenitorBasedDescendantList(Int_t itimedescen, Int_t ihaloinde
 void CleanProgenitorsUsingDescendants(Int_t i, HaloTreeData *&pht, DescendantDataProgenBased **&pprogendescen, ProgenitorData **&pprogen, int iopttemporalmerittype);
 
 ///similar to \ref CrossMatch but for descendants
-DescendantData *CrossMatchDescendant(Options &opt, const unsigned long long nhalos1, const unsigned long long nhalos2, HaloData *&h1, HaloData* &h2, unsigned int*&pfof2, int &ilistupdated, int istepval=1, unsigned int *ranking2=0, DescendantData *refdescen=NULL);
+DescendantData *CrossMatchDescendant(Options &opt, const unsigned long long nhalos1, const unsigned long long nhalos2, HaloData *&h1, HaloData* &h2, PFOFTYPE *&pfof2, int &ilistupdated, int istepval=1, PFOFTYPE *ranking2=0, DescendantData *refdescen=NULL);
 ///get descendant match for individual object, return if match found
 int CrossMatchDescendantIndividual(Options &opt, Int_t i,
     const unsigned long long nhalos1, const unsigned long long nhalos2,
     HaloData *&h1, HaloData *&h2,
-    unsigned int *&pfof2,
+    PFOFTYPE *&pfof2,
     int istepval, int initdtopval,
     DescendantData *&d1,
     unsigned int *&sharelist,
     unsigned int *&halolist,
     unsigned long long offset, unsigned long long offset2,
     unsigned int *&sharepartlist,
-    unsigned int *&pranking2,
+    PFOFTYPE *&pranking2,
     Double_t *&rankingsum
 );
 
@@ -259,6 +259,14 @@ void CleanDescendantsForMissingProgenitors(Options &opt, Int_t itime, HaloTreeDa
 ///Reranks descendants based on descendant to progenitor ranking and then merit.
 void RerankDescendants(Options &opt, HaloTreeData *&pht, DescendantData **&pdescen);
 
+///allocate mem
+void AllocatePFOFMem(Options &opt, PFOFTYPE *&pfof, PFOFTYPE *&prank);
+///set data in pfof array
+void SetPFOF(Options &opt, PFOFTYPE *&pfof, const Int_t nhalos, HaloData *&halos);
+///set data in pfof array
+void SetPRank(Options &opt, PFOFTYPE *&prank, const Int_t nhalos, HaloData *&halos);
+///Reset the pfof array to zero
+void ResetPFOF(Options &opt, PFOFTYPE *&pfof, const Int_t nhalos, HaloData *&halos);
 
 //@}
 

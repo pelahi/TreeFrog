@@ -232,3 +232,53 @@ void IDcheck(Options &opt, HaloTreeData *&pht){
 #endif
     }
 }
+
+
+//then allocate simple array used for accessing halo ids of particles through their IDs
+void AllocatePFOFMem(Options &opt, PFOFTYPE *&pfof, PFOFTYPE *&prank) {
+    pfof=new PFOFTYPE[opt.MaxIDValue];
+    for (auto i=0;i<opt.MaxIDValue;i++) pfof[i]=0;
+    if (opt.imerittype==MERITRankWeightedBoth) {
+        prank=new PFOFTYPE[opt.MaxIDValue];
+        for (auto i=0;i<opt.MaxIDValue;i++) prank[i]=0;
+    }
+}
+
+///set the pfof array based on halo ids
+void SetPFOF(Options &opt, PFOFTYPE *&pfof, const Int_t nhalos, HaloData *&halos) {
+    for (auto j=0;j<nhalos;j++) {
+        for (auto k=0;k<halos[j].NumberofParticles;k++) {
+            pfof[halos[j].ParticleID[k]]=j+1;
+        }
+    }
+    //now if also doing core weighting then update the halo id associated with the particle so that
+    //it is its current halo core ID + total number of halos
+    if (opt.icorematchtype!=PARTLISTNOCORE && opt.particle_frac<1 && opt.particle_frac>0) {
+        for (auto j=0;j<nhalos;j++) {
+            unsigned long long newnp=max((unsigned long long)(halos[j].NumberofParticles*opt.particle_frac), (unsigned long long)opt.min_numpart);
+            newnp=min((unsigned long long)halos[j].NumberofParticles, newnp);
+            for (auto k=0;k<newnp;k++)
+                pfof[halos[j].ParticleID[k]]=j+1+nhalos;
+        }
+    }
+}
+
+void SetPRank(Options &opt, PFOFTYPE *&prank, const Int_t nhalos, HaloData *&halos) {
+    if (opt.imerittype==MERITRankWeightedBoth) {
+        for (auto j=0;j<nhalos;j++) {
+            for (auto k=0;k<halos[j].NumberofParticles;k++) {
+                prank[halos[j].ParticleID[k]]=k+1;
+            }
+        }
+    }
+}
+
+///reset the index halo array
+void ResetPFOF(Options &opt, PFOFTYPE *&pfof, const Int_t nhalos, HaloData *&halos)
+{
+    for (auto j=0;j<nhalos;j++) {
+        for (auto k=0;k<halos[j].NumberofParticles;k++) {
+            pfof[halos[j].ParticleID[k]]=0;
+        }
+    }
+}

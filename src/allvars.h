@@ -238,6 +238,12 @@ typedef int IDTYPE;
 typedef int unsigned IDTYPE;
 #endif
 
+#ifdef TREEFROGLARGEHALOIDS
+typedef unsigned long long PFOFTYPE;
+#else
+typedef unsigned int PFOFTYPE;
+#endif
+
 /// Options structure stores useful variables that have user determined values which are altered by \ref GetArgs in \ref ui.cxx
 struct Options
 {

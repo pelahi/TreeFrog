@@ -61,8 +61,8 @@ int main(int argc,char **argv)
     ProgenitorData *pprogentemp;
     DescendantData *pdescentemp;
     //store the halo ids of particles in objects, with mapping of ids, makes it easy to look up the haloid of a given particle
-    unsigned int *pfofp,*pfofd;
-    unsigned int *prank=NULL;
+    PFOFTYPE *pfofp,*pfofd;
+    PFOFTYPE *prank=NULL;
     //int *ibuildrankflag;
     long long i,j;
     unsigned long long nh,nhp,nhd;
@@ -109,14 +109,7 @@ int main(int argc,char **argv)
         if (opt.imerittype==MERITRankWeightedBoth) cout<<" And also need similar amount of memory to store ranking information needed by merit"<<endl;
     }
     if(opt.isearchdirection!=SEARCHDESCEN) {
-        //then allocate simple array used for accessing halo ids of particles through their IDs
-        pfofp=new unsigned int[opt.MaxIDValue];
-        for (i=0;i<opt.MaxIDValue;i++) pfofp[i]=0;
-        if (opt.imerittype==MERITRankWeightedBoth) {
-            prank=new unsigned int[opt.MaxIDValue];
-            for (i=0;i<opt.MaxIDValue;i++) prank[i]=0;
-        }
-
+        AllocatePFOFMem(opt, pfofp, prank);
         //allocate memory associated with progenitors
         pprogen=new ProgenitorData*[opt.numsnapshots];
         //if more than a single snapshot is used to identify possible progenitors then must store the descendants information
@@ -146,7 +139,8 @@ int main(int argc,char **argv)
                 //current step if this has not already been allocated
                 if (opt.numsteps>1) {
                     for (j=1;j<=opt.numsteps;j++) if (i-j>=StartSnap)
-                        if (pprogendescen[i-j]==NULL && pht[i-j].numhalos>0) pprogendescen[i-j]=new DescendantDataProgenBased[pht[i-j].numhalos];
+                        if (pprogendescen[i-j] == NULL && pht[i-j].numhalos>0)
+                            pprogendescen[i-j] = new DescendantDataProgenBased[pht[i-j].numhalos];
                 }
                 //if not last snapshot then can look back in time and produce links
                 if (i>StartSnap) {
@@ -155,22 +149,8 @@ int main(int argc,char **argv)
                 //when using mpi also check that data is local
                 if (i-istep-StartSnap>=0) {
                     //set pfof progenitor data structure, used to produce links. Only produced IF snapshot not first one
-                    for (j=0;j<pht[i-istep].numhalos;j++) {
-                        for (Int_t k=0;k<pht[i-istep].Halo[j].NumberofParticles;k++) {
-                            pfofp[pht[i-istep].Halo[j].ParticleID[k]]=j+1;
-                        }
-                    }
-                    //now if also doing core weighting then update the halo id associated with the particle so that
-                    //it is its current halo core ID + total number of halos
-                    if (opt.icorematchtype!=PARTLISTNOCORE && opt.particle_frac<1 && opt.particle_frac>0) {
-                        for (j=0;j<pht[i-istep].numhalos;j++) {
-                            newnp=max((Int_t)(pht[i-istep].Halo[j].NumberofParticles*opt.particle_frac),opt.min_numpart);
-                            //if halo is smaller than the min numpart adjust again.
-                            newnp=min(pht[i-istep].Halo[j].NumberofParticles,newnp);
-                            for (Int_t k=0;k<newnp;k++)
-                                pfofp[pht[i-istep].Halo[j].ParticleID[k]]=j+1+pht[i-istep].numhalos;
-                        }
-                    }
+                    SetPFOF(opt, pfofp, pht[i-istep].numhalos, pht[i-istep].Halo);
+                    SetPRank(opt, prank, pht[i-istep].numhalos, pht[i-istep].Halo);
 
                     //begin cross matching with previous snapshot(s)
                     //for first linking, cross match and allocate memory
@@ -194,10 +174,7 @@ int main(int argc,char **argv)
 
                     }
 
-                    //reset pfof2 values
-                    for (j=0;j<pht[i-istep].numhalos;j++)
-                        for (int k=0;k<pht[i-istep].Halo[j].NumberofParticles;k++)
-                            pfofp[pht[i-istep].Halo[j].ParticleID[k]]=0;
+                    ResetPFOF(opt, pfofp, pht[i-istep].numhalos, pht[i-istep].Halo);
                 }
                 }
                 }
@@ -256,16 +233,12 @@ int main(int argc,char **argv)
     if(opt.isearchdirection!=SEARCHPROGEN) {
         time1=MyGetTime();
         if (opt.iverbose) cout<<"Starting descendant cross matching "<<endl;
+        //allocate memory
         pdescen=new DescendantData*[opt.numsnapshots];
-        pfofd=new unsigned int[opt.MaxIDValue];
-        for (i=0;i<opt.MaxIDValue;i++) pfofd[i]=0;
-        if (opt.imerittype==MERITRankWeightedBoth) {
-            prank=new unsigned int[opt.MaxIDValue];
-            for (i=0;i<opt.MaxIDValue;i++) prank[i]=0;
-        }
-
         //to store descendant based progenitor information
         pdescenprogen=new ProgenitorDataDescenBased*[opt.numsnapshots];
+        AllocatePFOFMem(opt, pfofd, prank);
+
         //initialize all to null
         for (i=0;i<opt.numsnapshots;i++) {
             pdescenprogen[i]=NULL;
@@ -280,7 +253,8 @@ int main(int argc,char **argv)
             if(pht[i].numhalos==0) {pdescen[i]=NULL;continue;}
             cout<<i<<" "<<pht[i].numhalos<<" cross matching objects in descendant direction"<<endl;
             for (j=1;j<=opt.numsteps;j++) if (i+j<EndSnap)
-                if (pdescenprogen[i+j]==NULL && pht[i+j].numhalos>0) pdescenprogen[i+j]=new ProgenitorDataDescenBased[pht[i+j].numhalos];
+                if (pdescenprogen[i+j]==NULL && pht[i+j].numhalos>0)
+                    pdescenprogen[i+j]=new ProgenitorDataDescenBased[pht[i+j].numhalos];
             //if beyond endsnap allocate mem but do nothing
             if (i>=EndSnap) {
                 pdescen[i]=new DescendantData[pht[i].numhalos];
@@ -290,28 +264,8 @@ int main(int argc,char **argv)
             if (!(i+istep<=opt.numsnapshots-1)) continue;
             if (!(i+istep<EndSnap)) continue;
             //set pfof progenitor data structure, used to produce links. Only produced IF snapshot not first one
-            for (j=0;j<pht[i+istep].numhalos;j++) {
-                for (int k=0;k<pht[i+istep].Halo[j].NumberofParticles;k++) {
-                    pfofd[pht[i+istep].Halo[j].ParticleID[k]]=j+1;
-                }
-            }
-            if (opt.imerittype==MERITRankWeightedBoth) {
-                for (j=0;j<pht[i+istep].numhalos;j++) {
-                    for (int k=0;k<pht[i+istep].Halo[j].NumberofParticles;k++) {
-                        prank[pht[i+istep].Halo[j].ParticleID[k]]=k+1;
-                    }
-                }
-            }
-            //now if also doing core weighting then update the halo id associated with the particle so that
-            //it is its current halo core ID + total number of halos
-            if (opt.icorematchtype!=PARTLISTNOCORE && opt.particle_frac<1 && opt.particle_frac>0) {
-                for (j=0;j<pht[i+istep].numhalos;j++) {
-                    newnp=max((Int_t)(pht[i+istep].Halo[j].NumberofParticles*opt.particle_frac),opt.min_numpart);
-                    newnp=min(pht[i+istep].Halo[j].NumberofParticles,newnp);
-                    for (Int_t k=0;k<newnp;k++)
-                        pfofd[pht[i+istep].Halo[j].ParticleID[k]]=j+1+pht[i+istep].numhalos;
-                }
-            }
+            SetPFOF(opt, pfofd, pht[i+istep].numhalos, pht[i+istep].Halo);
+            SetPRank(opt, prank, pht[i+istep].numhalos, pht[i+istep].Halo);
 
             //begin cross matching with  snapshot(s)
             //for first linking, cross match and allocate memory
@@ -326,11 +280,8 @@ int main(int argc,char **argv)
             //clean up the information stored in this list, adjusing rankings as necessary
             CleanCrossMatchDescendant(opt, i, pht, pdescenprogen, pdescen);
 
-            for (j=0;j<pht[i+istep].numhalos;j++) {
-                for (int k=0;k<pht[i+istep].Halo[j].NumberofParticles;k++) {
-                    pfofd[pht[i+istep].Halo[j].ParticleID[k]]=0;
-                }
-            }
+            ResetPFOF(opt, pfofd, pht[i+istep].numhalos, pht[i+istep].Halo);
+
             if (opt.numsteps==1) {
                 //to free up some memory, no need to keep particle ids
                 for (j=0;j<pht[i].numhalos;j++) {
@@ -349,34 +300,14 @@ int main(int argc,char **argv)
                 if(pht[i].numhalos==0) continue;
                 cout<<i<<" "<<pht[i].numhalos<<" cross matching objects in descendant direction second pass for poor/missing matches "<<endl;
                 for (j=2;j<=opt.numsteps;j++) if (i+j<EndSnap)
-                    if (pdescenprogen[i+j]==NULL && pht[i+j].numhalos>0) pdescenprogen[i+j]=new ProgenitorDataDescenBased[pht[i+j].numhalos];
+                    if (pdescenprogen[i+j]==NULL && pht[i+j].numhalos>0)
+                        pdescenprogen[i+j]=new ProgenitorDataDescenBased[pht[i+j].numhalos];
                 if (i>=EndSnap) continue;
                 for (Int_t istep=2;istep<=opt.numsteps;istep++) {
                     if (!(i+istep<=opt.numsnapshots-1)) continue;
                     if (!(i+istep<EndSnap)) continue;
-                    //set pfof progenitor data structure, used to produce links. Only produced IF snapshot not first one
-                    for (j=0;j<pht[i+istep].numhalos;j++) {
-                        for (int k=0;k<pht[i+istep].Halo[j].NumberofParticles;k++) {
-                            pfofd[pht[i+istep].Halo[j].ParticleID[k]]=j+1;
-                        }
-                    }
-                    if (opt.imerittype==MERITRankWeightedBoth) {
-                        for (j=0;j<pht[i+istep].numhalos;j++) {
-                            for (int k=0;k<pht[i+istep].Halo[j].NumberofParticles;k++) {
-                                prank[pht[i+istep].Halo[j].ParticleID[k]]=k+1;
-                            }
-                        }
-                    }
-                    //now if also doing core weighting then update the halo id associated with the particle so that
-                    //it is its current halo core ID + total number of halos
-                    if (opt.icorematchtype!=PARTLISTNOCORE && opt.particle_frac<1 && opt.particle_frac>0) {
-                        for (j=0;j<pht[i+istep].numhalos;j++) {
-                            newnp=max((Int_t)(pht[i+istep].Halo[j].NumberofParticles*opt.particle_frac),opt.min_numpart);
-                            newnp=min(pht[i+istep].Halo[j].NumberofParticles,newnp);
-                            for (Int_t k=0;k<newnp;k++)
-                                pfofd[pht[i+istep].Halo[j].ParticleID[k]]=j+1+pht[i+istep].numhalos;
-                        }
-                    }
+                    SetPFOF(opt, pfofd, pht[i+istep].numhalos, pht[i+istep].Halo);
+                    SetPRank(opt, prank, pht[i+istep].numhalos, pht[i+istep].Halo);
 
                     //if more than a single step is used to find descendants then we first search i+istep but only for those haloes that are deemed to have
                     //less than ideal descendants.
@@ -405,11 +336,7 @@ int main(int argc,char **argv)
                     }
                     delete[] pdescentemp;
 
-                    for (j=0;j<pht[i+istep].numhalos;j++) {
-                        for (int k=0;k<pht[i+istep].Halo[j].NumberofParticles;k++) {
-                            pfofd[pht[i+istep].Halo[j].ParticleID[k]]=0;
-                        }
-                    }
+                    ResetPFOF(opt, pfofd, pht[i+istep].numhalos, pht[i+istep].Halo);
                 }
                 //to free up some memory, no need to keep particle ids
                 for (j=0;j<pht[i].numhalos;j++) {

@@ -72,7 +72,7 @@ Double_t CalculateMerit(Options &opt, UInt_t n1, UInt_t n2, UInt_t nsh, HaloData
   \todo still need to clean up core matching section and implement \ref PARTLISTCORECOREONLY
 */
 
-ProgenitorData *CrossMatch(Options &opt, const unsigned long long nhalos1, const unsigned long long nhalos2, HaloData *&h1, HaloData *&h2, unsigned int*&pfof2, int &ilistupdated, int istepval, ProgenitorData *refprogen)
+ProgenitorData *CrossMatch(Options &opt, const unsigned long long nhalos1, const unsigned long long nhalos2, HaloData *&h1, HaloData *&h2, PFOFTYPE *&pfof2, int &ilistupdated, int istepval, ProgenitorData *refprogen)
 {
     long int i,j,k,n;
     int nthreads=1,tid,maxnthreads=1,chunksize;
@@ -220,7 +220,7 @@ private(i,k,tid,offset)
 int CrossMatchProgenitorIndividual(Options &opt, Int_t i,
     const unsigned long long nhalos1, const unsigned long long nhalos2,
     HaloData *&h1, HaloData *&h2,
-    unsigned int *&pfof2,
+    PFOFTYPE *&pfof2,
     int istepval,
     ProgenitorData *&p1,
     unsigned int *&sharelist,
@@ -383,7 +383,7 @@ int CrossMatchProgenitorIndividual(Options &opt, Int_t i,
 ///effectively the same code as \ref CrossMatch but allows for the possibility of matching descendant/child nodes using a different merit function
 ///here the lists are different as input order is reverse of that used in \ref CrossMatch
 DescendantData *CrossMatchDescendant(Options &opt, const unsigned long long nhalos1, const unsigned long long nhalos2,
-    HaloData *&h1, HaloData *&h2, unsigned int *&pfof2, int &ilistupdated, int istepval, unsigned int *pranking2,
+    HaloData *&h1, HaloData *&h2, PFOFTYPE *&pfof2, int &ilistupdated, int istepval, PFOFTYPE *pranking2,
     DescendantData *refdescen)
 {
     long int i,j,k,n;
@@ -554,14 +554,14 @@ private(i,k,tid,offset,offset2)
 int CrossMatchDescendantIndividual(Options &opt, Int_t i,
     const unsigned long long nhalos1, const unsigned long long nhalos2,
     HaloData *&h1, HaloData *&h2,
-    unsigned int *&pfof2,
+    PFOFTYPE *&pfof2,
     int istepval, int initdtopval,
     DescendantData *&d1,
     unsigned int *&sharelist,
     unsigned int *&halolist,
     unsigned long long offset, unsigned long long offset2,
     unsigned int *&sharepartlist,
-    unsigned int *&pranking2,
+    PFOFTYPE *&pranking2,
     Double_t *&rankingsum
     )
 {

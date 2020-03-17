@@ -48,6 +48,7 @@ tf_option(MPI               "Attempt to include MPI support in TreeFrog" ON)
 # Precison options
 tf_option(UNSIGNED_IDS "Use unsigned ID's in TreeFrog" OFF)
 tf_option(LONG_INT "Use long ints ID's in TreeFrog, this will be set by NBODY_LONG_INT if not explicity set" ON)
+tf_option(LONG_INT_HALO_INDEX "Numbers of halos > int32 so use long ints to store halo index" OFF)
 
 #ID related options
 tf_option(HALOIDNOTINDEX "If the haloID does not correspond to an index which it is located in the snapshot, if so this should be switched on and a index ordered, temporally unique ID will be outputted along with original ID" OFF)
@@ -205,6 +206,14 @@ else()
         endif()
 endif()
 
+# Lets set which ID type TreeFrog will be using from, long int, long int unsigned, unsigned int and int
+if(TF_LONG_INT_HALO_INDEX)
+    set(TF_HAS_LONG_INT_HALO_INDEX Yes)
+    list(APPEND TF_DEFINES TREEFROGLARGEHALOIDS)
+else()
+	set(TF_HAS_LONG_INT_HALO_INDEX No)
+endif()
+
 if(TF_HALOIDNOTINDEX)
     set(TF_HAS_HALOIDNOTINDEX Yes)
     list(APPEND TF_DEFINES HALOIDNOTINDEX)
@@ -250,7 +259,9 @@ tf_report("File formats"
           "HDF5" HDF5)
 tf_report("Types"
           "Long particle IDs" LONG_INT
-          "Unsigned particles IDs" UNSIGNED_IDS)
+          "Unsigned particles IDs" UNSIGNED_IDS
+		  "Long ints to store halo indices as more than int32 halos" LONG_INT_HALO_INDEX
+	  )
 tf_report("ID related"
           "Halo ID does not correspond to index within snapshot" HALOIDNOTINDEX)
 # tf_report("Others"
