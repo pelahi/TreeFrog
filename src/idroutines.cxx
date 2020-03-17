@@ -282,3 +282,11 @@ void ResetPFOF(Options &opt, PFOFTYPE *&pfof, const Int_t nhalos, HaloData *&hal
         }
     }
 }
+
+
+void FreeHaloDataMemory(Options &opt, const Int_t nhalos, HaloData *&halos) {
+    for (auto j=0;j<nhalos;j++) {
+        delete[] halos[j].ParticleID;
+        halos[j].ParticleID=NULL;
+    }
+}

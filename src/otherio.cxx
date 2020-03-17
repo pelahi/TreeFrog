@@ -28,12 +28,14 @@ HaloData *ReadHaloData(string &infile, Int_t &numhalos)
 #else
       Halo[i].haloID=haloid;
 #endif
-      double e,x,y,z,vx,vy,vz;
+      long long pid;
+      float e,x,y,z,vx,vy,vz;
       for(j=0; j<Halo[i].NumberofParticles; j++){
-        fscanf(f, "%ld %f %f %f %f %f %f %f",
-               &(Halo[i].ParticleID[j]),
+        fscanf(f, "%lld %f %f %f %f %f %f %f",
+               &pid,
                &e,&x,&y,&z,&vx,&vy,&vz
              );
+        Halo[i].ParticleID[j] = pid;
       }
     }
     numhalos=TotalNumberofHalos;
@@ -44,7 +46,7 @@ HaloData *ReadHaloData(string &infile, Int_t &numhalos)
 
 ///Read halo data from an idividual snapshot;
 ///as new AHF just outputs particle id and particle type AND particle type
-///is important as only DM particles have continuous ids, adjust read so that 
+///is important as only DM particles have continuous ids, adjust read so that
 ///though total is allocated only use particles of type 1 for zoom simulations
 HaloData *ReadNIFTYData(string &infile, Int_t &numhalos, int idcorrectflag, int hidoffset)
 {
@@ -71,7 +73,7 @@ HaloData *ReadNIFTYData(string &infile, Int_t &numhalos, int idcorrectflag, int 
     Halo = new HaloData[TotalNumberofHalos];
     for(i=0; i<TotalNumberofHalos; i++){
       fscanf(f, "%ld %ld",&(nparts),&(haloid));
-      Halo[i].Alloc(nparts); 
+      Halo[i].Alloc(nparts);
 #ifdef HALOIDNOTINDEX
       Halo[i].origID=haloid;
       Halo[i].haloID=i+hidoffset;
@@ -80,7 +82,7 @@ HaloData *ReadNIFTYData(string &infile, Int_t &numhalos, int idcorrectflag, int 
 #endif
       ncount=0;
       for(j=0; j<Halo[i].NumberofParticles; j++){
-        fscanf(f, "%ld %d",
+        fscanf(f, "%lld %d",
                &idval,&type
                );
            if (type==NIFTYDMTYPE) {
@@ -116,16 +118,16 @@ HaloData *ReadVoidData(string &infile, Int_t &numhalos, int idcorrectflag, int h
     }
     else cout<<"reading "<<infile<<endl;
     if (idvaloffset!=0) cout<<infile<<" offseting ids by "<<idvaloffset<<endl;
-    ///read the entire file to determine the number of lines (number of particles) and 
+    ///read the entire file to determine the number of lines (number of particles) and
     ///the maximum void id
     string str;
     nparts=0;
     if (Fin.good())
     {
-        while(getline(Fin,str)) 
+        while(getline(Fin,str))
         {
             istringstream ss(str);
-            //now have string parse it 
+            //now have string parse it
             ss >> type >> type>> haloid>> idval;
             if (haloid>TotalNumberofHalos) TotalNumberofHalos=haloid;
             nparts++;
@@ -138,10 +140,10 @@ HaloData *ReadVoidData(string &infile, Int_t &numhalos, int idcorrectflag, int h
     for(i=0; i<TotalNumberofHalos; i++) numingroup[i]=0;
     if (Fin.good())
     {
-        while(getline(Fin,str)) 
+        while(getline(Fin,str))
         {
             istringstream ss(str);
-            //now have string parse it 
+            //now have string parse it
             ss >> type >> type>> haloid>> idval;
             if (type==VOIDSTYPE) numingroup[haloid-1]++;
         }
@@ -151,10 +153,10 @@ HaloData *ReadVoidData(string &infile, Int_t &numhalos, int idcorrectflag, int h
     for(i=0; i<TotalNumberofHalos; i++) {Halo[i].Alloc(numingroup[i]);numingroup[i]=0;}
     if (Fin.good())
     {
-        while(getline(Fin,str)) 
+        while(getline(Fin,str))
         {
             istringstream ss(str);
-            //now have string parse it 
+            //now have string parse it
             ss >> type >> type>> haloid>> idval;
             if (type==VOIDSTYPE) Halo[haloid-1].ParticleID[numingroup[haloid-1]++]=idval+idvaloffset;
         }

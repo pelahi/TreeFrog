@@ -1,6 +1,5 @@
 /*! \file main.cxx
  *  \brief Main program
-
 */
 
 #include "TreeFrog.h"
@@ -196,9 +195,11 @@ int main(int argc,char **argv)
                 pprogendescen[i]=NULL;
             }
             //free up memory if not needed
-            if (opt.isearchdirection!=SEARCHALL) for (j=0;j<pht[i].numhalos;j++) {
-                delete[] pht[i].Halo[j].ParticleID;pht[i].Halo[j].ParticleID=NULL;
-            }
+            if (opt.isearchdirection!=SEARCHALL) FreeHaloDataMemory(opt, pht[i].numhalos, pht[i].Halo);
+            // if (opt.isearchdirection!=SEARCHALL)
+            // for (j=0;j<pht[i].numhalos;j++) {
+            //     delete[] pht[i].Halo[j].ParticleID;pht[i].Halo[j].ParticleID=NULL;
+            // }
             if (opt.iverbose) cout<<ThisTask<<" finished Progenitor processing for snapshot "<<i<<" in "<<MyGetTime()-time2<<endl;
         }
         else pprogen[i]=NULL;
@@ -282,12 +283,13 @@ int main(int argc,char **argv)
 
             ResetPFOF(opt, pfofd, pht[i+istep].numhalos, pht[i+istep].Halo);
 
-            if (opt.numsteps==1) {
-                //to free up some memory, no need to keep particle ids
-                for (j=0;j<pht[i].numhalos;j++) {
-                    delete[] pht[i].Halo[j].ParticleID;pht[i].Halo[j].ParticleID=NULL;
-                }
-            }
+            if (opt.numsteps==1) FreeHaloDataMemory(opt, pht[i].numhalos, pht[i].Halo);
+            // if (opt.numsteps==1) {
+            //     //to free up some memory, no need to keep particle ids
+            //     for (j=0;j<pht[i].numhalos;j++) {
+            //         delete[] pht[i].Halo[j].ParticleID;pht[i].Halo[j].ParticleID=NULL;
+            //     }
+            // }
             if (opt.iverbose) cout<<ThisTask<<" finished first pass for descendant processing for snapshot "<<i<<" in "<<MyGetTime()-time2<<endl;
         }
 
@@ -339,9 +341,10 @@ int main(int argc,char **argv)
                     ResetPFOF(opt, pfofd, pht[i+istep].numhalos, pht[i+istep].Halo);
                 }
                 //to free up some memory, no need to keep particle ids
-                for (j=0;j<pht[i].numhalos;j++) {
-                    delete[] pht[i].Halo[j].ParticleID;pht[i].Halo[j].ParticleID=NULL;
-                }
+                FreeHaloDataMemory(opt, pht[i].numhalos, pht[i].Halo);
+                // for (j=0;j<pht[i].numhalos;j++) {
+                //     delete[] pht[i].Halo[j].ParticleID;pht[i].Halo[j].ParticleID=NULL;
+                // }
                 if (opt.iverbose) cout<<ThisTask<<" finished descendant processing for snapshot "<<i<<" in "<<MyGetTime()-time2<<endl;
             }
             /*

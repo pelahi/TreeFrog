@@ -268,6 +268,9 @@ void SetPRank(Options &opt, PFOFTYPE *&prank, const Int_t nhalos, HaloData *&hal
 ///Reset the pfof array to zero
 void ResetPFOF(Options &opt, PFOFTYPE *&pfof, const Int_t nhalos, HaloData *&halos);
 
+///free some memory
+void FreeHaloDataMemory(Options &opt, const Int_t nhalos, HaloData *&halos);
+
 //@}
 
 ///\name cosmolog relate fucionts
