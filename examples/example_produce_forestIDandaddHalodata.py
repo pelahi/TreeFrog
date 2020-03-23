@@ -172,7 +172,7 @@ vpt.WriteForest(outputfname, numsnaps, numhalos, halodata, forestdata, scalefact
     DescriptionInfo, SimulationInfo, UnitInfo, HaloFinderConfigurationInfo
     )
 
-halolist = [None for for i in range(numsnaps)]
+halolist = [None for i in range(numsnaps)]
 for i in range(numsnaps):
     halolist=halocatalogdir+'snapshot_%03d.VELOCIraptor'%i
 vpt.ForestFileAddHaloData(outputfname, halolist, additionalrequestedfields)
