@@ -222,10 +222,12 @@ using namespace NBody;
 
 /// \name MPI parameters for load balancing
 #ifdef USEMPI
-///particle based splitting
+///particle based splitting at snapshot level
 #define MPIPARTICLEBALANCE 0
-///halo based splitting
+///halo based splitting at snapshot level
 #define MPIHALOBALANCE 1
+///halo based splitting at the particle id level
+#define MPIPARTICLEIDBALANCE 2
 #endif
 
 #ifdef TREEFROGLONGIDS
@@ -351,12 +353,13 @@ struct Options
     int ndesiredmpithreads;
     ///whether mpi threads write in parallel
     int iwriteparallel;
-    ///Set if the load balancing is either halo or particle based splitting
+    ///Set if the load balancing is either halo or particle based splitting at snapshot level or particle ID level
     int impiloadbalancesplitting;
     ///Maximum load imbalance for the mpi splitting
     float impimaxloadimbalance;
     ///whether to produce a mpi local id to index map or a global one
     int impilocalmap;
+
 #endif
 
     ///\name scale factor, Hubble in km/s/Mpc, cosmology, virial density. These are used if linking lengths are scaled or trying to define virlevel using the cosmology

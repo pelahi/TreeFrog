@@ -74,7 +74,7 @@ int main(int argc,char **argv)
 
     GetArgs(argc, argv, opt);
 #ifdef USEMPI
-    MPILoadBalanceSnapshots(opt);
+    MPILoadBalance(opt);
 #else
     StartSnap=0;
     EndSnap=opt.numsnapshots;

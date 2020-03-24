@@ -131,11 +131,19 @@ HaloData *MPIReadHaloGroupCatalogDataAllocation(string &infile, Int_t &numhalos,
 ///Reads VELOCIraptor like Group Catalog Data with memory already allocated for MPI version.
 void MPIReadHaloGroupCatalogData(string &infile, Int_t &numhalos, HaloData *&Halo, int mpi_ninput=0, int ibinary=1, int ifieldhalos=1, int itypesort=ALLTYPEMATCH, int iverbose=0);
 ///load balance input data
+void MPILoadBalance(Options &);
+///load balance input data
 void MPILoadBalanceSnapshots(Options &);
-///as load balancing is long, read/write the load balance
-void MPIWriteLoadBalance(Options &);
-///as load balancing is long, read/write the load balance
-int MPIReadLoadBalance(Options &);
+///as load balancing is long, read/write the snapshot load balance
+void MPIWriteSnapshotLoadBalance(Options &);
+///as load balancing is long, read/write the snapshot load balance
+int MPIReadSnapshotLoadBalance(Options &);
+///load balance input data
+void MPILoadBalanceParticleIDs(Options &);
+///as load balancing is long, read/write the id load balance
+void MPIWriteParticleIDLoadBalance(Options &);
+///as load balancing is long, read/write the id load balance
+int MPIReadParticleIDLoadBalance(Options &);
 //@}
 
 

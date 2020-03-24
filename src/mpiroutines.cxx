@@ -16,6 +16,7 @@
 int ThisTask,NProcs;
 int NSnap,StartSnap,EndSnap;
 int *mpi_startsnap,*mpi_endsnap;
+IDTYPE *mpi_startid, *mpi_endid;
 //@}
 
 unsigned long long indexofSmallestMPIDomain(unsigned long long array[], int size)
@@ -36,7 +37,8 @@ unsigned long long indexofSmallestMPIDomain(unsigned long long array[], int size
 /// all the receiving tasks in the previous round make up the new set of sending and receiving tasks.
 /// keep going till all info cascaded to task 0 and a unique set of ids are generated across all snapshots and mpi domains
 /// However, if only mpi local id maps required, do nothing
-map<IDTYPE, IDTYPE> MPIGatherIDs(Options &opt, vector<IDTYPE> &idvec) {
+map<IDTYPE, IDTYPE> MPIGatherIDs(Options &opt, vector<IDTYPE> &idvec)
+{
     map<IDTYPE, IDTYPE> idmap;
     double time1;
     if (opt.impilocalmap) {
@@ -196,9 +198,18 @@ map<IDTYPE, IDTYPE> MPIGatherIDs(Options &opt, vector<IDTYPE> &idvec) {
     return idmap;
 }
 
+
+///load balance mpi domains
+void MPILoadBalance(Options &opt)
+{
+    if (opt.impiloadbalancesplitting == MPIPARTICLEBALANCE) MPILoadBalanceParticleIDs(opt);
+    else MPILoadBalanceSnapshots(opt);
+}
+
 ///load balance how snapshots are split across mpi domains
 ///\todo improvement of the load balancing so splits better and checks if the data can be loaded into RAM
-void MPILoadBalanceSnapshots(Options &opt){
+void MPILoadBalanceSnapshots(Options &opt)
+{
     mpi_startsnap=new int[NProcs];
     mpi_endsnap=new int[NProcs];
 
@@ -225,7 +236,7 @@ void MPILoadBalanceSnapshots(Options &opt){
         mpi_startsnap=new int[NProcs];
         mpi_endsnap=new int[NProcs];
     }
-    iflag=MPIReadLoadBalance(opt);
+    iflag=MPIReadSnapshotLoadBalance(opt);
     if (iflag==1) {
         if (opt.iverbose==1&&ThisTask==0) cout<<"Finished load balancing "<<MyGetTime()-t0<<endl;
         return;
@@ -324,7 +335,7 @@ void MPILoadBalanceSnapshots(Options &opt){
 
     //task 0 has finished determining which snapshots a given mpi thread will process
     //write the data into a file
-    MPIWriteLoadBalance(opt);
+    MPIWriteSnapshotLoadBalance(opt);
     ///if code was operating under one mpi thread to determine the load balance for an expected number of threads (which was stored in opt.nummpithreads but now in NProcs)
     //then terminate here after writing the file
     if (opt.ndesiredmpithreads==1) {
@@ -342,11 +353,12 @@ void MPILoadBalanceSnapshots(Options &opt){
 
 ///MPI load balancing can take quite a while (especially the particle based load balancing) so can write the load balancing for a given input and setup
 ///in a file to be read later. This is useful for very large trees where one might run into memory issues arising from maximum id
-void MPIWriteLoadBalance(Options &opt){
+void MPIWriteSnapshotLoadBalance(Options &opt)
+{
     char fname[1000];
     fstream Fout;
     if (ThisTask==0) {
-        sprintf(fname,"%s.mpiloadbalance.txt",opt.outname);
+        sprintf(fname,"%s.mpisnapshotloadbalance.txt",opt.outname);
         cout<<"Writing load balancing information to "<<fname<<endl;
         Fout.open(fname,ios::out);
         Fout<<NProcs<<endl;
@@ -357,13 +369,14 @@ void MPIWriteLoadBalance(Options &opt){
     }
 }
 ///MPI load balancing read from a file, checks to see if options agree
-int MPIReadLoadBalance(Options &opt){
+int MPIReadSnapshotLoadBalance(Options &opt)
+{
     char fname[1000];
     fstream Fin;
     int nprocs,numsnaps,numsteps;
     int iflag=1;
     if (ThisTask==0) {
-        sprintf(fname,"%s.mpiloadbalance.txt",opt.outname);
+        sprintf(fname,"%s.mpisnapshotloadbalance.txt",opt.outname);
         cout<<"Reading load balancing information from "<<fname<<endl;
         Fin.open(fname,ios::in);
         if (Fin.is_open()) {
@@ -405,6 +418,29 @@ int MPIReadLoadBalance(Options &opt){
     StartSnap=mpi_startsnap[ThisTask];
     EndSnap=mpi_endsnap[ThisTask];
     NSnap=EndSnap-StartSnap;
+    return iflag;
+}
+
+
+void MPILoadBalanceParticleIDs(Options &opt)
+{
+}
+
+///MPI load balancing can take quite a while (especially the particle based load balancing) so can write the load balancing for a given input and setup
+///in a file to be read later. This is useful for very large trees where one might run into memory issues arising from maximum id
+void MPIWriteParticleIDLoadBalance(Options &opt)
+{
+    char fname[1000];
+    fstream Fout;
+    if (ThisTask==0) {
+    }
+}
+///MPI load balancing read from a file, checks to see if options agree
+int MPIReadParticleIDLoadBalance(Options &opt)
+{
+    char fname[1000];
+    fstream Fin;
+    int iflag;
     return iflag;
 }
 
