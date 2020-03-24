@@ -66,7 +66,10 @@ extern int ThisTask, NProcs;
 ///number of snapshots read and proccessed by thread
 extern int NSnap,StartSnap,EndSnap;
 extern int *mpi_startsnap,*mpi_endsnap;
-extern IDTYPE *mpi_startid, *mpi_endid;
+extern IDTYPE StartID, EndID;
+extern Int_t NumIDs;
+extern vector<Int_t> mpi_numids;
+extern vector<IDTYPE> mpi_startid, mpi_endid;
 
 
 #endif

@@ -16,7 +16,10 @@
 int ThisTask,NProcs;
 int NSnap,StartSnap,EndSnap;
 int *mpi_startsnap,*mpi_endsnap;
-IDTYPE *mpi_startid, *mpi_endid;
+Int_t NumIDs;
+IDTYPE StartID, EndID;
+vector<Int_t> mpi_numids;
+vector<IDTYPE> mpi_startid, mpi_endid;
 //@}
 
 unsigned long long indexofSmallestMPIDomain(unsigned long long array[], int size)
@@ -358,7 +361,7 @@ void MPIWriteSnapshotLoadBalance(Options &opt)
     char fname[1000];
     fstream Fout;
     if (ThisTask==0) {
-        sprintf(fname,"%s.mpisnapshotloadbalance.txt",opt.outname);
+        sprintf(fname,"%s.mpiloadbalance.snapshots.txt",opt.outname);
         cout<<"Writing load balancing information to "<<fname<<endl;
         Fout.open(fname,ios::out);
         Fout<<NProcs<<endl;
@@ -376,7 +379,7 @@ int MPIReadSnapshotLoadBalance(Options &opt)
     int nprocs,numsnaps,numsteps;
     int iflag=1;
     if (ThisTask==0) {
-        sprintf(fname,"%s.mpisnapshotloadbalance.txt",opt.outname);
+        sprintf(fname,"%s.mpiloadbalance.snapshots.txt",opt.outname);
         cout<<"Reading load balancing information from "<<fname<<endl;
         Fin.open(fname,ios::in);
         if (Fin.is_open()) {
@@ -424,6 +427,83 @@ int MPIReadSnapshotLoadBalance(Options &opt)
 
 void MPILoadBalanceParticleIDs(Options &opt)
 {
+    //load the last snapshot which should have the most ids
+    mpi_startid.resize(NProcs,0);
+    mpi_endid.resize(NProcs,0);
+    mpi_numids.resize(NProcs,0);
+    if (ThisTask==0)
+    {
+        HaloData *Halos;
+        Int_t numhalos;
+        vector<string> buf(opt.numsnapshots);
+        fstream Fin;
+        Fin.open(opt.fname);
+        for(auto i=0; i<opt.numsnapshots; i++) Fin>>buf[i];
+        Fin.close();
+        if (opt.ioformat==DSUSSING) Halos = ReadHaloData(buf[opt.numsnapshots-1],numhalos);
+        else if (opt.ioformat==DCATALOG) Halos = ReadHaloGroupCatalogData(buf[opt.numsnapshots-1], numhalos, opt.nmpifiles, opt.ibinary,opt.ifield, opt.itypematch,opt.iverbose);
+        else if (opt.ioformat==DNIFTY) Halos = ReadNIFTYData(buf[opt.numsnapshots-1], numhalos, opt.idcorrectflag);
+        else if (opt.ioformat==DVOID) Halos = ReadVoidData(buf[opt.numsnapshots-1], numhalos, opt.idcorrectflag);
+
+        //now with data loaded, produce a sorted vector
+        //depending on whether producing idtoindexmap may need to adjust
+        vector<IDTYPE> ids;
+        Int_t numparts = 0;
+        for (auto i=0;i<numhalos;i++) numparts+=Halos[i].NumberofParticles;
+        ///\todo might be that memory limits means I should grow memory
+        ///as I delete it. Consider a 10^12 sim. I would need to allocate
+        ///~0.2*10^12/1024^3*8 bit of memory or 1.4 TB of memory
+        ///but if I grow the vector as I delete in chunks then might be able
+        ///to save memory. Would also require that I only read portions
+        ///of the file to produce small HaloData data
+        ids.resize(numparts,0);
+        numparts=0;
+        for (auto i=0;i<numhalos;i++) {
+            for (auto j=0;j<Halos[i].NumberofParticles;j++) ids[numparts++]=Halos[i].ParticleID[j];
+            delete[] Halos[i].ParticleID;
+            Halos[i].ParticleID = NULL;
+        }
+        Int_t numpartpermpi = numparts / NProcs;
+        int itask = 0;
+        IDTYPE startid = ids[0], endid = ids[numparts-1];
+        numparts = 0;
+        for (auto i=0;i<numhalos;i++) {
+            numparts += Halos[i].NumberofParticles;
+            if (numparts > numpartpermpi*(itask+1)) {
+                mpi_startid[itask] = startid;
+                endid = ids[numparts];
+                mpi_endid[itask] = endid;
+                startid = endid;
+                if (itask == 0) mpi_numids[itask] = numparts;
+                else mpi_numids[itask] = numparts - mpi_numids[itask-1];
+                itask++;
+            }
+        }
+        mpi_endid[NProcs-1] = ids[numparts-1];
+        delete[] Halos;
+        cout<<"MPI decomposition is such that nominally each MPI task has "<<numpartpermpi;
+        cout<<" particles requiring "<<numpartpermpi/pow(1024.0,3.0)*sizeof(IDTYPE)<<" of memory per mpi task"<<endl;
+        cout<<"Actual load balance is ";
+        double ave = 0, maxval = 0;
+        for (itask = 0; itask < NProcs; itask++) {
+            cout<<itask<<" : "<<mpi_numids[itask]/(double)numpartpermpi<<endl;
+            ave += mpi_numids[itask]/(double)numpartpermpi;
+            maxval = max(maxval,mpi_numids[itask]/(double)numpartpermpi);
+        }
+        cout<<"Giving average load imbalance of "<<ave/(double)NProcs<<" and max of "<<maxval<<endl;
+    }
+
+    //and all mpi process all snapshots
+    StartSnap = 0;
+    EndSnap = opt.numsnapshots;
+    MPI_Bcast(mpi_startid.data(), NProcs, MPI_IDTYPE, 0, MPI_COMM_WORLD);
+    MPI_Bcast(mpi_endid.data(), NProcs, MPI_IDTYPE, 0, MPI_COMM_WORLD);
+    MPI_Bcast(mpi_numids.data(), NProcs, MPI_Int_t, 0, MPI_COMM_WORLD);
+    StartID = mpi_startid[ThisTask];
+    EndID = mpi_endid[ThisTask];
+    NumIDs = mpi_numids[ThisTask];
+
+    //for first task, it handles all ids below its startid, last task handles all above
 }
 
 ///MPI load balancing can take quite a while (especially the particle based load balancing) so can write the load balancing for a given input and setup
@@ -433,6 +513,15 @@ void MPIWriteParticleIDLoadBalance(Options &opt)
     char fname[1000];
     fstream Fout;
     if (ThisTask==0) {
+        sprintf(fname,"%s.mpiloadbalance.particleids.txt",opt.outname);
+        cout<<"Writing load balancing information to "<<fname<<endl;
+        Fout.open(fname,ios::out);
+        Fout<<NProcs<<endl;
+        Fout<<opt.numsnapshots<<endl;
+        Fout<<opt.numsteps<<endl;
+        // Fout<<opt.numids<<endl;
+        for (int i=0;i<NProcs;i++) Fout<<mpi_startid[i]<<" "<<mpi_endid[i]<<endl;
+        Fout.close();
     }
 }
 ///MPI load balancing read from a file, checks to see if options agree
@@ -440,7 +529,7 @@ int MPIReadParticleIDLoadBalance(Options &opt)
 {
     char fname[1000];
     fstream Fin;
-    int iflag;
+    int iflag = -1;
     return iflag;
 }
 

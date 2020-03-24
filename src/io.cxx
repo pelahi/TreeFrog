@@ -68,12 +68,8 @@ unsigned long long ReadNumberofParticlesInHalos(Options &opt, unsigned long long
     for(int i=0; i<opt.numsnapshots; i++)
     {
         Fin>>buf[i];
-            //if (opt.ioformat==DSUSSING) HaloTree[i].Halo=ReadHaloData(&buf[i*1000],HaloTree[i].numhalos);
-            //else if (opt.ioformat==DCATALOG)
-            numpartinhalos[i]=MPIReadHaloGroupCatalogDataParticleNum(buf[i],opt.nmpifiles, opt.ibinary,opt.ifield, opt.itypematch);
-            //else if (opt.ioformat==DNIFTY) HaloTree[i].Halo=ReadNIFTYData(&buf[i*1000],HaloTree[i].numhalos, opt.idcorrectflag);
-            //tothalos+=numhalos[i];
-            totpart+=numpartinhalos[i];
+        numpartinhalos[i]=MPIReadHaloGroupCatalogDataParticleNum(buf[i],opt.nmpifiles, opt.ibinary,opt.ifield, opt.itypematch);
+        totpart+=numpartinhalos[i];
     }
     Fin.close();
     delete[] buf;
