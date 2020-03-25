@@ -624,6 +624,13 @@ inline void ConfigCheck(Options &opt)
         errormessage("ERROR: You specified a numsteps array so each step searchs a different number of steps but the size of the list does not match the number of snaphots ");
         ConfigExit();
     }
+    if (opt.numstepsarray.size() > 0 ) {
+        for (auto &x:opt.numstepsarray) if (x==0) {
+            errormessage("ERROR: array of numsteps passed but have entires of 0. Values must be >=1. CheckConfig");
+            ConfigExit();
+        }
+    }
+
 
     //if delta time/scalefactor options set and > 0 then need
     //to update the opt.numsteps array
