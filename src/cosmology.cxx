@@ -61,4 +61,12 @@ Double_t CalcCosmicTime(Options &opt, Double_t a1, Double_t a2){
     cosmictime = 1./(opt.hval*opt.H*1.02269032e-9)*result;
     return cosmictime;
 }
+
+Double_t CalcFreeFallTimeFromOverdensity(Options &opt, Double_t a){
+    Double_t tff;
+    Double_t H = GetHubble(opt, a);
+    tff = M_PI/(2.0*sqrt(opt.deltarho)*H);
+    tff *= opt.HubbletoGyrs;
+    return tff;
+}
 //@}

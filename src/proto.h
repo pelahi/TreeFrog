@@ -283,6 +283,7 @@ void CalcCosmoParams(Options &opt, Double_t a);
 Double_t GetHubble(Options &opt, Double_t a);
 double GetInvaH(double a, void * params);
 Double_t CalcCosmicTime(Options &opt, Double_t a1, Double_t a2);
+Double_t CalcFreeFallTimeFromOverdensity(Options &opt, Double_t a);
 //@}
 
 /// \name for mapping ids to index routines
