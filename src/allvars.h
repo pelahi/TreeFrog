@@ -361,7 +361,7 @@ struct Options
 
     ///\name scale factor, Hubble in km/s/Mpc, cosmology, virial density. These are used if linking lengths are scaled or trying to define virlevel using the cosmology
     //@{
-    Double_t Gravity, hval, H;
+    Double_t Gravity, hval, H, ainit;
     Double_t Omega_m, Omega_b, Omega_cdm, Omega_Lambda, Omega_k, Omega_r, Omega_nu, Omega_de, w_de;
     Double_t rhocrit, rhobg, deltarho;
     Double_t HubbletoGyrs;
@@ -430,9 +430,12 @@ struct Options
         deltarho = 200.0;
         //conversion from 1/(km/s/kpc) to Gyrs
         HubbletoGyrs = 0.97781310637;
-
+        ainit = 0.001;
         delta_time = delta_scalefactor = 0.0;
+        Omega_m = Omega_b = Omega_cdm = Omega_Lambda = Omega_k = Omega_r = Omega_nu = Omega_de = 0;
+        w_de = -1.0;
     }
+
 };
 
 /*!

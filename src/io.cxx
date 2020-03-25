@@ -136,6 +136,16 @@ HaloTreeData *ReadData(Options &opt)
     if (opt.iverbose==1) cout<<"Reading data"<<endl;
 #endif
 
+    //if using search window defined by scalefactor or time need to read data
+    for(i=0; i<opt.numsnapshots; i++)
+    {
+        if (i==0) ReadCosmologyCatalog(opt,buf[i]);
+        if (opt.ioformat==DCATALOG) {
+            ReadSnaphotTimeCatalog(opt,buf[i], opt.snapshot_time[i], opt.snapshot_scalefactor[i]);
+        }
+    }
+
+
 #if (defined(USEOPENMP) && !defined(USEMPI))
 #pragma omp parallel default(shared) \
 private(i)
@@ -1470,7 +1480,7 @@ void WriteHaloMergerTree(Options &opt, DescendantData **p, HaloTreeData *h) {
             StrType strdatatype(PredType::C_S1, 1000);
             string datastring = "";
             for (auto &x:opt.numstepsarray) datastring+=to_string(x)+",";
-            H5std_string strwritebuf (datastring);
+            H5std_string strwritebuf(datastring);
             attr=Fhdf.createAttribute("Nsteps_search_new_links_for_each_snap", strdatatype, attrspace);
             attr.write(strdatatype, strwritebuf);
             attr=Fhdf.createAttribute("Multistep_linking_criterion", PredType::STD_U32LE, attrspace);

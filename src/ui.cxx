@@ -211,6 +211,10 @@ void GetParamFile(Options &opt)
                         opt.w_de= atof(vbuff);
                     else if (strcmp(tbuff, "Overdensity_value_in_critical_density_defining_freefall_time")==0)
                         opt.deltarho = atof(vbuff);
+                    else if (strcmp(tbuff, "Delta_time_window_search_new_links")==0)
+                        opt.delta_time = atof(vbuff);
+                    else if (strcmp(tbuff, "Delta_scalefactor_window_search_new_links")==0)
+                        opt.delta_scalefactor = atof(vbuff);
 
                     //Other options
                     else if (strcmp(tbuff, "Verbose")==0){
@@ -652,6 +656,8 @@ inline void ConfigCheck(Options &opt)
             errormessage("Either use array of snapshots windows calculated to generated the desired delta and update config or disable these options.");
             ConfigExit();
         }
+        opt.snapshot_time.resize(opt.numsnapshots,0);
+        opt.snapshot_scalefactor.resize(opt.numsnapshots,0);
     }
     else {
         if (opt.numstepsarray.size()>0) {

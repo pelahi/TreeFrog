@@ -45,6 +45,10 @@ HaloData *ReadNIFTYData(string &fname, Int_t &nhalos, int idcorrectflag=0, int h
 HaloData *ReadVoidData(string &fname, Int_t &nhalos, int idcorrectflag=0, int hidoffset=1);
 ///Reads VELOCIraptor like Group Catalog Data. Can adjust so that only particles of some type are check for cross matching
 HaloData *ReadHaloGroupCatalogData(string &infile, Int_t &numhalos, int mpi_ninput=0, int ibinary=1, int ifieldhalos=1, int itypesort=ALLTYPEMATCH, int iverbose=0);
+///reads cosmology info
+void ReadCosmologyCatalog(Options &opt, string fname);
+///reads snapshot time information
+void ReadSnaphotTimeCatalog(Options &opt, string fname, double &time, double &scalefactor);
 //@}
 
 /// \name routines used to read VELOCIraptor output
