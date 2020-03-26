@@ -21,12 +21,12 @@ void ReadSnaphotTimeCatalog(Options &opt, string fname, double &time, double &sc
     Fin.open(fname+string(".siminfo"),ios::in);
     getline(Fin, dataline);
     //first line indicates whether simulation is cosmological or not
-    pos = dataline.find(delimiter);
+    pos = dataline.find(delimiter)+delimiter.size();
     dataline = dataline.substr(pos,dataline.size());
     int icosmology = stoi(dataline);
     //next line has scale factor or time depending on whether simulation is cosmological
     getline(Fin, dataline);
-    pos = dataline.find(delimiter);
+    pos = dataline.find(delimiter)+delimiter.size();
     dataline = dataline.substr(pos,dataline.size());
     t = stof(dataline);
     if (icosmology) {
@@ -37,6 +37,7 @@ void ReadSnaphotTimeCatalog(Options &opt, string fname, double &time, double &sc
         scalefactor = 1.0;
         time = t;
     }
+    Fin.close();
 }
 void ReadCosmologyCatalog(Options &opt, string fname)
 {
@@ -49,25 +50,26 @@ void ReadCosmologyCatalog(Options &opt, string fname)
     Fin.open(fname+string(".siminfo"),ios::in);
     getline(Fin, dataline);
     //first line indicates whether simulation is cosmological or not
-    pos = dataline.find(delimiter);
+    pos = dataline.find(delimiter)+delimiter.size();
     dataline = dataline.substr(pos,dataline.size());
     int icosmology = stoi(dataline);
     if (icosmology) {
         getline(Fin, dataline);
-        getline(Fin, dataline); pos = dataline.find(delimiter);
+        getline(Fin, dataline); pos = dataline.find(delimiter)+delimiter.size();
         opt.hval = stof(dataline.substr(pos,dataline.size()));
-        getline(Fin, dataline); pos = dataline.find(delimiter);
+        getline(Fin, dataline); pos = dataline.find(delimiter)+delimiter.size();
         opt.Omega_m = stof(dataline.substr(pos,dataline.size()));
-        getline(Fin, dataline); pos = dataline.find(delimiter);
+        getline(Fin, dataline); pos = dataline.find(delimiter)+delimiter.size();
         opt.Omega_Lambda = stof(dataline.substr(pos,dataline.size()));
-        getline(Fin, dataline); pos = dataline.find(delimiter);
+        getline(Fin, dataline); pos = dataline.find(delimiter)+delimiter.size();
         opt.Omega_cdm = stof(dataline.substr(pos,dataline.size()));
-        getline(Fin, dataline); pos = dataline.find(delimiter);
+        getline(Fin, dataline); pos = dataline.find(delimiter)+delimiter.size();
         opt.Omega_b = stof(dataline.substr(pos,dataline.size()));
-        getline(Fin, dataline); pos = dataline.find(delimiter);
+        getline(Fin, dataline); pos = dataline.find(delimiter)+delimiter.size();
         // opt.w_de = stof(dataline.substr(pos,dataline.size()));
         CalcOmegak(opt);
     }
+    Fin.close();
 }
 //@}
 
