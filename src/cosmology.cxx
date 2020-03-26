@@ -101,7 +101,7 @@ void FillNumStepsArrayBasedOnScaleFactor(Options &opt) {
 }
 
 void FillNumStepsArrayBasedOnDynamicalTime(Options &opt) {
-    vector<Double_t> tend;
+    vector<Double_t> tend(opt.numsnapshots,0);
     for (auto i=0;i<opt.numsnapshots;i++) {
         tend[i] = CalcFreeFallTimeFromOverdensity(opt, opt.snapshot_scalefactor[i]);
     }
