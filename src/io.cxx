@@ -145,9 +145,7 @@ HaloTreeData *ReadData(Options &opt)
                 ReadSnaphotTimeCatalog(opt,buf[i], opt.snapshot_time[i], opt.snapshot_scalefactor[i]);
             }
         }
-        if (opt.delta_time > 0) FillNumStepsArrayBasedOnTime(opt);
-        else if (opt.delta_scalefactor > 0) FillNumStepsArrayBasedOnScaleFactor(opt);
-        else if (opt.delta_dynamical_time_fraction > 0) FillNumStepsArrayBasedOnDynamicalTime(opt);
+        FillNumStepsArray(opt);
     }
 
 

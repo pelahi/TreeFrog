@@ -292,6 +292,8 @@ Double_t CalcFreeFallTimeFromOverdensity(Options &opt, Double_t a);
 
 ///\name determining number of snapshots over which to search for links
 //@{
+///Fills numstep array based on desired time stepping. 
+void FillNumStepsArray(Options &opt);
 ///if provided a fixed time, use it to fill the numstepsarray
 void FillNumStepsArrayBasedOnTime(Options &opt);
 ///if provided a fixed scale factor change, use it to fill the numstepsarray
