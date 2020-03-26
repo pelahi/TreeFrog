@@ -109,8 +109,11 @@ void GetParamFile(Options &opt)
                     else if (strcmp(tbuff, "Snapshot_search_window_in_Gyrs")==0) {
                         opt.delta_time = atof(vbuff);
                     }
-                    else if (strcmp(tbuff, "Snapshot_search_window_in_Scalefactor")==0) {
+                    else if (strcmp(tbuff, "Snapshot_search_window_in_scalefactor")==0) {
                         opt.delta_scalefactor = atof(vbuff);
+                    }
+                    else if (strcmp(tbuff, "Snapshot_search_window_in_fraction_of_dynamical_time")==0) {
+                        opt.delta_dynamical_time_fraction = atof(vbuff);
                     }
                     else if (strcmp(tbuff, "Default_values")==0) {
                         idefaultflag = atoi(vbuff);
@@ -211,10 +214,6 @@ void GetParamFile(Options &opt)
                         opt.w_de= atof(vbuff);
                     else if (strcmp(tbuff, "Overdensity_value_in_critical_density_defining_freefall_time")==0)
                         opt.deltarho = atof(vbuff);
-                    else if (strcmp(tbuff, "Delta_time_window_search_new_links")==0)
-                        opt.delta_time = atof(vbuff);
-                    else if (strcmp(tbuff, "Delta_scalefactor_window_search_new_links")==0)
-                        opt.delta_scalefactor = atof(vbuff);
 
                     //Other options
                     else if (strcmp(tbuff, "Verbose")==0){
@@ -638,16 +637,19 @@ inline void ConfigCheck(Options &opt)
 
     //if delta time/scalefactor options set and > 0 then need
     //to update the opt.numsteps array
-    if (opt.delta_time >0 && opt.delta_scalefactor > 0) {
-        errormessage("Snapshot search windows in both timne and scale factor provided. Please use one or the other. Update Config.");
+    if (opt.delta_time*opt.delta_dynamical_time_fraction*opt.delta_scalefactor > 0 ) {
+        errormessage("Snapshot search windows in time, dynamical time and scale factor provided. Please use one. Update Config.");
         ConfigExit();
     }
-    else if (opt.delta_time>0 || opt.delta_scalefactor>0){
+    else if (opt.delta_time>0 || opt.delta_scalefactor>0 || opt.delta_dynamical_time_fraction>0){
         if (opt.delta_time>0) {
             errormessage("Using time in Gyrs to determine number of snapshots over which to serach for links.");
         }
         else if (opt.delta_scalefactor>0) {
             errormessage("Using time in scale factor change to determine number of snapshots over which to serach for links.");
+        }
+        else if (opt.delta_dynamical_time_fraction>0) {
+            errormessage("Using dynamical time defined by a factor of the free fall time at virial overdensity to determine number of snapshots over which to serach for links.");
         }
         errormessage("This option requires input data has scale factor/time for each snapshot and cosmological information.");
         errormessage("Currently, only VELOCIraptor input configured to load in scale factors and cosmology data.");

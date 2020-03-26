@@ -69,4 +69,54 @@ Double_t CalcFreeFallTimeFromOverdensity(Options &opt, Double_t a){
     tff *= opt.HubbletoGyrs;
     return tff;
 }
+
+void FillNumStepsArrayBasedOnTime(Options &opt) {
+    opt.numstepsarray[opt.numsnapshots-1] = 0;
+    for (auto i=0;i<opt.numsnapshots-1;i++){
+        opt.numstepsarray[i] = 1;
+        for (auto j=i+1;j<opt.numsnapshots;j++) {
+            if (opt.snapshot_time[i]+opt.delta_time>opt.snapshot_time[j]){
+                opt.numstepsarray[i] = j-i;
+                break;
+            }
+        }
+    }
+    opt.numsteps = 0;
+    for (auto &x:opt.numstepsarray) if (opt.numsteps < x) opt.numsteps = x;
+}
+
+void FillNumStepsArrayBasedOnScaleFactor(Options &opt) {
+    opt.numstepsarray[opt.numsnapshots-1] = 0;
+    for (auto i=0;i<opt.numsnapshots-1;i++){
+        opt.numstepsarray[i] = 1;
+        for (auto j=i+1;j<opt.numsnapshots;j++) {
+            if (opt.snapshot_scalefactor[i]+opt.delta_scalefactor>opt.snapshot_scalefactor[j]){
+                opt.numstepsarray[i] = j-i;
+                break;
+            }
+        }
+    }
+    opt.numsteps = 0;
+    for (auto &x:opt.numstepsarray) if (opt.numsteps < x) opt.numsteps = x;
+}
+
+void FillNumStepsArrayBasedOnDynamicalTime(Options &opt) {
+    vector<Double_t> tend;
+    for (auto i=0;i<opt.numsnapshots;i++) {
+        tend[i] = CalcFreeFallTimeFromOverdensity(opt, opt.snapshot_scalefactor[i]);
+    }
+    opt.numstepsarray[opt.numsnapshots-1] = 0;
+    for (auto i=0;i<opt.numsnapshots-1;i++){
+        opt.numstepsarray[i] = 1;
+        for (auto j=i+1;j<opt.numsnapshots;j++) {
+            if (opt.snapshot_time[i]+tend[i]>opt.snapshot_time[j]){
+                opt.numstepsarray[i] = j-i;
+                break;
+            }
+        }
+    }
+    opt.numsteps = 0;
+    for (auto &x:opt.numstepsarray) if (opt.numsteps < x) opt.numsteps = x;
+}
+
 //@}

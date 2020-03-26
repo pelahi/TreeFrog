@@ -277,7 +277,7 @@ void FreeHaloDataMemory(Options &opt, const Int_t nhalos, HaloData *&halos);
 
 //@}
 
-///\name cosmolog relate fucionts
+///\name cosmology related fuctions
 /// see \ref cosmology.cxx for implementation
 //@{
 void CalcOmegak(Options &opt);
@@ -288,6 +288,16 @@ Double_t GetHubble(Options &opt, Double_t a);
 double GetInvaH(double a, void * params);
 Double_t CalcCosmicTime(Options &opt, Double_t a1, Double_t a2);
 Double_t CalcFreeFallTimeFromOverdensity(Options &opt, Double_t a);
+//@}
+
+///\name determining number of snapshots over which to search for links
+//@{
+///if provided a fixed time, use it to fill the numstepsarray
+void FillNumStepsArrayBasedOnTime(Options &opt);
+///if provided a fixed scale factor change, use it to fill the numstepsarray
+void FillNumStepsArrayBasedOnScaleFactor(Options &opt);
+///if provided a fixed factor of the dynamical time, use it to fill the numstepsarray
+void FillNumStepsArrayBasedOnDynamicalTime(Options &opt);
 //@}
 
 /// \name for mapping ids to index routines

@@ -137,12 +137,17 @@ HaloTreeData *ReadData(Options &opt)
 #endif
 
     //if using search window defined by scalefactor or time need to read data
-    for(i=0; i<opt.numsnapshots; i++)
-    {
-        if (i==0) ReadCosmologyCatalog(opt,buf[i]);
-        if (opt.ioformat==DCATALOG) {
-            ReadSnaphotTimeCatalog(opt,buf[i], opt.snapshot_time[i], opt.snapshot_scalefactor[i]);
+    if (opt.delta_time> 0 || opt.delta_scalefactor > 0 || opt.delta_dynamical_time_fraction > 0) {
+        for(i=0; i<opt.numsnapshots; i++)
+        {
+            if (opt.ioformat==DCATALOG) {
+                if (i==0) ReadCosmologyCatalog(opt,buf[i]);
+                ReadSnaphotTimeCatalog(opt,buf[i], opt.snapshot_time[i], opt.snapshot_scalefactor[i]);
+            }
         }
+        if (opt.delta_time > 0) FillNumStepsArrayBasedOnTime(opt);
+        else if (opt.delta_scalefactor > 0) FillNumStepsArrayBasedOnScaleFactor(opt);
+        else if (opt.delta_dynamical_time_fraction > 0) FillNumStepsArrayBasedOnDynamicalTime(opt);
     }
 
 
