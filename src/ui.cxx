@@ -660,6 +660,7 @@ inline void ConfigCheck(Options &opt)
         }
         opt.snapshot_time.resize(opt.numsnapshots,0);
         opt.snapshot_scalefactor.resize(opt.numsnapshots,0);
+        opt.numstepsarray.resize(opt.numsnapshots,0);
     }
     else {
         if (opt.numstepsarray.size()>0) {
