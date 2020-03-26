@@ -57,6 +57,17 @@ Part_type=-1
 #number of steps used to search for candidate links. >1 suggested but value
 #depends on input cadence of halo catalog.
 Nsteps_search_new_links=5
+#can also provide explicit list of steps for each snapshot
+#Nsteps_search_new_links_for_each_snap=5,2,4,2,3,5,2,1,1,1,
+#or use a delta time, delta scalefactor or fraction of dynamical time
+#to calculate the number of steps over which to search for links
+#Suggestion is to use dynamical time fraction to adaptively
+#set the window over which to search for links
+#Snapshot_search_window_in_fraction_of_dynamical_time=0.5
+#can also set a fixed physical time
+#Snapshot_search_window_in_Gyrs=1.0
+#or scale factor 
+#Snapshot_search_window_in_scalefactor=0.1
 
 # Merit and matching options
 #whether to use default (velociraptor optimised values based on tree direction)
