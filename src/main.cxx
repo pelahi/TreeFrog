@@ -136,15 +136,15 @@ int main(int argc,char **argv)
                 cout<<ThisTask<<" "<<i<<" "<<pht[i].numhalos<<" cross matching objects in standard merger tree direction (progenitors)"<<endl;
                 //if need to store DescendantDataProgenBased as multiple snapshots, allocate any unallocated pprogendescen needed to process
                 //current step if this has not already been allocated
-                if (opt.numsteps>1) {
-                    for (j=1;j<=opt.numsteps;j++) if (i-j>=StartSnap)
+                if (opt.numstepsarray[i]>1) {
+                    for (j=1;j<=opt.numstepsarray[i];j++) if (i-j>=StartSnap)
                         if (pprogendescen[i-j] == NULL && pht[i-j].numhalos>0)
                             pprogendescen[i-j] = new DescendantDataProgenBased[pht[i-j].numhalos];
                 }
                 //if not last snapshot then can look back in time and produce links
                 if (i>StartSnap) {
                 //loop over all possible steps
-                for (Int_t istep=1;istep<=opt.numsteps;istep++) if (i-istep>=0) {
+                for (Int_t istep=1;istep<=opt.numstepsarray[i];istep++) if (i-istep>=0) {
                 //when using mpi also check that data is local
                 if (i-istep-StartSnap>=0) {
                     //set pfof progenitor data structure, used to produce links. Only produced IF snapshot not first one
@@ -156,7 +156,7 @@ int main(int argc,char **argv)
                     if (istep==1) {
                         pprogen[i]=CrossMatch(opt, pht[i].numhalos, pht[i-istep].numhalos, pht[i].Halo, pht[i-istep].Halo, pfofp, ilistupdated);
                         CleanCrossMatch(istep, pht[i].numhalos, pht[i-istep].numhalos, pht[i].Halo, pht[i-istep].Halo, pprogen[i]);
-                        if (opt.numsteps>1) BuildProgenitorBasedDescendantList(i, i-istep, pht[i].numhalos, pprogen[i], pprogendescen);
+                        if (opt.numstepsarray[i]>1) BuildProgenitorBasedDescendantList(i, i-istep, pht[i].numhalos, pprogen[i], pprogendescen);
                     }
                     //otherwise only care about objects with no links
                     else {
@@ -188,7 +188,7 @@ int main(int argc,char **argv)
             //if enough non-overlapping (mpi wise) snapshots have been processed, one can cleanup progenitor list using the DescendantDataProgenBased data
             //then free this data
             //this occurs if current snapshot is at least Endsnap-opt.numsteps*2 or lower as then Endsnap-opt.numsteps have had progenitor list processed
-            if (opt.numsteps>1 && pht[i].numhalos>0 && (i<EndSnap-2*opt.numsteps && i>StartSnap+2*opt.numsteps)) {
+            if (opt.numstepsarray[i]>1 && pht[i].numhalos>0 && (i<EndSnap-2*opt.numstepsarray[i] && i>StartSnap+2*opt.numstepsarray[i])) {
                 if (opt.iverbose) cout<<"Cleaning Progenitor list using descendant information for "<<i<<endl;
                 CleanProgenitorsUsingDescendants(i, pht, pprogendescen, pprogen, opt.iopttemporalmerittype);
                 delete[] pprogendescen[i];
@@ -253,7 +253,7 @@ int main(int argc,char **argv)
             time2=MyGetTime();
             if(pht[i].numhalos==0) {pdescen[i]=NULL;continue;}
             cout<<i<<" "<<pht[i].numhalos<<" cross matching objects in descendant direction"<<endl;
-            for (j=1;j<=opt.numsteps;j++) if (i+j<EndSnap)
+            for (j=1;j<=opt.numstepsarray[i];j++) if (i+j<EndSnap)
                 if (pdescenprogen[i+j]==NULL && pht[i+j].numhalos>0)
                     pdescenprogen[i+j]=new ProgenitorDataDescenBased[pht[i+j].numhalos];
             //if beyond endsnap allocate mem but do nothing
@@ -301,11 +301,11 @@ int main(int argc,char **argv)
                 time2=MyGetTime();
                 if(pht[i].numhalos==0) continue;
                 cout<<i<<" "<<pht[i].numhalos<<" cross matching objects in descendant direction second pass for poor/missing matches "<<endl;
-                for (j=2;j<=opt.numsteps;j++) if (i+j<EndSnap)
+                for (j=2;j<=opt.numstepsarray[i];j++) if (i+j<EndSnap)
                     if (pdescenprogen[i+j]==NULL && pht[i+j].numhalos>0)
                         pdescenprogen[i+j]=new ProgenitorDataDescenBased[pht[i+j].numhalos];
                 if (i>=EndSnap) continue;
-                for (Int_t istep=2;istep<=opt.numsteps;istep++) {
+                for (Int_t istep=2;istep<=opt.numstepsarray[i];istep++) {
                     if (!(i+istep<=opt.numsnapshots-1)) continue;
                     if (!(i+istep<EndSnap)) continue;
                     SetPFOF(opt, pfofd, pht[i+istep].numhalos, pht[i+istep].Halo);

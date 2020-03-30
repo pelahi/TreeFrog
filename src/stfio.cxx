@@ -9,6 +9,71 @@
 using namespace H5;
 #endif
 
+///\name routines to load meta data form velociraptor catalo
+//@{
+void ReadSnaphotTimeCatalog(Options &opt, string fname, double &time, double &scalefactor)
+{
+    fstream Fin;
+    string delimiter=" : ";
+    string dataline;
+    int pos;
+    double t;
+    Fin.open(fname+string(".siminfo"),ios::in);
+    getline(Fin, dataline);
+    //first line indicates whether simulation is cosmological or not
+    pos = dataline.find(delimiter)+delimiter.size();
+    dataline = dataline.substr(pos,dataline.size());
+    int icosmology = stoi(dataline);
+    //next line has scale factor or time depending on whether simulation is cosmological
+    getline(Fin, dataline);
+    pos = dataline.find(delimiter)+delimiter.size();
+    dataline = dataline.substr(pos,dataline.size());
+    t = stof(dataline);
+    if (icosmology) {
+        scalefactor = t;
+        time = CalcCosmicTime(opt, opt.ainit, scalefactor);
+    }
+    else {
+        scalefactor = 1.0;
+        time = t;
+    }
+    Fin.close();
+}
+void ReadCosmologyCatalog(Options &opt, string fname)
+{
+    //data has icosmology, time/scalefactor
+    //then if cosmological: h_val, Omega_m, Omega_Lambda, Omega_cdm, Omega_b, w_DE
+    fstream Fin;
+    string delimiter=" : ";
+    string dataline;
+    int pos;
+    Fin.open(fname+string(".siminfo"),ios::in);
+    getline(Fin, dataline);
+    //first line indicates whether simulation is cosmological or not
+    pos = dataline.find(delimiter)+delimiter.size();
+    dataline = dataline.substr(pos,dataline.size());
+    int icosmology = stoi(dataline);
+    if (icosmology) {
+        getline(Fin, dataline);
+        getline(Fin, dataline); pos = dataline.find(delimiter)+delimiter.size();
+        opt.hval = stof(dataline.substr(pos,dataline.size()));
+        getline(Fin, dataline); pos = dataline.find(delimiter)+delimiter.size();
+        opt.Omega_m = stof(dataline.substr(pos,dataline.size()));
+        getline(Fin, dataline); pos = dataline.find(delimiter)+delimiter.size();
+        opt.Omega_Lambda = stof(dataline.substr(pos,dataline.size()));
+        getline(Fin, dataline); pos = dataline.find(delimiter)+delimiter.size();
+        opt.Omega_cdm = stof(dataline.substr(pos,dataline.size()));
+        getline(Fin, dataline); pos = dataline.find(delimiter)+delimiter.size();
+        opt.Omega_b = stof(dataline.substr(pos,dataline.size()));
+        getline(Fin, dataline); pos = dataline.find(delimiter)+delimiter.size();
+        // opt.w_de = stof(dataline.substr(pos,dataline.size()));
+        CalcOmegak(opt);
+    }
+    Fin.close();
+}
+//@}
+
+
 ///\name routines for opening closing the set of files produced by velociraptor
 //@{
 void OpenBinaryorAsciiFiles(string &infile, int ibinary, int numfiletypes, int k, int mpi_ninput, int ifieldhalos, int itypematch,

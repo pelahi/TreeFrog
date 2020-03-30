@@ -61,4 +61,86 @@ Double_t CalcCosmicTime(Options &opt, Double_t a1, Double_t a2){
     cosmictime = 1./(opt.hval*opt.H*1.02269032e-9)*result;
     return cosmictime;
 }
+
+Double_t CalcFreeFallTimeFromOverdensity(Options &opt, Double_t a){
+    Double_t tff;
+    Double_t H = GetHubble(opt, a);
+    tff = M_PI/(2.0*sqrt(opt.deltarho)*H);
+    tff *= opt.HubbletoGyrs;
+    return tff;
+}
+
+void FillNumStepsArray(Options &opt){
+#ifndef USEMPI
+    int ThisTask = 0;
+#endif
+    if (opt.delta_time > 0) FillNumStepsArrayBasedOnTime(opt);
+    else if (opt.delta_scalefactor > 0) FillNumStepsArrayBasedOnScaleFactor(opt);
+    else if (opt.delta_dynamical_time_fraction > 0) FillNumStepsArrayBasedOnDynamicalTime(opt);
+    if (opt.iverbose>=1 && ThisTask == 0) {
+        cout<<" Number of steps used at a given snapshot are :"<<endl;
+        for (auto i=0; i<opt.numsnapshots;i++) {
+            cout<<i<<" "<<opt.numstepsarray[i]<<endl;
+        }
+    }
+}
+
+void FillNumStepsArrayBasedOnTime(Options &opt) {
+    opt.numstepsarray[opt.numsnapshots-1] = 0;
+    for (auto i=0;i<opt.numsnapshots-1;i++){
+        opt.numstepsarray[i] = -1;
+        for (auto j=i+1;j<opt.numsnapshots;j++) {
+            if (opt.snapshot_time[i]+opt.delta_time<opt.snapshot_time[j]){
+                opt.numstepsarray[i] = j-i;
+                break;
+            }
+        }
+        if (opt.numstepsarray[i] == -1) {
+           opt.numstepsarray[i] = opt.numsnapshots-1-i;
+        }
+    }
+    opt.numsteps = 0;
+    for (auto &x:opt.numstepsarray) if (opt.numsteps < x) opt.numsteps = x;
+}
+
+void FillNumStepsArrayBasedOnScaleFactor(Options &opt) {
+    opt.numstepsarray[opt.numsnapshots-1] = 0;
+    for (auto i=0;i<opt.numsnapshots-1;i++){
+        opt.numstepsarray[i] = -1;
+        for (auto j=i+1;j<opt.numsnapshots;j++) {
+            if (opt.snapshot_scalefactor[i]+opt.delta_scalefactor<opt.snapshot_scalefactor[j]){
+                opt.numstepsarray[i] = j-i;
+                break;
+            }
+        }
+        if (opt.numstepsarray[i] == -1) {
+           opt.numstepsarray[i] = opt.numsnapshots-1-i;
+        }
+    }
+    opt.numsteps = 0;
+    for (auto &x:opt.numstepsarray) if (opt.numsteps < x) opt.numsteps = x;
+}
+
+void FillNumStepsArrayBasedOnDynamicalTime(Options &opt) {
+    vector<Double_t> tend(opt.numsnapshots,0);
+    for (auto i=0;i<opt.numsnapshots;i++) {
+        tend[i] = CalcFreeFallTimeFromOverdensity(opt, opt.snapshot_scalefactor[i])*1e9*opt.delta_dynamical_time_fraction;
+    }
+    opt.numstepsarray[opt.numsnapshots-1] = 0;
+    for (auto i=0;i<opt.numsnapshots-1;i++){
+        opt.numstepsarray[i] = -1;
+        for (auto j=i+1;j<opt.numsnapshots;j++) {
+            if (opt.snapshot_time[i]+tend[i]<opt.snapshot_time[j]){
+                opt.numstepsarray[i] = j-i;
+                break;
+            }
+        }
+        if (opt.numstepsarray[i] == -1) {
+           opt.numstepsarray[i] = opt.numsnapshots-1-i;
+        }
+    }
+    opt.numsteps = 0;
+    for (auto &x:opt.numstepsarray) if (opt.numsteps < x) opt.numsteps = x;
+}
+
 //@}

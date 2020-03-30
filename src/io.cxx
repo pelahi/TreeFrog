@@ -132,6 +132,19 @@ HaloTreeData *ReadData(Options &opt)
     if (opt.iverbose==1) cout<<"Reading data"<<endl;
 #endif
 
+    //if using search window defined by scalefactor or time need to read data
+    if (opt.delta_time> 0 || opt.delta_scalefactor > 0 || opt.delta_dynamical_time_fraction > 0) {
+        for(i=0; i<opt.numsnapshots; i++)
+        {
+            if (opt.ioformat==DCATALOG) {
+                if (i==0) ReadCosmologyCatalog(opt,buf[i]);
+                ReadSnaphotTimeCatalog(opt,buf[i], opt.snapshot_time[i], opt.snapshot_scalefactor[i]);
+            }
+        }
+        FillNumStepsArray(opt);
+    }
+
+
 #if (defined(USEOPENMP) && !defined(USEMPI))
 #pragma omp parallel default(shared) \
 private(i)
@@ -151,7 +164,7 @@ private(i)
 #ifdef USEMPI
             //if mpi then there is data overlap so only add to total if no overlap
             if (ThisTask<NProcs-1 && NProcs>1) {
-                if (i<EndSnap-opt.numsteps) tothalos+=HaloTree[i].numhalos;
+                if (i<EndSnap-opt.numstepsarray[i]) tothalos+=HaloTree[i].numhalos;
             }
             else tothalos+=HaloTree[i].numhalos;
 #else
@@ -221,7 +234,7 @@ void WriteHaloMergerTree(Options &opt, ProgenitorData **p, HaloTreeData *h) {
         //startpoint+numofsteps used to produce links
         //save first task which goes all the way to its StartSnap
         iend=EndSnap;
-        istart=StartSnap+opt.numsteps;
+        istart=StartSnap+opt.numstepsarray[StartSnap];
         if (opt.iwriteparallel==1) sprintf(fnamempi,"%s.mpi_task-%d.isnap-%d.fsnap-%d",opt.outname,ThisTask,istart,iend);
         else sprintf(fnamempi,"%s",fname);
         if (ThisTask==0) istart=0;
@@ -322,7 +335,7 @@ void WriteHaloMergerTree(Options &opt, ProgenitorData **p, HaloTreeData *h) {
     {
         //If hdf5 then write a tree file per snapshot meaning it can be written out in parallel
         iend=EndSnap;
-        istart=StartSnap+opt.numsteps;
+        istart=StartSnap+opt.numstepsarray[StartSnap];
         if (ThisTask==0) istart=0;
 
         for (int i=opt.numsnapshots-1;i>0;i--) if (i>=istart && i<iend) {
@@ -396,6 +409,14 @@ void WriteHaloMergerTree(Options &opt, ProgenitorData **p, HaloTreeData *h) {
             attr=Fhdf.createAttribute("Nsteps_search_new_links", PredType::STD_U32LE, attrspace);
             attr.write(PredType::STD_U32LE,&opt.numsteps);
             attrspace=DataSpace(H5S_SCALAR);
+
+            StrType strdatatype(PredType::C_S1, 1000);
+            string datastring = "";
+            for (auto &x:opt.numstepsarray) datastring+=to_string(x)+",";
+            H5std_string strwritebuf (datastring);
+            attr=Fhdf.createAttribute("Nsteps_search_new_links_for_each_snap", strdatatype, attrspace);
+            attr.write(strdatatype, strwritebuf);
+            attrspace=DataSpace(H5S_SCALAR);
             attr=Fhdf.createAttribute("Multistep_linking_criterion", PredType::STD_U32LE, attrspace);
             attr.write(PredType::STD_U32LE,&opt.imultsteplinkcrit);
             attrspace=DataSpace(H5S_SCALAR);
@@ -413,11 +434,10 @@ void WriteHaloMergerTree(Options &opt, ProgenitorData **p, HaloTreeData *h) {
 
             // general description
             // Create new string datatype for attribute
-            StrType strdatatypedesc(PredType::C_S1, 1000);
             // Set up write buffer for attribute
-            const H5std_string strwritebufdesc (opt.description);
-            attr = Fhdf.createAttribute("Description", strdatatypedesc, attrspace);
-            attr.write(strdatatypedesc, strwritebufdesc);
+            strwritebuf = H5std_string(opt.description);
+            attr = Fhdf.createAttribute("Description", strdatatype, attrspace);
+            attr.write(strdatatype, strwritebuf);
 
 
             //Set the datasets properties
@@ -727,6 +747,13 @@ void WriteHaloMergerTree(Options &opt, ProgenitorData **p, HaloTreeData *h) {
             attr=Fhdf.createAttribute("Nsteps_search_new_links", PredType::STD_U32LE, attrspace);
             attr.write(PredType::STD_U32LE,&opt.numsteps);
             attrspace=DataSpace(H5S_SCALAR);
+            StrType strdatatype(PredType::C_S1, 1000);
+            string datastring = "";
+            for (auto &x:opt.numstepsarray) datastring+=to_string(x)+",";
+            H5std_string strwritebuf (datastring);
+            attr=Fhdf.createAttribute("Nsteps_search_new_links_for_each_snap", strdatatype, attrspace);
+            attr.write(strdatatype, strwritebuf);
+
             attr=Fhdf.createAttribute("Multistep_linking_criterion", PredType::STD_U32LE, attrspace);
             attr.write(PredType::STD_U32LE,&opt.imultsteplinkcrit);
             attrspace=DataSpace(H5S_SCALAR);
@@ -743,12 +770,9 @@ void WriteHaloMergerTree(Options &opt, ProgenitorData **p, HaloTreeData *h) {
             attr.write(PredType::NATIVE_FLOAT,&opt.mlsig);
 
             // general description
-            // Create new string datatype for attribute
-            StrType strdatatypedesc(PredType::C_S1, 1000);
-            // Set up write buffer for attribute
-            const H5std_string strwritebufdesc (opt.description);
-            attr = Fhdf.createAttribute("Description", strdatatypedesc, attrspace);
-            attr.write(strdatatypedesc, strwritebufdesc);
+            strwritebuf = H5std_string(opt.description);
+            attr = Fhdf.createAttribute("Description", strdatatype, attrspace);
+            attr.write(strdatatype, strwritebuf);
 
 
             ///last file has no connections
@@ -1085,6 +1109,12 @@ void WriteHaloMergerTree(Options &opt, DescendantData **p, HaloTreeData *h) {
             attr=Fhdf.createAttribute("Nsteps_search_new_links", PredType::STD_U32LE, attrspace);
             attr.write(PredType::STD_U32LE,&opt.numsteps);
             attrspace=DataSpace(H5S_SCALAR);
+            StrType strdatatype(PredType::C_S1, 1000);
+            string datastring = "";
+            for (auto &x:opt.numstepsarray) datastring+=to_string(x)+",";
+            H5std_string strwritebuf (datastring);
+            attr=Fhdf.createAttribute("Nsteps_search_new_links_for_each_snap", strdatatype, attrspace);
+            attr.write(strdatatype, strwritebuf);
             attr=Fhdf.createAttribute("Multistep_linking_criterion", PredType::STD_U32LE, attrspace);
             attr.write(PredType::STD_U32LE,&opt.imultsteplinkcrit);
             attrspace=DataSpace(H5S_SCALAR);
@@ -1446,6 +1476,12 @@ void WriteHaloMergerTree(Options &opt, DescendantData **p, HaloTreeData *h) {
             attr=Fhdf.createAttribute("Nsteps_search_new_links", PredType::STD_U32LE, attrspace);
             attr.write(PredType::STD_U32LE,&opt.numsteps);
             attrspace=DataSpace(H5S_SCALAR);
+            StrType strdatatype(PredType::C_S1, 1000);
+            string datastring = "";
+            for (auto &x:opt.numstepsarray) datastring+=to_string(x)+",";
+            H5std_string strwritebuf(datastring);
+            attr=Fhdf.createAttribute("Nsteps_search_new_links_for_each_snap", strdatatype, attrspace);
+            attr.write(strdatatype, strwritebuf);
             attr=Fhdf.createAttribute("Multistep_linking_criterion", PredType::STD_U32LE, attrspace);
             attr.write(PredType::STD_U32LE,&opt.imultsteplinkcrit);
             attrspace=DataSpace(H5S_SCALAR);

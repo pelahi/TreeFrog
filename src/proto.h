@@ -45,6 +45,10 @@ HaloData *ReadNIFTYData(string &fname, Int_t &nhalos, int idcorrectflag=0, int h
 HaloData *ReadVoidData(string &fname, Int_t &nhalos, int idcorrectflag=0, int hidoffset=1);
 ///Reads VELOCIraptor like Group Catalog Data. Can adjust so that only particles of some type are check for cross matching
 HaloData *ReadHaloGroupCatalogData(string &infile, Int_t &numhalos, int mpi_ninput=0, int ibinary=1, int ifieldhalos=1, int itypesort=ALLTYPEMATCH, int iverbose=0);
+///reads cosmology info
+void ReadCosmologyCatalog(Options &opt, string fname);
+///reads snapshot time information
+void ReadSnaphotTimeCatalog(Options &opt, string fname, double &time, double &scalefactor);
 //@}
 
 /// \name routines used to read VELOCIraptor output
@@ -281,7 +285,7 @@ void FreeHaloDataMemory(Options &opt, const Int_t nhalos, HaloData *&halos);
 
 //@}
 
-///\name cosmolog relate fucionts
+///\name cosmology related fuctions
 /// see \ref cosmology.cxx for implementation
 //@{
 void CalcOmegak(Options &opt);
@@ -291,6 +295,19 @@ void CalcCosmoParams(Options &opt, Double_t a);
 Double_t GetHubble(Options &opt, Double_t a);
 double GetInvaH(double a, void * params);
 Double_t CalcCosmicTime(Options &opt, Double_t a1, Double_t a2);
+Double_t CalcFreeFallTimeFromOverdensity(Options &opt, Double_t a);
+//@}
+
+///\name determining number of snapshots over which to search for links
+//@{
+///Fills numstep array based on desired time stepping. 
+void FillNumStepsArray(Options &opt);
+///if provided a fixed time, use it to fill the numstepsarray
+void FillNumStepsArrayBasedOnTime(Options &opt);
+///if provided a fixed scale factor change, use it to fill the numstepsarray
+void FillNumStepsArrayBasedOnScaleFactor(Options &opt);
+///if provided a fixed factor of the dynamical time, use it to fill the numstepsarray
+void FillNumStepsArrayBasedOnDynamicalTime(Options &opt);
 //@}
 
 /// \name for mapping ids to index routines

@@ -4,6 +4,22 @@
 
 #include "TreeFrog.h"
 
+inline void errormessage(string message) {
+#ifndef USEMPI
+    int ThisTask =0;
+#endif
+    if (ThisTask==0)  cerr<<message<<endl;
+}
+
+inline void ConfigExit() {
+#ifdef USEMPI
+            MPI_Abort(MPI_COMM_WORLD,8);
+#else
+            exit(8);
+#endif
+}
+
+
 ///Read parameters from a parameter file. For list of currently implemented options see \ref configopt
 ///\todo still more parameters that can be adjusted
 void GetParamFile(Options &opt)
@@ -89,6 +105,15 @@ void GetParamFile(Options &opt)
                             opt.numstepsarray.push_back(stof(token));
                             dataline.erase(0, pos + delimiter.length());
                         }
+                    }
+                    else if (strcmp(tbuff, "Snapshot_search_window_in_Gyrs")==0) {
+                        opt.delta_time = atof(vbuff);
+                    }
+                    else if (strcmp(tbuff, "Snapshot_search_window_in_scalefactor")==0) {
+                        opt.delta_scalefactor = atof(vbuff);
+                    }
+                    else if (strcmp(tbuff, "Snapshot_search_window_in_fraction_of_dynamical_time")==0) {
+                        opt.delta_dynamical_time_fraction = atof(vbuff);
                     }
                     else if (strcmp(tbuff, "Default_values")==0) {
                         idefaultflag = atoi(vbuff);
@@ -187,6 +212,8 @@ void GetParamFile(Options &opt)
                         opt.Omega_nu= atof(vbuff);
                     else if (strcmp(tbuff, "w_of_DE")==0)
                         opt.w_de= atof(vbuff);
+                    else if (strcmp(tbuff, "Overdensity_value_in_critical_density_defining_freefall_time")==0)
+                        opt.deltarho = atof(vbuff);
 
                     //Other options
                     else if (strcmp(tbuff, "Verbose")==0){
@@ -521,48 +548,27 @@ inline void ConfigCheck(Options &opt)
     int ThisTask=0;
 #endif
     if (opt.fname==NULL||opt.outname==NULL){
-    if (ThisTask==0)
-        cerr<<"Must provide input and output file names\n";
-#ifdef USEMPI
-            MPI_Abort(MPI_COMM_WORLD,8);
-#else
-            exit(8);
-#endif
+        errormessage("Must provide input and output file names\n");
+        ConfigExit();
     }
 
     if (opt.imapping==DSIMPLEMAP) opt.mappingfunc=simplemap;
     if (opt.numsnapshots<2){
-    if (ThisTask==0)
-        cerr<<"Number of snapshots must be >=2\n";
-#ifdef USEMPI
-            MPI_Abort(MPI_COMM_WORLD,8);
-#else
-            exit(8);
-#endif
+        errormessage("Number of snapshots must be >=2\n");
+        ConfigExit();
     }
     if (opt.numsteps<1){
-    if (ThisTask==0)
-        cerr<<"Number of steps over which to produce links must be >=1\n";
-#ifdef USEMPI
-            MPI_Abort(MPI_COMM_WORLD,8);
-#else
-            exit(8);
-#endif
+        errormessage("Number of steps over which to produce links must be >=1\n");
+        ConfigExit();
     }
     if ((opt.particle_frac<1 && opt.particle_frac>0 && opt.icorematchtype==PARTLISTNOCORE && opt.min_numpart>1)){
-        if (ThisTask==0) {
-            cerr<<"Core matching configuration inconsistent. \n";
-            if (opt.icorematchtype==PARTLISTNOCORE) cerr<<"Core fractions less than 1 but core matching disabled. Alter -E argument. \n";
-            if (opt.min_numpart<1) cerr<<"Min num of particles used to identify matches < 1. Alter -p argument. \n";
-        }
-#ifdef USEMPI
-            MPI_Abort(MPI_COMM_WORLD,8);
-#else
-            exit(8);
-#endif
+        errormessage("Core matching configuration inconsistent. \n");
+        if (opt.icorematchtype==PARTLISTNOCORE) errormessage("Core fractions less than 1 but core matching disabled. Alter -E argument. \n");
+        if (opt.min_numpart<1) errormessage("Min num of particles used to identify matches < 1. Alter -p argument. \n");
+        ConfigExit();
     }
     if (opt.idefaultvalues) {
-        cout<<"Parameters specifying special matching criteria not passed by user, using default values"<<endl;
+        errormessage("Parameters specifying special matching criteria not passed by user, using default values");
         if (opt.icatalog==DCROSSCAT){
             if(opt.isearchdirection==SEARCHALL) {
                 opt.icorematchtype=PARTLISTNOCORE;
@@ -595,36 +601,78 @@ inline void ConfigCheck(Options &opt)
         }
     }
     if (opt.icatalog==DCROSSCAT) {
-        if (opt.numsnapshots>2) {cerr<<"Cross catalog, yet more than two snapshots compared, reseting and only comparing two"<<endl;opt.numsnapshots=2;}
-        if (opt.numsteps>1) {cerr<<"Cross catalog, yet asking to use more than a single step when linking, reseting and only linking across one "<<endl;opt.numsteps=1;}
+        if (opt.numsnapshots>2) {
+            errormessage("Cross catalog, yet more than two snapshots compared, reseting and only comparing two");
+            opt.numsnapshots=2;
+        }
+        if (opt.numsteps>1) {
+            errormessage("Cross catalog, yet asking to use more than a single step when linking, reseting and only linking across one ");
+            opt.numsteps=1;
+        }
     }
     if (opt.outputformat<OUTASCII && opt.outputformat>OUTHDF){
-        cerr<<"Output format not valid, defaulting to ascii"<<endl; opt.outputformat=OUTASCII;
+        errormessage("Output format not valid, defaulting to ascii");
+        opt.outputformat=OUTASCII;
     }
     if (opt.outdataformat<0){
-        cerr<<"Output data requested not valid, defaulting to minimal output"<<endl; opt.outdataformat=DATAOUTMATCHESONLY;
+        errormessage("Output data requested not valid, defaulting to minimal output"); opt.outdataformat=DATAOUTMATCHESONLY;
     }
 #ifndef USEHDF
     if (opt.ibinary==2){
-        cerr<<"ERROR: You specified that the input data format is HDF5 but the code has not been compiled with the HDF5 library\n";
-#ifdef USEMPI
-            MPI_Abort(MPI_COMM_WORLD,8);
-#else
-            exit(8);
-#endif
+        errormessage("ERROR: You specified that the input data format is HDF5 but the code has not been compiled with the HDF5 library\n");
+        ConfigExit();
     }
 #endif
     if (opt.numstepsarray.size() > 0 && opt.numstepsarray.size() != opt.numsnapshots) {
-        cerr<<"ERROR: You specified a numsteps array so each step searchs a different number of steps but the size of the list does not match the number of snaphots "<<endl;
-        #ifdef USEMPI
-                    MPI_Abort(MPI_COMM_WORLD,8);
-        #else
-                    exit(8);
-        #endif
+        errormessage("ERROR: You specified a numsteps array so each step searchs a different number of steps but the size of the list does not match the number of snaphots ");
+        ConfigExit();
     }
-    if (opt.numstepsarray.size()>0) {
-        opt.numsteps = 0;
-        for (auto &i:opt.numstepsarray) if (opt.numsteps < i) opt.numsteps = i;
+    if (opt.numstepsarray.size() > 0 ) {
+        for (auto &x:opt.numstepsarray) if (x==0) {
+            errormessage("ERROR: array of numsteps passed but have entires of 0. Values must be >=1. CheckConfig");
+            ConfigExit();
+        }
+    }
+
+
+    //if delta time/scalefactor options set and > 0 then need
+    //to update the opt.numsteps array
+    if (opt.delta_time*opt.delta_dynamical_time_fraction*opt.delta_scalefactor > 0 ) {
+        errormessage("Snapshot search windows in time, dynamical time and scale factor provided. Please use one. Update Config.");
+        ConfigExit();
+    }
+    else if (opt.delta_time>0 || opt.delta_scalefactor>0 || opt.delta_dynamical_time_fraction>0){
+        if (opt.delta_time>0) {
+            errormessage("Using time in Gyrs to determine number of snapshots over which to serach for links.");
+        }
+        else if (opt.delta_scalefactor>0) {
+            errormessage("Using time in scale factor change to determine number of snapshots over which to serach for links.");
+        }
+        else if (opt.delta_dynamical_time_fraction>0) {
+            errormessage("Using dynamical time defined by a factor of the free fall time at virial overdensity to determine number of snapshots over which to serach for links.");
+        }
+        errormessage("This option requires input data has scale factor/time for each snapshot and cosmological information.");
+        errormessage("Currently, only VELOCIraptor input configured to load in scale factors and cosmology data.");
+        if (opt.ioformat != DCATALOG) {
+            errormessage("Input not compatible with desired snapshot search window.");
+            errormessage("Either use array of snapshots windows calculated to generated the desired delta and update config or disable these options.");
+            ConfigExit();
+        }
+        opt.snapshot_time.resize(opt.numsnapshots,0);
+        opt.snapshot_scalefactor.resize(opt.numsnapshots,0);
+        opt.numstepsarray.resize(opt.numsnapshots,0);
+    }
+    else {
+        if (opt.numstepsarray.size()>0) {
+            //get the max number of steps
+            errormessage("Array of number of step over which to search for links provided.");
+            errormessage("Single global snapshot search window ignored.");
+            opt.numsteps = 0;
+            for (auto &i:opt.numstepsarray) if (opt.numsteps < i) opt.numsteps = i;
+        }
+        else {
+            opt.numstepsarray.resize(opt.numsnapshots,opt.numsteps);
+        }
     }
 
     //now set description

@@ -264,7 +264,7 @@ struct Options
     vector<int> numstepsarray;
     ///store delta t, delta a, that dictates the size of the steps for which you
     ///search forward or backward
-    double deltaT, deltascalefactor;
+    double delta_time, delta_scalefactor, delta_dynamical_time_fraction;
     ///maximum id value, used to allocate an array of this size so that ids can be mapped to an index and thus easily accessible.
     unsigned long long MaxIDValue;
     ///total number of haloes across all snapshots
@@ -364,9 +364,13 @@ struct Options
 
     ///\name scale factor, Hubble in km/s/Mpc, cosmology, virial density. These are used if linking lengths are scaled or trying to define virlevel using the cosmology
     //@{
-    Double_t Gravity, hval, H;
+    Double_t Gravity, hval, H, ainit;
     Double_t Omega_m, Omega_b, Omega_cdm, Omega_Lambda, Omega_k, Omega_r, Omega_nu, Omega_de, w_de;
-    Double_t rhocrit, rhobg;
+    Double_t rhocrit, rhobg, deltarho;
+    Double_t HubbletoGyrs;
+
+    vector<Double_t> snapshot_scalefactor;
+    vector<Double_t> snapshot_time;
     //@}
 
     Options()
@@ -426,7 +430,15 @@ struct Options
         //set units of comology to km/s/kpc  and solar mass
         H = 0.1;
         Gravity = 4.3022682e-6;
+        deltarho = 200.0;
+        //conversion from 1/(km/s/kpc) to Gyrs
+        HubbletoGyrs = 0.97781310637;
+        ainit = 0.001;
+        delta_time = delta_scalefactor = delta_dynamical_time_fraction = 0.0;
+        Omega_m = Omega_b = Omega_cdm = Omega_Lambda = Omega_k = Omega_r = Omega_nu = Omega_de = 0;
+        w_de = -1.0;
     }
+
 };
 
 /*!
