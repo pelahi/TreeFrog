@@ -1,4 +1,4 @@
-# Sample TreeFrog Config file useful for running on VR catalogs 
+# Sample TreeFrog Config file useful for running on VR catalogs
 # It produces and id to index map and also has the temporal id set to the default VR value
 
 ###################################
@@ -55,9 +55,20 @@ HaloID_snapshot_offset=0
 Tree_direction=1
 #particle types used to build tree. All -1, gas 0, dark matter 1, star 4, gas+dark matter -2,
 Part_type=-1
-#number of steps used to search for candidate links. >1 suggested but value
-#depends on input cadence of halo catalog.
-Nsteps_search_new_links=5
+
+# here we set number of snapshots over which to search for links
+# for completeness all options are shown but the dynamical time is set
+# set the fraction of dynamical time
+Snapshot_search_window_in_fraction_of_dynamical_time=0.5
+
+# fixed number of steps
+#Nsteps_search_new_links=5
+# can also provide explicit list of steps for each snapshot
+#Nsteps_search_new_links_for_each_snap=5,2,4,2,3,5,2,1,1,1,
+# can also set a fixed physical time
+#Snapshot_search_window_in_Gyrs=1.0
+# or scale factor
+#Snapshot_search_window_in_scalefactor=0.1
 
 # Merit and matching options
 #whether to use default (velociraptor optimised values based on tree direction)
