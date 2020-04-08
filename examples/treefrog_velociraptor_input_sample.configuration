@@ -1,0 +1,124 @@
+# Sample TreeFrog Config file useful for running on VR catalogs 
+# It produces and id to index map and also has the temporal id set to the default VR value
+
+###################################
+# Input/Output Options
+###################################
+# Integer indicating the input format of the halo catalog
+#For velociraptor catalogs 2, for SUSSING (ascii) format 1, for nifty ascii format 3, for void tree format 4
+Input_tree_format=2
+
+# Input modifiers for catalog produced by velociraptor
+#whether catalog is ascii 0, binary 1, or hdf5 2
+VELOCIraptor_input_format=2
+#whether catalog is separated into field and subhalo files (0/1 is n/y)
+VELOCIraptor_input_field_sep_files=0
+#whether there is more than one file per snapshot (when running velociraptor in mpi, set this to 1)
+VELOCIraptor_input_num_files_per_snap=1
+
+# Output related options
+#ascii 0, binary 1 [not yet implemented], hdf5 2
+Output_format=2
+#what data fields to include in the output, 0 minimal, 1 include merits, 2 extensive
+Output_data_content=1
+
+###################################
+
+###################################
+# Particle/Halo ID options
+###################################
+#TreeFrog allocates array of size Max_ID_Value to cross correlate particles
+#thus specify maximim ID and code will allocate an array of size max ID
+#of either ints or long ints (depending on compilation options) to cross correlate
+#If value not set must a id to index mapping
+Max_ID_Value=0
+#Can construct a memory efficient ID to index map (computationally expensive but reduces)
+#memory by prodiving a map or by having code produce a map.
+#no map 0, memory efficient treefrog built map -1, user defined (must alter code) map 1
+Mapping=-1
+
+#TreeFrog outputs halo IDs as index+HaloID_offset+Temporal_haloidval*(snapshot_number +HaloID_snapshot_offset)
+#for example, typical velociraptor temporally unique IDs are often
+#halo index+1+1000000000000L*snpashot_number
+#makes it easy to match TreeFrog halo ids to input halo catalog ids
+Temporal_haloidval=1000000000000
+HaloID_offset=0
+HaloID_snapshot_offset=0
+###################################
+
+###################################
+# Tree construction options.
+###################################
+
+# KEY OPTIONS
+#direction of tree, whether progenitor 0, descendant 1, or both 2
+Tree_direction=1
+#particle types used to build tree. All -1, gas 0, dark matter 1, star 4, gas+dark matter -2,
+Part_type=-1
+#number of steps used to search for candidate links. >1 suggested but value
+#depends on input cadence of halo catalog.
+Nsteps_search_new_links=5
+
+# Merit and matching options
+#whether to use default (velociraptor optimised values based on tree direction)
+Default_values=1
+# Options below set Default values to 0
+#what merit function to use.
+#For descendant tree used combined shared and ranking merit 6)
+#For progenitor tree use
+Merit_type=6
+#core matching of particles (does require input particle catalogs to be)
+#sorted in a physically meaningful way.
+#No core matching 0, match core to all 1, core to all followed by core to core 2, core to core only 3
+Core_match_type=2
+#Fraction of object particles defining core
+Particle_core_fraction=0.4
+#Minimum number of particles used
+Particle_core_min_numpart=5
+#Ratio defining minimal number of shared particles for match relative to Poisson noise
+Shared_particle_signal_to_noise_limit=0
+
+# Multiple snapshot search options
+#Criterion defining when to continue searching snapshots for links
+#If object has no match 0, If no match or merit low 1,
+#If no match or match not primary (for descendant tree) 2, If no match or match not primary (for descendant tree) or merit low 3,
+Multistep_linking_criterion=3
+#Merit limit to continue searching
+Merit_limit_continuing_search=0.025
+#Time of temporal weight applied to merits
+
+###################################
+
+
+
+###################################
+# MPI load balancing options
+###################################
+#Tree building is memory intensive as particle IDs must be stored
+#Thus when running in mpi, can get significant load imbalances
+#particularly if multiple snapshots are being searched. Early
+#cosmological times have few objects were as late times have many.
+
+#also can run treefrog with a single thread to examine what the mpi load balance would be
+#using below
+#Num_desired_mpi_threads=
+
+#Type of load balance splitting 0 for particles, 1 for halos
+Mpi_load_balance_splitting=0
+
+#maximum allowed load imbalance between the mpi threads this must be >1
+Mpi_max_load_imbalance=1.1
+
+#write output in parallel
+Write_parallel=1
+
+###################################
+
+###################################
+# Other options
+###################################
+
+#how verbose to be, quite 0, verbose 1, chatterbox 2
+Verbose=0
+
+###################################
