@@ -1,2 +1,3 @@
-Sphinx>=1.8
+python>=3.8
+Sphinx>=3.0.3
 breathe
