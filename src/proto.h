@@ -262,14 +262,14 @@ void RerankDescendants(Options &opt, HaloTreeData *&pht, DescendantData **&pdesc
 void MemoryEfficientMap(Options &opt,HaloTreeData *&pht);
 ///generate a map for particle ids to index and store it in the set, which can be searched to
 ///relate pid to index
-map<IDTYPE, IDTYPE> ConstructMemoryEfficientPIDStoIndexMap(Options &opt, HaloTreeData *&pht);
+unordered_map<IDTYPE, IDTYPE> ConstructMemoryEfficientPIDStoIndexMap(Options &opt, HaloTreeData *&pht);
 ///save the particle id to index map
-void SavePIDStoIndexMap(Options &,map<IDTYPE, IDTYPE>&);
+void SavePIDStoIndexMap(Options &, unordered_map<IDTYPE, IDTYPE>&);
 ///read the particle id to index map from file
-int ReadPIDStoIndexMap(Options &, map<IDTYPE, IDTYPE>&);
+int ReadPIDStoIndexMap(Options &, unordered_map<IDTYPE, IDTYPE>&);
 
 ///map particle id to index position
-void MapPIDStoIndex(Options &opt, HaloTreeData *&pht, map<IDTYPE, IDTYPE> &);
+void MapPIDStoIndex(Options &opt, HaloTreeData *&pht, unordered_map<IDTYPE, IDTYPE> &);
 ///map particle id to index position
 void MapPIDStoIndex(Options &opt, HaloTreeData *&pht);
 

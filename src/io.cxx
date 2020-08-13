@@ -1677,7 +1677,7 @@ void WriteCrossComp(Options &opt, ProgenitorData **p, HaloTreeData *h) {
 ///\name write associated information of treefrog run
 //@{
 ///if a memory efficient particle id to index map was produced save the file
-void SavePIDStoIndexMap(Options &opt,map<IDTYPE, IDTYPE>&idmap)
+void SavePIDStoIndexMap(Options &opt, unordered_map<IDTYPE, IDTYPE>&idmap)
 {
     char fname[1000];
     fstream Fout;
@@ -1739,7 +1739,7 @@ void SavePIDStoIndexMap(Options &opt,map<IDTYPE, IDTYPE>&idmap)
     }
 }
 ///if a memory efficient particle id to index map file exists read it
-int ReadPIDStoIndexMap(Options &opt,map<IDTYPE, IDTYPE>&idmap)
+int ReadPIDStoIndexMap(Options &opt, unordered_map<IDTYPE, IDTYPE>&idmap)
 {
     char fname[1000];
     fstream Fin, Fin2;

@@ -32,7 +32,7 @@ void MemoryEfficientMap(Options &opt,HaloTreeData *&pht)
 #ifndef USEMPI
     int ThisTask=0;
 #endif
-    map<IDTYPE, IDTYPE> idmap;
+    unordered_map<IDTYPE, IDTYPE> idmap;
     //try reading information and if it does not suceed then produce map
     if (ReadPIDStoIndexMap(opt,idmap)==0) {
         if (ThisTask==0) cout<<"Generating unique memory efficent mapping for particle IDS to index"<<endl;
@@ -45,7 +45,7 @@ void MemoryEfficientMap(Options &opt,HaloTreeData *&pht)
 
 ///builds a map by identifying the ids of particles in structure across snapshots
 ///which is memory efficient as only needs array size of maximum number of particles in structures
-map<IDTYPE, IDTYPE> ConstructMemoryEfficientPIDStoIndexMap(Options &opt, HaloTreeData *&pht) {
+unordered_map<IDTYPE, IDTYPE> ConstructMemoryEfficientPIDStoIndexMap(Options &opt, HaloTreeData *&pht) {
     Int_t i,j,k;
     Int_t index,indexoffset,offsetsnap;
     double time1,time2;
@@ -63,7 +63,7 @@ map<IDTYPE, IDTYPE> ConstructMemoryEfficientPIDStoIndexMap(Options &opt, HaloTre
     //place ids in a set so have unique ordered set of ids
     vector<IDTYPE> idvec;
     vector<IDTYPE> idtempvec;
-    map<IDTYPE, IDTYPE> idmap;
+    unordered_map<IDTYPE, IDTYPE> idmap;
     unordered_set<IDTYPE> idset;
     time1=MyGetTime();
     time2=MyGetTime();
@@ -71,11 +71,13 @@ map<IDTYPE, IDTYPE> ConstructMemoryEfficientPIDStoIndexMap(Options &opt, HaloTre
     for (j=0;j<pht[EndSnap-1].numhalos;j++) reservesize+=pht[EndSnap-1].Halo[j].NumberofParticles;
     if (opt.iexclusiveids) {
         idvec.reserve(reservesize);
+        idmap.rehash(reservesize);
         cout<<ThisTask<<" initial reserve of memory for construction of id map is "<<reservesize*sizeof(IDTYPE)/1024./1024./1024.<<"GB"<<endl;
     }
     else {
         idset.reserve(reservesize);
         idvec.reserve(reservesize);
+        idmap.rehash(reservesize);
         cout<<ThisTask<<" Non exclusive ids, must generate memory heavy set, initial reserve of memory for construction of id map is "<<reservesize*(sizeof(IDTYPE)+32)/1024./1024./1024.<<"GB"<<endl;
     }
     for (i=EndSnap-1;i>=StartSnap+offsetsnap;i--) {
@@ -289,7 +291,7 @@ map<IDTYPE, IDTYPE> ConstructMemoryEfficientPIDStoIndexMap(Options &opt, HaloTre
 }
 
 
-void MapPIDStoIndex(Options &opt, HaloTreeData *&pht, map<IDTYPE, IDTYPE> &idmap) {
+void MapPIDStoIndex(Options &opt, HaloTreeData *&pht, unordered_map<IDTYPE, IDTYPE> &idmap) {
 #ifndef USEMPI
         int ThisTask=0,StartSnap=0,EndSnap=opt.numsnapshots;
 #endif
