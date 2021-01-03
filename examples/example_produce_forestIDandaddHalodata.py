@@ -12,7 +12,7 @@ The information is then saved in a forest file.
 import sys
 import os
 import glob
-import psutil
+#import psutil
 import time
 import numpy as np
 import copy
@@ -47,12 +47,11 @@ ireducememfootprintflag = False
 #accessible in the resulting forest file.
 requestedfields=[
     'ID', 'hostHaloID',
-    'Structuretype'
+    'Structuretype', 'Mass_tot', 'npart', 'numSubStruct'
     ]
 
 additionalrequestedfields=[
-    'numSubStruct', 'npart',
-    'Mass_tot', 'Mass_FOF', 'Mass_200mean', 'Mass_200crit',
+    'Mass_FOF', 'Mass_200mean', 'Mass_200crit',
     'R_size', 'R_HalfMass', 'R_200mean', 'R_200crit',
     'Xc', 'Yc', 'Zc',
     'Xcminpot', 'Ycminpot', 'Zcminpot',
@@ -96,10 +95,10 @@ scalefactors = np.zeros(numsnaps)
 
 #load halo properties file
 print('Loading halo properties ...')
-time1 = time.clock()
+time1 = time.time()
 mp = -1
 for i in range(numsnaps):
-    fname=halocatalogdir+'snapshot_%03d.VELOCIraptor'%i
+    fname=halocatalogdir+'snap_%04d/snap_%04d.VELOCIraptor'%(i,i)
     halos, numhalos[i] = vpt.ReadPropertyFile(fname,RAWPROPFORMAT,0,0,requestedfields)
     scalefactors[i]=halos['SimulationInfo']['ScaleFactor']
     if (numhalos[i] > 0 and mp == -1):
@@ -109,7 +108,7 @@ for i in range(numsnaps):
             if (halos[key].dtype==np.float64):
                 halos[key] = np.array(halos[key],dtype=np.float32)
     halodata[i].update(halos)
-print('Done', time.clock() - time1)
+print('Done', time.time() - time1)
 
 #given walkable tree, determine the largest difference in snapshots between an object and its head
 maxnsnapsearch=0
@@ -174,5 +173,5 @@ vpt.WriteForest(outputfname, numsnaps, numhalos, halodata, forestdata, scalefact
 
 halolist = [None for i in range(numsnaps)]
 for i in range(numsnaps):
-    halolist=halocatalogdir+'snapshot_%03d.VELOCIraptor'%i
+    halolist[i]=halocatalogdir+'snap_%04d/snap_%04d.VELOCIraptor'%(i,i)
 vpt.ForestFileAddHaloData(outputfname, halolist, additionalrequestedfields)
